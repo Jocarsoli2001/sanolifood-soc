@@ -1,0 +1,60 @@
+.
+├── app
+│   ├── src
+│   │   └── .gitkeep
+│   ├── static
+│   │   └── .gitkeep
+│   ├── templates
+│   │   └── .gitkeep
+│   └── tests
+│       └── .gitkeep
+├── compose.yaml
+├── DECISIONS.md
+├── detections
+│   ├── rules
+│   │   └── .gitkeep
+│   └── tests
+│       └── fixtures
+│           └── .gitkeep
+├── docs
+│   ├── adr
+│   │   └── .gitkeep
+│   └── diagrams
+│       └── .gitkeep
+├── .env.example
+├── evaluation
+│   └── .gitkeep
+├── evidence
+│   └── ENV-001
+│       ├── repository-structure.txt
+│       └── system-inventory.txt
+├── .gitignore
+├── infrastructure
+│   ├── nginx
+│   │   └── .gitkeep
+│   └── scripts
+│       └── .gitkeep
+├── INSTALL.md
+├── n8n
+│   └── workflows
+│       └── .gitkeep
+├── README.md
+├── scenarios
+│   └── .gitkeep
+├── suricata
+│   ├── config
+│   │   └── .gitkeep
+│   └── rules
+│       └── .gitkeep
+├── threat-intel
+│   └── .gitkeep
+├── VERSIONS.md
+└── wazuh
+    ├── config
+    │   └── .gitkeep
+    ├── decoders
+    │   └── .gitkeep
+    └── rules
+        └── .gitkeep
+
+30 directories, 28 files
