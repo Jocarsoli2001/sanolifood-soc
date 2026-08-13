@@ -1,0 +1,49 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime data
+logs/
+data/
+tmp/
+*.log
+*.pid
+
+# Docker-generated data
+volumes/
+backups/
+
+# n8n runtime data
+.n8n/
+
+# Test and evaluation outputs
+evaluation/results/
+evidence/**/raw/
+evidence/**/*.pcap
+evidence/**/*.pcapng
+
+# Keep evidence documentation
+!evidence/**/
+!evidence/**/*.md
+!evidence/**/*.txt
+!evidence/**/*.json
