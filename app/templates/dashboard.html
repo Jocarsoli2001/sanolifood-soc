@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div>
+    <span class="status-pill"><span></span>Plataforma operativa</span>
+    <h2>Control confiable para cada lote, ingrediente y decisión.</h2>
+    <p>La base tecnológica está preparada para incorporar procesos de producción, calidad, inventario y trazabilidad con seguridad integrada.</p>
+  </div>
+  <div class="hero-mark" aria-hidden="true"><span>SF</span><small>2026</small></div>
+</section>
+
+<section class="metrics" aria-label="Indicadores de plataforma">
+  <article class="metric"><span class="metric-label">Aplicación</span><strong>Operativa</strong><small>FastAPI · v{{ app_version }}</small><i class="metric-accent green"></i></article>
+  <article class="metric"><span class="metric-label">Persistencia</span><strong>Disponible</strong><small>PostgreSQL · migrado</small><i class="metric-accent blue"></i></article>
+  <article class="metric"><span class="metric-label">Telemetría</span><strong>Activa</strong><small>Eventos JSON correlacionados</small><i class="metric-accent teal"></i></article>
+  <article class="metric"><span class="metric-label">Exposición</span><strong>Controlada</strong><small>Nginx · puerto único</small><i class="metric-accent orange"></i></article>
+</section>
+
+<div class="section-heading"><div><p class="eyebrow">Mapa funcional</p><h2>Módulos empresariales</h2></div><span class="quiet-badge">Incremento base</span></div>
+<section class="module-grid">
+  {% for module in modules %}
+  <article class="module-card">
+    <span class="module-symbol {{ module.tone }}">{{ loop.index|string }}</span>
+    <div><h3>{{ module.name }}</h3><p>{{ module.description }}</p></div>
+    <span class="module-state">{{ module.state }}</span>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="panel-grid">
+  <article class="panel">
+    <div class="panel-header"><div><p class="eyebrow">Arquitectura</p><h2>Cadena de servicio</h2></div><span class="status-ok">Saludable</span></div>
+    <ol class="service-flow">
+      <li><span>01</span><div><strong>Nginx</strong><small>Entrada controlada y cabeceras</small></div></li>
+      <li><span>02</span><div><strong>FastAPI</strong><small>Negocio, API y telemetría</small></div></li>
+      <li><span>03</span><div><strong>PostgreSQL</strong><small>Persistencia transaccional</small></div></li>
+    </ol>
+  </article>
+  <article class="panel evidence-panel">
+    <div class="panel-header"><div><p class="eyebrow">Observabilidad</p><h2>Evidencia desde el diseño</h2></div></div>
+    <p>Cada solicitud recibe un identificador de correlación y produce un evento JSON apto para la integración posterior con Wazuh.</p>
+    <div class="code-sample"><span>event_type</span><strong>http.request.completed</strong><span>correlation_id</span><strong>{{ correlation_id[:18] }}…</strong></div>
+  </article>
+</section>
+{% endblock %}
+

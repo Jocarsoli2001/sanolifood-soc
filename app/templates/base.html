@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portal corporativo de operaciones de SanoliFood SA">
+  <title>{{ page_title }} | SanoliFood SA</title>
+  <link rel="icon" href="{{ url_for('static', path='img/brand-mark.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="/" aria-label="SanoliFood SA - Inicio">
+        <img src="{{ url_for('static', path='img/brand-mark.svg') }}" width="42" height="42" alt="">
+        <span><strong>SanoliFood</strong><small>Operations</small></span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <a class="nav-item active" href="/"><span class="nav-icon">⌂</span>Resumen</a>
+        <span class="nav-caption">Operaciones</span>
+        <span class="nav-item disabled"><span class="nav-icon">▦</span>Producción</span>
+        <span class="nav-item disabled"><span class="nav-icon">✓</span>Calidad</span>
+        <span class="nav-item disabled"><span class="nav-icon">◇</span>Inventario</span>
+        <span class="nav-caption">Gobierno</span>
+        <span class="nav-item disabled"><span class="nav-icon">◉</span>Auditoría</span>
+        <span class="nav-item disabled"><span class="nav-icon">⚙</span>Configuración</span>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="environment-dot"></span>
+        <div><strong>{{ app_env|upper }}</strong><small>Versión {{ app_version }}</small></div>
+      </div>
+    </aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="menu-button" type="button" aria-label="Abrir menú" data-sidebar-toggle>☰</button>
+        <div><p class="eyebrow">SanoliFood SA</p><h1>{{ page_title }}</h1></div>
+        <div class="operator"><span class="avatar">SC</span><span><strong>Sesión de laboratorio</strong><small>Plataforma base</small></span></div>
+      </header>
+      <section class="content">
+        {% block content %}{% endblock %}
+      </section>
+      <footer class="footer">
+        <span>SanoliFood SA · Entorno corporativo simulado</span>
+        <span>Correlation ID: <code>{{ correlation_id }}</code></span>
+      </footer>
+    </main>
+  </div>
+  <script src="{{ url_for('static', path='js/app.js') }}" defer></script>
+</body>
+</html>
+

@@ -1,0 +1,200 @@
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+app-1  |     return self._loop.run_until_complete(task)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+app-1  |     await self._serve(sockets)
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+app-1  |     config.load()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/config.py", line 436, in load
+app-1  |     self.loaded_app = import_from_string(self.app)
+app-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+app-1  |     module = importlib.import_module(module_str)
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+app-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+app-1  |   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+app-1  |   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+app-1  |   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+app-1  |   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+app-1  |   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/sanolifood/main.py", line 48, in <module>
+app-1  |     app.mount("/static", StaticFiles(directory=str(project_dir / "static")), name="static")
+app-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/starlette/staticfiles.py", line 56, in __init__
+app-1  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+app-1  | RuntimeError: Directory '/opt/venv/lib/python3.12/static' does not exist
+app-1  | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+app-1  | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+app-1  | Traceback (most recent call last):
+app-1  |   File "/opt/venv/bin/uvicorn", line 6, in <module>
+app-1  |     sys.exit(main())
+app-1  |              ^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1569, in __call__
+app-1  |     return self.main(*args, **kwargs)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1490, in main
+app-1  |     rv = self.invoke(ctx)
+app-1  |          ^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1353, in invoke
+app-1  |     return ctx.invoke(self.callback, **ctx.params)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 907, in invoke
+app-1  |     return callback(*args, **kwargs)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/main.py", line 413, in main
+app-1  |     run(
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/main.py", line 580, in run
+app-1  |     server.run()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+app-1  |     return asyncio.run(self.serve(sockets=sockets))
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+app-1  |     return runner.run(main)
+app-1  |            ^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+app-1  |     return self._loop.run_until_complete(task)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+app-1  |     await self._serve(sockets)
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+app-1  |     config.load()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/config.py", line 436, in load
+app-1  |     self.loaded_app = import_from_string(self.app)
+app-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+app-1  |     module = importlib.import_module(module_str)
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+app-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+app-1  |   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+app-1  |   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+app-1  |   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+app-1  |   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+app-1  |   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/sanolifood/main.py", line 48, in <module>
+app-1  |     app.mount("/static", StaticFiles(directory=str(project_dir / "static")), name="static")
+app-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/starlette/staticfiles.py", line 56, in __init__
+app-1  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+app-1  | RuntimeError: Directory '/opt/venv/lib/python3.12/static' does not exist
+app-1  | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+app-1  | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+app-1  | Traceback (most recent call last):
+app-1  |   File "/opt/venv/bin/uvicorn", line 6, in <module>
+app-1  |     sys.exit(main())
+app-1  |              ^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1569, in __call__
+app-1  |     return self.main(*args, **kwargs)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1490, in main
+app-1  |     rv = self.invoke(ctx)
+app-1  |          ^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1353, in invoke
+app-1  |     return ctx.invoke(self.callback, **ctx.params)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 907, in invoke
+app-1  |     return callback(*args, **kwargs)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/main.py", line 413, in main
+app-1  |     run(
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/main.py", line 580, in run
+app-1  |     server.run()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+app-1  |     return asyncio.run(self.serve(sockets=sockets))
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+app-1  |     return runner.run(main)
+app-1  |            ^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+app-1  |     return self._loop.run_until_complete(task)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+app-1  |     await self._serve(sockets)
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+app-1  |     config.load()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/config.py", line 436, in load
+app-1  |     self.loaded_app = import_from_string(self.app)
+app-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+app-1  |     module = importlib.import_module(module_str)
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+app-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+app-1  |   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+app-1  |   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+app-1  |   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+app-1  |   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+app-1  |   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/sanolifood/main.py", line 48, in <module>
+app-1  |     app.mount("/static", StaticFiles(directory=str(project_dir / "static")), name="static")
+app-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/starlette/staticfiles.py", line 56, in __init__
+app-1  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+app-1  | RuntimeError: Directory '/opt/venv/lib/python3.12/static' does not exist
+app-1  | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+app-1  | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+app-1  | Traceback (most recent call last):
+app-1  |   File "/opt/venv/bin/uvicorn", line 6, in <module>
+app-1  |     sys.exit(main())
+app-1  |              ^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1569, in __call__
+app-1  |     return self.main(*args, **kwargs)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1490, in main
+app-1  |     rv = self.invoke(ctx)
+app-1  |          ^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 1353, in invoke
+app-1  |     return ctx.invoke(self.callback, **ctx.params)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/click/core.py", line 907, in invoke
+app-1  |     return callback(*args, **kwargs)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/main.py", line 413, in main
+app-1  |     run(
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/main.py", line 580, in run
+app-1  |     server.run()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+app-1  |     return asyncio.run(self.serve(sockets=sockets))
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+app-1  |     return runner.run(main)
+app-1  |            ^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+app-1  |     return self._loop.run_until_complete(task)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+app-1  |     await self._serve(sockets)
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+app-1  |     config.load()
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/config.py", line 436, in load
+app-1  |     self.loaded_app = import_from_string(self.app)
+app-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+app-1  |     module = importlib.import_module(module_str)
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+app-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+app-1  |   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+app-1  |   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+app-1  |   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+app-1  |   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+app-1  |   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/sanolifood/main.py", line 48, in <module>
+app-1  |     app.mount("/static", StaticFiles(directory=str(project_dir / "static")), name="static")
+app-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/opt/venv/lib/python3.12/site-packages/starlette/staticfiles.py", line 56, in __init__
+app-1  |     raise RuntimeError(f"Directory '{directory}' does not exist")
+app-1  | RuntimeError: Directory '/opt/venv/lib/python3.12/static' does not exist
