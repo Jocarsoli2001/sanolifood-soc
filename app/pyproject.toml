@@ -4,12 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sanolifood"
-version = "0.1.0"
+version = "0.2.2"
 description = "SanoliFood SA corporate food-processing operations portal"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "alembic==1.16.5",
+  "argon2-cffi==25.1.0",
   "fastapi==0.116.1",
+  "itsdangerous==2.2.0",
   "jinja2==3.1.6",
   "psycopg[binary]==3.2.9",
   "pydantic-settings==2.10.1",
@@ -35,4 +37,3 @@ where = ["src"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "--strict-markers --disable-warnings"
-

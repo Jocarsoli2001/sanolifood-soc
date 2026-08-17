@@ -27,7 +27,9 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-    image: sanolifood/app:0.1.0
+      args:
+        APP_VERSION: "0.2.2"
+    image: sanolifood/app:0.2.2
     restart: unless-stopped
     env_file:
       - .env
@@ -45,10 +47,10 @@ services:
         - python
         - -c
         - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"
-      interval: 10s
+      interval: 5s
       timeout: 3s
       retries: 10
-      start_period: 20s
+      start_period: 45s
     security_opt:
       - no-new-privileges:true
     read_only: true
@@ -69,11 +71,11 @@ services:
       - sanoli_dmz
       - sanoli_app
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/nginx-health >/dev/null 2>&1"]
-      interval: 10s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health/ready | grep -q '\"status\":\"ready\"'"]
+      interval: 5s
       timeout: 3s
       retries: 10
-      start_period: 10s
+      start_period: 15s
     security_opt:
       - no-new-privileges:true
     read_only: true
@@ -95,4 +97,3 @@ networks:
 volumes:
   postgres_data:
     name: sanolifood_postgres_data
-

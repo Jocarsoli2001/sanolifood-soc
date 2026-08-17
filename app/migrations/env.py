@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from sanolifood.core.config import get_settings
 from sanolifood.database.base import Base
-from sanolifood.models import PlatformMetadata  # noqa: F401
+from sanolifood.models import AuditEvent, PlatformMetadata, User  # noqa: F401
 
 
 config = context.config
@@ -44,4 +44,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

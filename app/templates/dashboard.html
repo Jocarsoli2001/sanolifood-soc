@@ -11,18 +11,19 @@
 
 <section class="metrics" aria-label="Indicadores de plataforma">
   <article class="metric"><span class="metric-label">Aplicación</span><strong>Operativa</strong><small>FastAPI · v{{ app_version }}</small><i class="metric-accent green"></i></article>
-  <article class="metric"><span class="metric-label">Persistencia</span><strong>Disponible</strong><small>PostgreSQL · migrado</small><i class="metric-accent blue"></i></article>
-  <article class="metric"><span class="metric-label">Telemetría</span><strong>Activa</strong><small>Eventos JSON correlacionados</small><i class="metric-accent teal"></i></article>
-  <article class="metric"><span class="metric-label">Exposición</span><strong>Controlada</strong><small>Nginx · puerto único</small><i class="metric-accent orange"></i></article>
+  <article class="metric"><span class="metric-label">Usuarios activos</span><strong>{{ active_users }}</strong><small>Identidades habilitadas</small><i class="metric-accent blue"></i></article>
+  <article class="metric"><span class="metric-label">Eventos de auditoría</span><strong>{{ audit_events }}</strong><small>Persistidos en PostgreSQL</small><i class="metric-accent teal"></i></article>
+  <article class="metric"><span class="metric-label">Sesión</span><strong>Protegida</strong><small>RBAC · CSRF · Argon2</small><i class="metric-accent orange"></i></article>
 </section>
 
 <div class="section-heading"><div><p class="eyebrow">Mapa funcional</p><h2>Módulos empresariales</h2></div><span class="quiet-badge">Incremento base</span></div>
 <section class="module-grid">
   {% for module in modules %}
-  <article class="module-card">
+  <article class="module-card{% if module.url %} module-card-linked{% endif %}">
     <span class="module-symbol {{ module.tone }}">{{ loop.index|string }}</span>
     <div><h3>{{ module.name }}</h3><p>{{ module.description }}</p></div>
     <span class="module-state">{{ module.state }}</span>
+    {% if module.url %}<a class="card-link" href="{{ module.url }}" aria-label="Abrir {{ module.name }}"></a>{% endif %}
   </article>
   {% endfor %}
 </section>
@@ -43,4 +44,3 @@
   </article>
 </section>
 {% endblock %}
-

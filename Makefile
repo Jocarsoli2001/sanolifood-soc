@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap config build up down logs ps health test migrate validate clean
+.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild reset-lab clean
 
 bootstrap:
 	@test -f .env || (cp .env.example .env && echo "Created .env; replace placeholder secrets before starting.")
@@ -12,7 +12,7 @@ build:
 	docker compose build --pull
 
 up: config
-	docker compose up -d --build
+	docker compose up -d --build --wait --wait-timeout 240
 
 down:
 	docker compose down
@@ -27,13 +27,25 @@ health:
 	@./infrastructure/scripts/healthcheck.sh
 
 test:
-	docker compose run --rm --no-deps app pytest -q
+	docker compose run --rm --no-deps \
+		-e DATABASE_URL=sqlite+pysqlite:///:memory: \
+		-e APP_ENV=test \
+		--entrypoint pytest app -q
 
 migrate:
 	docker compose run --rm app alembic upgrade head
 
 validate: config test
 
+rebuild: config
+	docker compose down --remove-orphans
+	docker compose build --no-cache --pull app
+	docker compose up -d --wait --wait-timeout 240
+	@./infrastructure/scripts/healthcheck.sh
+	docker compose exec -T app python -m sanolifood.schema_guard
+
+reset-lab:
+	@./infrastructure/scripts/reset-lab.sh --confirm
+
 clean:
 	docker compose down --remove-orphans
-

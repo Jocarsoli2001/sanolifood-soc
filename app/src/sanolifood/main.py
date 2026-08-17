@@ -4,23 +4,31 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from sanolifood import __version__
 from sanolifood.core.config import get_settings
 from sanolifood.core.logging import configure_logging
 from sanolifood.database.session import engine
+from sanolifood.schema_guard import schema_status
+from sanolifood.web.audit import router as audit_router
+from sanolifood.web.auth import router as auth_router
+from sanolifood.web.dependencies import AuthenticationRequired, PermissionDenied
 from sanolifood.web.router import router as web_router
+from sanolifood.web.templates import templates, view_context
+from sanolifood.web.users import router as users_router
 
 
 settings = get_settings()
 configure_logging(settings.log_level)
 logger = logging.getLogger("sanolifood")
-project_dir = Path("/app") if Path("/app/static").is_dir() else Path(__file__).resolve().parents[2]
+container_root = Path("/app")
+project_dir = container_root if (container_root / "static").is_dir() else Path(__file__).resolve().parents[2]
 
 
 @asynccontextmanager
@@ -45,8 +53,19 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=["*"] if settings.app_env in {"development", "test"} else settings.allowed_hosts_list,
 )
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.session_secret.get_secret_value(),
+    session_cookie="sanolifood_session",
+    max_age=settings.session_max_age_seconds,
+    same_site="lax",
+    https_only=settings.app_env == "production",
+)
 app.mount("/static", StaticFiles(directory=str(project_dir / "static")), name="static")
+app.include_router(auth_router)
 app.include_router(web_router)
+app.include_router(users_router)
+app.include_router(audit_router)
 
 
 @app.middleware("http")
@@ -60,6 +79,8 @@ async def request_context(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if request.url.path.startswith("/static/") and settings.app_env in {"development", "test"}:
+        response.headers["Cache-Control"] = "no-store, max-age=0"
     logger.info(
         "request_completed",
         extra={
@@ -88,7 +109,46 @@ def liveness() -> dict[str, str]:
 def readiness() -> dict[str, str]:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
+    _, missing_tables = schema_status(engine)
+    if missing_tables:
+        logger.error(
+            "readiness_schema_incomplete",
+            extra={
+                "event_type": "platform.readiness.failed",
+                "missing_tables": sorted(missing_tables),
+            },
+        )
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "not_ready",
+                "reason": "database_schema_incomplete",
+                "missing_tables": sorted(missing_tables),
+            },
+        )
     return {"status": "ready", "database": "reachable", "version": __version__}
+
+
+@app.exception_handler(AuthenticationRequired)
+async def authentication_required(_: Request, __: AuthenticationRequired) -> RedirectResponse:
+    return RedirectResponse(url="/auth/login", status_code=303)
+
+
+@app.exception_handler(PermissionDenied)
+async def permission_denied(request: Request, exc: PermissionDenied) -> HTMLResponse:
+    current_user = getattr(request.state, "current_user", None)
+    return templates.TemplateResponse(
+        request=request,
+        name="errors/403.html",
+        context=view_context(
+            request,
+            page_title="Acceso restringido",
+            current_user=current_user,
+            nav_active="",
+            error_message=exc.message,
+        ),
+        status_code=403,
+    )
 
 
 @app.exception_handler(Exception)

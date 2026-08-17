@@ -1,5 +1,11 @@
 FROM python:3.12.11-slim-bookworm
 
+ARG APP_VERSION=0.2.2
+
+LABEL org.opencontainers.image.title="SanoliFood Operations" \
+      org.opencontainers.image.version="${APP_VERSION}" \
+      org.opencontainers.image.description="Corporate food-processing operations portal for the SanoliFood SOC laboratory"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \

@@ -3,6 +3,26 @@ set -euo pipefail
 
 base_url="${SANOLIFOOD_URL:-http://127.0.0.1:${PUBLIC_HTTP_PORT:-8080}}"
 failed=0
+timeout_seconds="${SANOLIFOOD_HEALTH_TIMEOUT_SECONDS:-60}"
+
+service_is_healthy() {
+  local service="$1" container_id health
+  container_id="$(docker compose ps -q "$service")"
+  [[ -n "$container_id" ]] || return 1
+  health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}' "$container_id")"
+  [[ "$health" == "healthy" ]]
+}
+
+deadline=$((SECONDS + timeout_seconds))
+while (( SECONDS < deadline )); do
+  if service_is_healthy postgres \
+    && service_is_healthy app \
+    && service_is_healthy nginx \
+    && curl --fail --silent "$base_url/health/ready" | grep -q '"status":"ready"'; then
+    break
+  fi
+  sleep 3
+done
 
 check_service() {
   local service="$1"
