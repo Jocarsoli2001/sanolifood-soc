@@ -19,6 +19,9 @@ from sanolifood.schema_guard import schema_status
 from sanolifood.web.audit import router as audit_router
 from sanolifood.web.auth import router as auth_router
 from sanolifood.web.dependencies import AuthenticationRequired, PermissionDenied
+from sanolifood.web.inventory import router as inventory_router
+from sanolifood.web.production import router as production_router
+from sanolifood.web.quality import router as quality_router
 from sanolifood.web.router import router as web_router
 from sanolifood.web.templates import templates, view_context
 from sanolifood.web.users import router as users_router
@@ -66,6 +69,9 @@ app.include_router(auth_router)
 app.include_router(web_router)
 app.include_router(users_router)
 app.include_router(audit_router)
+app.include_router(inventory_router)
+app.include_router(production_router)
+app.include_router(quality_router)
 
 
 @app.middleware("http")

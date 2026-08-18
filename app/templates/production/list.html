@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-intro">
+  <div><p class="eyebrow">Manufactura alimentaria</p><h2>Producción y trazabilidad</h2><p>Productos, fórmulas versionadas y ciclo de vida controlado de cada lote.</p></div>
+  <span class="quiet-badge">{{ lots|length }} lotes trazables</span>
+</div>
+
+{% if created %}<div class="alert alert-success">La operación de producción fue completada y auditada.</div>{% endif %}
+{% if errors %}<div class="alert alert-error"><strong>Revisa la operación:</strong><ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+
+<section class="operation-metrics">
+  <article><span>Productos</span><strong>{{ products|length }}</strong><small>Portafolio activo</small></article>
+  <article><span>Recetas</span><strong>{{ recipes|length }}</strong><small>Versiones controladas</small></article>
+  <article><span>En proceso</span><strong>{{ lots|selectattr('status','equalto','in_progress')|list|length }}</strong><small>Ejecución de planta</small></article>
+  <article class="{{ 'metric-warning' if lots|selectattr('status','equalto','quality_hold')|list|length else '' }}"><span>Retenidos</span><strong>{{ lots|selectattr('status','equalto','quality_hold')|list|length }}</strong><small>Decisión de Calidad</small></article>
+</section>
+
+{% if can_produce %}
+<section class="operation-forms three-columns">
+  <article class="panel compact-panel">
+    <div class="panel-header"><div><p class="eyebrow">Portafolio</p><h2>Nuevo producto</h2></div><span class="panel-icon">01</span></div>
+    <form method="post" action="/production/products" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>SKU<input name="sku" placeholder="PRD-NUE-500" required></label>
+      <label>Unidad<input name="unit" value="unidad" required></label>
+      <label class="field-span-2">Nombre<input name="name" placeholder="Producto terminado" required></label>
+      <label class="field-span-2">Descripción<textarea name="description" rows="2" placeholder="Presentación y proceso"></textarea></label>
+      <label class="field-span-2">Vida útil (días)<input name="shelf_life_days" type="number" min="1" max="3650" value="180" required></label>
+      <button class="button button-primary field-span-2" type="submit">Crear producto</button>
+    </form>
+  </article>
+
+  <article class="panel compact-panel">
+    <div class="panel-header"><div><p class="eyebrow">Fórmula</p><h2>Nueva receta</h2></div><span class="panel-icon">02</span></div>
+    <form method="post" action="/production/recipes" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="field-span-2">Producto<select name="product_id" required>{% for product in products %}<option value="{{ product.id }}">{{ product.sku }} · {{ product.name }}</option>{% endfor %}</select></label>
+      <label>Versión<input name="version" type="number" min="1" value="1" required></label>
+      <label>Rendimiento<input name="yield_quantity" type="number" min="0.001" step="0.001" value="1000" required></label>
+      <p class="field-help field-span-2">La receta nace en borrador. Calidad debe aprobarla después de incorporar ingredientes.</p>
+      <button class="button button-primary field-span-2" type="submit"{% if not products %} disabled{% endif %}>Crear borrador</button>
+    </form>
+  </article>
+
+  <article class="panel compact-panel accent-panel">
+    <div class="panel-header"><div><p class="eyebrow">Plan maestro</p><h2>Planificar lote</h2></div><span class="panel-icon">03</span></div>
+    <form method="post" action="/production/lots" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="field-span-2">Código de lote<input name="lot_code" placeholder="SF26-SAL-0018" required></label>
+      <label class="field-span-2">Producto<select name="product_id" required>{% for product in products %}<option value="{{ product.id }}">{{ product.sku }} · {{ product.name }}</option>{% endfor %}</select></label>
+      <label>Cantidad<input name="planned_quantity" type="number" min="0.001" step="0.001" value="1000" required></label>
+      <label>Programación<input name="scheduled_at" type="datetime-local" required></label>
+      <button class="button button-primary field-span-2" type="submit"{% if not products %} disabled{% endif %}>Planificar lote</button>
+    </form>
+  </article>
+</section>
+{% else %}<div class="permission-note">Tu rol puede consultar producción. Crear productos, recetas y lotes requiere Administración o Producción.</div>{% endif %}
+
+<section class="section-panel">
+  <div class="section-heading"><div><p class="eyebrow">BOM y gobierno</p><h2>Recetas versionadas</h2></div><span class="quiet-badge">Aprobación segregada</span></div>
+  <div class="recipe-grid">
+  {% for recipe in recipes %}
+    <article class="panel recipe-card">
+      <div class="recipe-head"><div><span class="status-badge {{ 'status-success' if recipe.status == 'approved' else 'status-warning' }}">{{ 'Aprobada' if recipe.status == 'approved' else 'Borrador' }}</span><h3>{{ recipe.product.name }}</h3><p>{{ recipe.product.sku }} · v{{ recipe.version }} · rendimiento {{ recipe.yield_quantity }}</p></div><span class="recipe-version">v{{ recipe.version }}</span></div>
+      <ul class="recipe-items">{% for item in recipe.items %}<li><span>{{ item.ingredient.name }}</span><strong>{{ item.quantity }} {{ item.ingredient.unit }}</strong></li>{% else %}<li class="muted-row">Sin ingredientes incorporados</li>{% endfor %}</ul>
+      {% if recipe.status == 'draft' and can_produce %}
+      <form method="post" action="/production/recipes/{{ recipe.id }}/items" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>Ingrediente<select name="ingredient_id">{% for ingredient in ingredients %}<option value="{{ ingredient.id }}">{{ ingredient.sku }} · {{ ingredient.name }}</option>{% endfor %}</select></label>
+        <label>Cantidad<input name="quantity" type="number" min="0.001" step="0.001" required></label>
+        <button class="button button-quiet" type="submit">Añadir</button>
+      </form>{% endif %}
+      {% if recipe.status == 'draft' and can_approve_recipe %}<form method="post" action="/production/recipes/{{ recipe.id }}/approve" class="recipe-action"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-primary button-full" type="submit">Aprobar fórmula</button></form>{% endif %}
+    </article>
+  {% else %}<article class="panel empty-card">No existen recetas versionadas.</article>{% endfor %}
+  </div>
+</section>
+
+<section class="panel full-panel section-panel">
+  <div class="panel-header"><div><p class="eyebrow">Genealogía de producto</p><h2>Tablero de lotes</h2></div><span class="status-ok">Estados controlados</span></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th>Lote</th><th>Producto</th><th>Programación</th><th>Cantidad</th><th>Estado</th><th>Responsable</th><th>Acción</th></tr></thead><tbody>
+  {% for lot in lots %}<tr>
+    <td><strong>{{ lot.lot_code }}</strong><small>ID interno {{ lot.id }}</small></td>
+    <td><strong>{{ lot.product.name }}</strong><small>{{ lot.product.sku }} · receta v{{ lot.recipe.version }}</small></td>
+    <td>{{ lot.scheduled_at.strftime('%d/%m/%Y %H:%M') }}</td>
+    <td>{{ lot.actual_quantity or lot.planned_quantity }} {{ lot.product.unit }}</td>
+    <td><span class="status-badge status-{{ lot.status }}">{{ {'planned':'Planificado','in_progress':'En proceso','quality_hold':'Retenido','released':'Liberado','rejected':'Rechazado'}.get(lot.status, lot.status) }}</span></td>
+    <td>{{ lot.created_by.full_name if lot.created_by else 'Sistema' }}</td>
+    <td class="table-actions">
+      {% if can_produce and lot.status == 'planned' %}<form method="post" action="/production/lots/{{ lot.id }}/transition"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="target_status" value="in_progress"><button class="button button-primary" type="submit">Iniciar</button></form>{% endif %}
+      {% if can_produce and lot.status == 'in_progress' %}<form method="post" action="/production/lots/{{ lot.id }}/transition"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="target_status" value="quality_hold"><button class="button button-quiet" type="submit">Enviar a Calidad</button></form>{% endif %}
+      {% if lot.status in ['released','rejected'] %}<span class="table-done">Ciclo cerrado</span>{% elif not can_produce %}<span class="table-done">Solo consulta</span>{% endif %}
+    </td>
+  </tr>{% else %}<tr><td colspan="7" class="empty-state">No existen lotes de producción.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

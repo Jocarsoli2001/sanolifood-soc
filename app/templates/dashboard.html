@@ -4,19 +4,19 @@
   <div>
     <span class="status-pill"><span></span>Plataforma operativa</span>
     <h2>Control confiable para cada lote, ingrediente y decisión.</h2>
-    <p>La base tecnológica está preparada para incorporar procesos de producción, calidad, inventario y trazabilidad con seguridad integrada.</p>
+    <p>Producción, calidad e inventario operan sobre datos transaccionales y dejan evidencia correlacionada para la futura supervisión del SOC.</p>
   </div>
   <div class="hero-mark" aria-hidden="true"><span>SF</span><small>2026</small></div>
 </section>
 
 <section class="metrics" aria-label="Indicadores de plataforma">
-  <article class="metric"><span class="metric-label">Aplicación</span><strong>Operativa</strong><small>FastAPI · v{{ app_version }}</small><i class="metric-accent green"></i></article>
-  <article class="metric"><span class="metric-label">Usuarios activos</span><strong>{{ active_users }}</strong><small>Identidades habilitadas</small><i class="metric-accent blue"></i></article>
-  <article class="metric"><span class="metric-label">Eventos de auditoría</span><strong>{{ audit_events }}</strong><small>Persistidos en PostgreSQL</small><i class="metric-accent teal"></i></article>
-  <article class="metric"><span class="metric-label">Sesión</span><strong>Protegida</strong><small>RBAC · CSRF · Argon2</small><i class="metric-accent orange"></i></article>
+  <article class="metric"><span class="metric-label">Lotes activos</span><strong>{{ active_lots }}</strong><small>Planificados, en proceso o retenidos</small><i class="metric-accent blue"></i></article>
+  <article class="metric"><span class="metric-label">Bajo reposición</span><strong>{{ low_stock }}</strong><small>Ingredientes que requieren atención</small><i class="metric-accent orange"></i></article>
+  <article class="metric"><span class="metric-label">Retenciones</span><strong>{{ quality_holds }}</strong><small>Lotes bajo decisión de Calidad</small><i class="metric-accent teal"></i></article>
+  <article class="metric"><span class="metric-label">Eventos auditados</span><strong>{{ audit_events }}</strong><small>{{ active_users }} identidades activas · PostgreSQL</small><i class="metric-accent green"></i></article>
 </section>
 
-<div class="section-heading"><div><p class="eyebrow">Mapa funcional</p><h2>Módulos empresariales</h2></div><span class="quiet-badge">Incremento base</span></div>
+<div class="section-heading"><div><p class="eyebrow">Mapa funcional</p><h2>Módulos empresariales</h2></div><span class="quiet-badge">Núcleo operativo 0.3</span></div>
 <section class="module-grid">
   {% for module in modules %}
   <article class="module-card{% if module.url %} module-card-linked{% endif %}">

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-intro">
+  <div><p class="eyebrow">Inocuidad y conformidad</p><h2>Calidad y liberación</h2><p>Controles parametrizados, desviaciones y decisiones segregadas por lote.</p></div>
+  <span class="quiet-badge">{{ checks|length }} controles visibles</span>
+</div>
+
+{% if created %}<div class="alert alert-success">La decisión de Calidad fue guardada y correlacionada en auditoría.</div>{% endif %}
+{% if errors %}<div class="alert alert-error"><strong>No se pudo completar el control:</strong><ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+
+<section class="operation-metrics">
+  <article><span>Lotes inspeccionables</span><strong>{{ inspectable_lots|length }}</strong><small>En proceso o retenidos</small></article>
+  <article class="{{ 'metric-warning' if hold_count else '' }}"><span>Retenciones</span><strong>{{ hold_count }}</strong><small>Esperan disposición</small></article>
+  <article><span>Controles conformes</span><strong>{{ checks|selectattr('result','equalto','pass')|list|length }}</strong><small>Dentro de especificación</small></article>
+  <article class="{{ 'metric-danger' if checks|selectattr('result','equalto','fail')|list|length else '' }}"><span>Desviaciones</span><strong>{{ checks|selectattr('result','equalto','fail')|list|length }}</strong><small>Hallazgos registrados</small></article>
+</section>
+
+{% if can_write %}
+<section class="quality-layout">
+  <article class="panel compact-panel quality-form-panel">
+    <div class="panel-header"><div><p class="eyebrow">Muestreo</p><h2>Registrar control</h2></div><span class="panel-icon">QC</span></div>
+    <form method="post" action="/quality/checks" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="field-span-2">Lote<select name="lot_id" required>{% for lot in inspectable_lots %}<option value="{{ lot.id }}">{{ lot.lot_code }} · {{ lot.product.name }} · {{ lot.status }}</option>{% endfor %}</select></label>
+      <label class="field-span-2">Parámetro<input name="check_type" placeholder="pH, temperatura, viscosidad" required></label>
+      <label>Medición<input name="measured_value" type="number" step="0.001" required></label>
+      <label>Unidad<input name="unit" placeholder="pH, °C, cP" required></label>
+      <label>Límite mínimo<input name="min_value" type="number" step="0.001" required></label>
+      <label>Límite máximo<input name="max_value" type="number" step="0.001" required></label>
+      <label class="field-span-2">Observaciones<textarea name="notes" rows="3" placeholder="Método, muestra y evidencia"></textarea></label>
+      <button class="button button-primary field-span-2" type="submit"{% if not inspectable_lots %} disabled{% endif %}>Evaluar contra límites</button>
+    </form>
+  </article>
+
+  <div class="decision-column">
+    <div class="section-heading"><div><p class="eyebrow">Disposición</p><h2>Lotes bajo retención</h2></div><span class="quiet-badge">Doble control</span></div>
+    {% for lot in lots if lot.status == 'quality_hold' %}
+    <article class="panel decision-card">
+      <div><span class="status-badge status-quality_hold">Retenido</span><h3>{{ lot.lot_code }}</h3><p>{{ lot.product.name }} · {{ lot.planned_quantity }} {{ lot.product.unit }}</p></div>
+      <div class="decision-actions">
+        <form method="post" action="/quality/lots/{{ lot.id }}/decision"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="decision" value="released"><button class="button button-primary" type="submit">Liberar</button></form>
+        <form method="post" action="/quality/lots/{{ lot.id }}/decision"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="decision" value="rejected"><button class="button button-danger" type="submit">Rechazar</button></form>
+      </div>
+    </article>
+    {% else %}<article class="panel empty-card">No hay lotes retenidos. Las desviaciones aparecerán aquí automáticamente.</article>{% endfor %}
+  </div>
+</section>
+{% else %}<div class="permission-note">Tu rol puede consultar los controles. La toma de decisiones está reservada a Administración y Calidad.</div>{% endif %}
+
+<section class="panel full-panel section-panel">
+  <div class="panel-header"><div><p class="eyebrow">Registro analítico</p><h2>Historial de controles</h2></div><span class="status-ok">Límites persistidos</span></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th>Fecha UTC</th><th>Lote</th><th>Parámetro</th><th>Medición</th><th>Especificación</th><th>Resultado</th><th>Inspector</th></tr></thead><tbody>
+  {% for check in checks %}<tr>
+    <td>{{ check.inspected_at.strftime('%d/%m/%Y %H:%M') }}</td>
+    <td><strong>{{ check.production_lot.lot_code }}</strong><small>{{ check.production_lot.product.name }}</small></td>
+    <td><strong>{{ check.check_type }}</strong><small>{{ check.notes or 'Sin observación' }}</small></td>
+    <td class="numeric">{{ check.measured_value }} {{ check.unit }}</td>
+    <td>{{ check.min_value }} – {{ check.max_value }} {{ check.unit }}</td>
+    <td><span class="status-badge {{ 'status-success' if check.result == 'pass' else 'status-failure' }}">{{ 'Conforme' if check.result == 'pass' else 'Desviación' }}</span></td>
+    <td>{{ check.inspected_by.full_name if check.inspected_by else 'Sistema' }}</td>
+  </tr>{% else %}<tr><td colspan="7" class="empty-state">Aún no existen controles de calidad.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

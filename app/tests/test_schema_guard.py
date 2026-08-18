@@ -7,11 +7,7 @@ def test_schema_guard_accepts_complete_schema() -> None:
 
 
 def test_schema_guard_reports_missing_tables() -> None:
-    assert missing_required_tables({"alembic_version"}) == {
-        "platform_metadata",
-        "users",
-        "audit_events",
-    }
+    assert missing_required_tables({"alembic_version"}) == REQUIRED_TABLES - {"alembic_version"}
 
 
 def test_schema_status_inspects_the_isolated_database() -> None:

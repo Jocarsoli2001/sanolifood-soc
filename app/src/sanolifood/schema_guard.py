@@ -8,7 +8,22 @@ from sanolifood.core.logging import configure_logging
 from sanolifood.database.session import engine
 
 
-REQUIRED_TABLES = frozenset({"alembic_version", "platform_metadata", "users", "audit_events"})
+REQUIRED_TABLES = frozenset(
+    {
+        "alembic_version",
+        "audit_events",
+        "ingredients",
+        "inventory_movements",
+        "platform_metadata",
+        "production_lots",
+        "products",
+        "quality_checks",
+        "recipe_items",
+        "recipes",
+        "suppliers",
+        "users",
+    }
+)
 
 
 def missing_required_tables(existing_tables: set[str]) -> set[str]:

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild reset-lab clean
+.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild upgrade-0.3 evidence-business reset-lab clean
 
 bootstrap:
 	@test -f .env || (cp .env.example .env && echo "Created .env; replace placeholder secrets before starting.")
@@ -43,6 +43,12 @@ rebuild: config
 	docker compose up -d --wait --wait-timeout 240
 	@./infrastructure/scripts/healthcheck.sh
 	docker compose exec -T app python -m sanolifood.schema_guard
+
+upgrade-0.3:
+	@./infrastructure/scripts/upgrade-v0.3.0.sh
+
+evidence-business:
+	@./infrastructure/scripts/collect-business-evidence.sh
 
 reset-lab:
 	@./infrastructure/scripts/reset-lab.sh --confirm

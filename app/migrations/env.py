@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from sanolifood.core.config import get_settings
 from sanolifood.database.base import Base
-from sanolifood.models import AuditEvent, PlatformMetadata, User  # noqa: F401
+from sanolifood import models  # noqa: F401
 
 
 config = context.config

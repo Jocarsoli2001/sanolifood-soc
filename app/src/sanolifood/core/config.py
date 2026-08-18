@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     app_name: str = "SanoliFood Operations"
     app_env: str = "development"
-    app_version: str = "0.2.2"
+    app_version: str = "0.3.0"
     app_debug: bool = False
     app_timezone: str = "UTC"
     log_level: str = "INFO"

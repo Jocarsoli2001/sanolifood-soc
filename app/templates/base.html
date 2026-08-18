@@ -18,9 +18,9 @@
       <nav class="nav" aria-label="Navegación principal">
         <a class="nav-item{% if nav_active == 'dashboard' %} active{% endif %}" href="/"><span class="nav-icon">⌂</span>Resumen</a>
         <span class="nav-caption">Operaciones</span>
-        <span class="nav-item disabled"><span class="nav-icon">▦</span>Producción</span>
-        <span class="nav-item disabled"><span class="nav-icon">✓</span>Calidad</span>
-        <span class="nav-item disabled"><span class="nav-icon">◇</span>Inventario</span>
+        <a class="nav-item{% if nav_active == 'production' %} active{% endif %}" href="/production"><span class="nav-icon">▦</span>Producción</a>
+        <a class="nav-item{% if nav_active == 'quality' %} active{% endif %}" href="/quality"><span class="nav-icon">✓</span>Calidad</a>
+        <a class="nav-item{% if nav_active == 'inventory' %} active{% endif %}" href="/inventory"><span class="nav-icon">◇</span>Inventario</a>
         <span class="nav-caption">Gobierno</span>
         {% if current_user and current_user.role in ['admin', 'auditor'] %}
         <a class="nav-item{% if nav_active == 'audit' %} active{% endif %}" href="/audit"><span class="nav-icon">◉</span>Auditoría</a>

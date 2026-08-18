@@ -23,4 +23,8 @@ if [ "${RUN_BOOTSTRAP:-true}" = "true" ]; then
   python -m sanolifood.bootstrap
 fi
 
+if [ "${RUN_DEMO_SEED:-true}" = "true" ]; then
+  python -m sanolifood.bootstrap_business
+fi
+
 exec "$@"
