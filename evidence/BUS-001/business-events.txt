@@ -1,0 +1,4 @@
+ occurred_at | event_type | outcome | actor_username | correlation_id 
+-------------+------------+---------+----------------+----------------
+(0 rows)
+

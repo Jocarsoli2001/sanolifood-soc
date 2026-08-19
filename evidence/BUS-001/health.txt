@@ -1,0 +1,4 @@
+OK   postgres     state=running health=healthy
+OK   app          state=running health=healthy
+OK   nginx        state=running health=healthy
+OK   HTTP         http://127.0.0.1:8080/health/ready

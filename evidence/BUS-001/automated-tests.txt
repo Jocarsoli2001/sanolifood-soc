@@ -1,0 +1,4 @@
+ Container sanolifood-app-run-db1f597dd807 Creating 
+ Container sanolifood-app-run-db1f597dd807 Created 
+...........................                                              [100%]
+27 passed, 1 warning in 9.94s

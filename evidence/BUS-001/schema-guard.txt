@@ -1,0 +1,1 @@
+{"timestamp":"2026-08-18T23:57:30.459300+00:00","level":"INFO","logger":"sanolifood.schema","message":"database_schema_verified","event_type":"database.schema.verified","required_tables":["alembic_version","audit_events","ingredients","inventory_movements","platform_metadata","production_lots","products","quality_checks","recipe_items","recipes","suppliers","users"]}
