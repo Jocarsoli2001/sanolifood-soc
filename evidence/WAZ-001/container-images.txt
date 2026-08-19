@@ -1,0 +1,4 @@
+CONTAINER                            REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+sanolifood-wazuh-wazuh.dashboard-1   wazuh/wazuh-dashboard   4.14.7              linux/amd64         eeff857a664b        481MB               34 hours ago
+sanolifood-wazuh-wazuh.indexer-1     wazuh/wazuh-indexer     4.14.7              linux/amd64         66b7640cce54        1.07GB              34 hours ago
+sanolifood-wazuh-wazuh.manager-1     wazuh/wazuh-manager     4.14.7              linux/amd64         8665c9807a57        906MB               34 hours ago

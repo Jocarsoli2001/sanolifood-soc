@@ -28,19 +28,22 @@ services:
       context: ./app
       dockerfile: Dockerfile
       args:
-        APP_VERSION: "0.3.0"
-    image: sanolifood/app:0.3.0
+        APP_VERSION: "0.4.0"
+    image: sanolifood/app:0.4.0
     restart: unless-stopped
     env_file:
       - .env
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      APP_LOG_FILE: ${APP_LOG_FILE:-/var/log/sanolifood/sanolifood.jsonl}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - sanoli_app
       - sanoli_data
+    volumes:
+      - app_logs:/var/log/sanolifood
     healthcheck:
       test:
         - CMD
@@ -97,3 +100,5 @@ networks:
 volumes:
   postgres_data:
     name: sanolifood_postgres_data
+  app_logs:
+    name: sanolifood_app_logs

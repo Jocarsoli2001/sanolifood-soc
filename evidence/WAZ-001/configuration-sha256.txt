@@ -1,0 +1,5 @@
+6f5c38ce9df22331e81e30a8883ea0071213555c01d85a237a821b12e6202d75  /home/socadmin/sanolifood-soc/wazuh/compose.yaml
+1a343ce60c5dacb30ed3a1f80702b27a4910c2c3bca4a7052f7233aa29fb7572  /home/socadmin/sanolifood-soc/wazuh/config/manager/ossec.conf
+57185ab25509fac60c2c636e157f58b961858d925c253298262ff541e78edaee  /home/socadmin/sanolifood-soc/wazuh/config/indexer/wazuh.indexer.yml
+74bdcab04ceeafcbdeb3276307dd80d9a60e7e2aaf201ff20d44f275f22e41d1  /home/socadmin/sanolifood-soc/wazuh/config/dashboard/opensearch_dashboards.yml
+30206faf6096e410bbd9c993865926af8d281eef1dafe70c9a25eafd541b13ad  /home/socadmin/sanolifood-soc/wazuh/rules/sanolifood_rules.xml

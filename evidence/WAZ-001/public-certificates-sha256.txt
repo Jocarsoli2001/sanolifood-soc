@@ -1,0 +1,6 @@
+0db5120309926d05cf9d8a9342e9653c8b42a5be60704333c398073b36a7a720  /certs/wazuh.dashboard.pem
+4915714105fa68a87f732e9804f6cc634fd85852d27d2f8a29f530b1cef904ec  /certs/wazuh.indexer.pem
+749014f9ae56003590e440dc0ec3f56b1d8eb4018ba6e1c0dd03b440f94e84a1  /certs/root-ca-manager.pem
+749014f9ae56003590e440dc0ec3f56b1d8eb4018ba6e1c0dd03b440f94e84a1  /certs/root-ca.pem
+ede337c20a363863bc0e9ed7810877be1eaa76a3ac12abfa7db97fa6acb3dadf  /certs/admin.pem
+fcbcda5df0ba3cffe2d4b422fe8cf480a662017459a2d074e8a4cbc8fa03d512  /certs/wazuh.manager.pem

@@ -28,7 +28,7 @@ from sanolifood.web.users import router as users_router
 
 
 settings = get_settings()
-configure_logging(settings.log_level)
+configure_logging(settings.log_level, settings.app_log_file)
 logger = logging.getLogger("sanolifood")
 container_root = Path("/app")
 project_dir = container_root if (container_root / "static").is_dir() else Path(__file__).resolve().parents[2]

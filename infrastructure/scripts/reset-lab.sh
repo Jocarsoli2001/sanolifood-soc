@@ -33,7 +33,7 @@ session_secret_value="$(openssl rand -hex 32)"
 postgres_password_value="$(openssl rand -hex 24)"
 admin_password_value="Sf!$(openssl rand -hex 12)Aa1"
 
-set_env_value APP_VERSION 0.3.0
+set_env_value APP_VERSION 0.4.0
 set_env_value SESSION_SECRET "$session_secret_value"
 set_env_value POSTGRES_DB sanolifood
 set_env_value POSTGRES_USER sanolifood_app
@@ -51,7 +51,7 @@ docker compose config --quiet
 printf 'Eliminando exclusivamente el estado Docker de SanoliFood...\n'
 docker compose down --volumes --remove-orphans
 
-printf 'Construyendo SanoliFood Operations v0.3.0 sin caché...\n'
+printf 'Construyendo SanoliFood Operations v0.4.0 sin caché...\n'
 docker compose build --no-cache --pull app
 
 printf 'Levantando la plataforma completa y esperando sus healthchecks...\n'

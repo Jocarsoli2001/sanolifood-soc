@@ -1,0 +1,5 @@
+OK   wazuh.indexer      state=running health=healthy
+OK   wazuh.manager      state=running health=healthy
+OK   wazuh.dashboard    state=running health=healthy
+OK   HTTPS              https://127.0.0.1:8443/app/wz-home
+OK   telemetry          /var/log/sanolifood/sanolifood.jsonl

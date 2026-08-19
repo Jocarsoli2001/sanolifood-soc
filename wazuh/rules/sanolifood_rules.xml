@@ -1,0 +1,58 @@
+<!-- Custom rule IDs 110000-110099 are reserved for SanoliFood Operations. -->
+<group name="sanolifood,application,">
+  <rule id="110000" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="logger" type="pcre2">^sanolifood(?:\.|$)</field>
+    <description>SanoliFood application telemetry event</description>
+    <options>no_full_log</options>
+  </rule>
+
+  <rule id="110010" level="5">
+    <if_sid>110000</if_sid>
+    <field name="sf_event_type" type="pcre2">^auth\.login\.failed$</field>
+    <description>SanoliFood authentication failure for $(actor_username) from $(source_ip)</description>
+    <group>authentication_failed,</group>
+  </rule>
+
+  <rule id="110011" level="10" frequency="5" timeframe="120">
+    <if_matched_sid>110010</if_matched_sid>
+    <same_field>source_ip</same_field>
+    <description>Repeated SanoliFood authentication failures from $(source_ip)</description>
+    <mitre>
+      <id>T1110</id>
+      <id>T1110.001</id>
+    </mitre>
+    <group>authentication_failures,attack,</group>
+  </rule>
+
+  <rule id="110012" level="9">
+    <if_sid>110000</if_sid>
+    <field name="sf_event_type" type="pcre2">^auth\.account\.locked$</field>
+    <description>SanoliFood account locked after repeated authentication failures: $(actor_username)</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+    <group>authentication_failures,account_lockout,</group>
+  </rule>
+
+  <rule id="110020" level="8">
+    <if_sid>110000</if_sid>
+    <field name="sf_event_type" type="pcre2">^inventory\.adjustment\.high_value$</field>
+    <description>High-value SanoliFood inventory adjustment by $(actor_username)</description>
+    <group>business_anomaly,inventory,</group>
+  </rule>
+
+  <rule id="110030" level="8">
+    <if_sid>110000</if_sid>
+    <field name="sf_event_type" type="pcre2">^quality\.check\.failed$</field>
+    <description>SanoliFood quality check outside specification for resource $(resource_id)</description>
+    <group>business_anomaly,quality,</group>
+  </rule>
+
+  <rule id="110040" level="12">
+    <if_sid>110000</if_sid>
+    <field name="sf_event_type" type="pcre2">^application\.error\.unhandled$</field>
+    <description>Unhandled SanoliFood application error with correlation $(correlation_id)</description>
+    <group>application_error,availability,</group>
+  </rule>
+</group>

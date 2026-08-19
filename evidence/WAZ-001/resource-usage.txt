@@ -1,0 +1,4 @@
+CONTAINER ID   NAME                                 CPU %     MEM USAGE / LIMIT    MEM %     NET I/O           BLOCK I/O        PIDS
+e6cfa103b16f   sanolifood-wazuh-wazuh.dashboard-1   0.35%     252MiB / 9.48GiB     2.60%     10.6MB / 43.5MB   273MB / 24.6kB   12
+aa09ff5d52f6   sanolifood-wazuh-wazuh.indexer-1     43.89%    1.649GiB / 9.48GiB   17.40%    12.7MB / 10.4MB   441MB / 160MB    95
+1146215ee865   sanolifood-wazuh-wazuh.manager-1     1.12%     445.7MiB / 9.48GiB   4.59%     3.21MB / 6.85MB   232MB / 222MB    248

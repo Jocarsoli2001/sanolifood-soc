@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild upgrade-0.3 evidence-business reset-lab clean
+.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild upgrade-0.3 upgrade-0.4 evidence-business reset-lab clean wazuh-preflight wazuh-bootstrap wazuh-up wazuh-down wazuh-ps wazuh-logs wazuh-health wazuh-reload-rules wazuh-test-rules wazuh-credentials evidence-wazuh soc-up soc-health
 
 bootstrap:
 	@test -f .env || (cp .env.example .env && echo "Created .env; replace placeholder secrets before starting.")
@@ -47,8 +47,49 @@ rebuild: config
 upgrade-0.3:
 	@./infrastructure/scripts/upgrade-v0.3.0.sh
 
+upgrade-0.4:
+	@./infrastructure/scripts/upgrade-v0.4.0.sh
+
 evidence-business:
 	@./infrastructure/scripts/collect-business-evidence.sh
+
+wazuh-preflight:
+	@./wazuh/scripts/preflight.sh
+
+wazuh-bootstrap wazuh-up:
+	@./wazuh/scripts/bootstrap.sh
+
+wazuh-down:
+	@./wazuh/scripts/down.sh
+
+wazuh-ps:
+	@docker compose --env-file wazuh/runtime/.env -f wazuh/compose.yaml ps
+
+wazuh-logs:
+	@docker compose --env-file wazuh/runtime/.env -f wazuh/compose.yaml logs -f --tail=150
+
+wazuh-health:
+	@./wazuh/scripts/healthcheck.sh
+
+wazuh-reload-rules:
+	@./wazuh/scripts/reload-rules.sh
+
+wazuh-test-rules:
+	@./wazuh/scripts/test-rules.sh
+
+wazuh-credentials:
+	@./wazuh/scripts/credentials.sh
+
+evidence-wazuh:
+	@./wazuh/scripts/collect-evidence.sh
+
+soc-up:
+	@$(MAKE) up
+	@$(MAKE) wazuh-up
+
+soc-health:
+	@$(MAKE) health
+	@$(MAKE) wazuh-health
 
 reset-lab:
 	@./infrastructure/scripts/reset-lab.sh --confirm

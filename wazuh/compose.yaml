@@ -1,0 +1,155 @@
+name: sanolifood-wazuh
+
+services:
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:${WAZUH_VERSION:-4.14.7}
+    restart: unless-stopped
+    environment:
+      OPENSEARCH_JAVA_OPTS: ${WAZUH_INDEXER_JAVA_OPTS:--Xms1g -Xmx1g}
+      INDEXER_PASSWORD: ${WAZUH_INDEXER_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - ./runtime/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem:ro
+      - ./runtime/certs/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/wazuh.indexer.key:ro
+      - ./runtime/certs/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/wazuh.indexer.pem:ro
+      - ./runtime/certs/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem:ro
+      - ./runtime/certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem:ro
+      - ./config/indexer/wazuh.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml:ro
+      - ./runtime/internal_users.yml:/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml:ro
+    networks:
+      - sanoli_soc
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -sk --fail -u "${WAZUH_INDEXER_USERNAME:-admin}:$${INDEXER_PASSWORD}"
+          https://127.0.0.1:9200/_cluster/health?wait_for_status=yellow >/dev/null
+      interval: 10s
+      timeout: 8s
+      retries: 18
+      start_period: 90s
+
+  wazuh.manager:
+    image: wazuh/wazuh-manager:${WAZUH_VERSION:-4.14.7}
+    restart: unless-stopped
+    depends_on:
+      wazuh.indexer:
+        condition: service_healthy
+    environment:
+      INDEXER_URL: https://wazuh.indexer:9200
+      INDEXER_USERNAME: ${WAZUH_INDEXER_USERNAME:-admin}
+      INDEXER_PASSWORD: ${WAZUH_INDEXER_PASSWORD}
+      FILEBEAT_SSL_VERIFICATION_MODE: full
+      SSL_CERTIFICATE_AUTHORITIES: /etc/ssl/root-ca.pem
+      SSL_CERTIFICATE: /etc/ssl/filebeat.pem
+      SSL_KEY: /etc/ssl/filebeat.key
+      API_USERNAME: ${WAZUH_API_USERNAME:-wazuh-wui}
+      API_PASSWORD: ${WAZUH_API_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 655360
+        hard: 655360
+    ports:
+      - "${WAZUH_AGENT_PORT:-1514}:1514/tcp"
+      - "${WAZUH_ENROLLMENT_PORT:-1515}:1515/tcp"
+      - "${WAZUH_SYSLOG_PORT:-514}:514/udp"
+    volumes:
+      - wazuh_api_configuration:/var/ossec/api/configuration
+      - wazuh_etc:/var/ossec/etc
+      - wazuh_logs:/var/ossec/logs
+      - wazuh_queue:/var/ossec/queue
+      - wazuh_var_multigroups:/var/ossec/var/multigroups
+      - wazuh_integrations:/var/ossec/integrations
+      - wazuh_active_response:/var/ossec/active-response/bin
+      - wazuh_agentless:/var/ossec/agentless
+      - wazuh_wodles:/var/ossec/wodles
+      - filebeat_etc:/etc/filebeat
+      - filebeat_var:/var/lib/filebeat
+      - ./runtime/certs/root-ca-manager.pem:/etc/ssl/root-ca.pem:ro
+      - ./runtime/certs/wazuh.manager.pem:/etc/ssl/filebeat.pem:ro
+      - ./runtime/certs/wazuh.manager-key.pem:/etc/ssl/filebeat.key:ro
+      - ./config/manager/ossec.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./rules/sanolifood_rules.xml:/wazuh-config-mount/etc/rules/sanolifood_rules.xml:ro
+      - ./runtime/authd.pass:/wazuh-config-mount/etc/authd.pass:ro
+      - ./config/manager/entrypoint:/entrypoint-scripts:ro
+      - sanolifood_app_logs:/var/log/sanolifood:ro
+    networks:
+      - sanoli_soc
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /var/ossec/bin/wazuh-control status 2>/dev/null | grep -q 'wazuh-analysisd is running'
+      interval: 10s
+      timeout: 6s
+      retries: 18
+      start_period: 90s
+
+  wazuh.dashboard:
+    image: wazuh/wazuh-dashboard:${WAZUH_VERSION:-4.14.7}
+    restart: unless-stopped
+    depends_on:
+      wazuh.indexer:
+        condition: service_healthy
+      wazuh.manager:
+        condition: service_healthy
+    ports:
+      - "${WAZUH_DASHBOARD_PORT:-8443}:5601/tcp"
+    environment:
+      INDEXER_USERNAME: ${WAZUH_INDEXER_USERNAME:-admin}
+      INDEXER_PASSWORD: ${WAZUH_INDEXER_PASSWORD}
+      WAZUH_API_URL: https://wazuh.manager
+      DASHBOARD_USERNAME: ${WAZUH_DASHBOARD_USERNAME:-kibanaserver}
+      DASHBOARD_PASSWORD: ${WAZUH_DASHBOARD_PASSWORD}
+      API_USERNAME: ${WAZUH_API_USERNAME:-wazuh-wui}
+      API_PASSWORD: ${WAZUH_API_PASSWORD}
+    volumes:
+      - ./runtime/certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem:ro
+      - ./runtime/certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem:ro
+      - ./runtime/certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem:ro
+      - ./config/dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:ro
+      - ./runtime/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml:ro
+      - wazuh_dashboard_config:/usr/share/wazuh-dashboard/data/wazuh/config
+      - wazuh_dashboard_custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+    networks:
+      - sanoli_soc
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -sk --fail https://127.0.0.1:5601/app/wz-home >/dev/null
+      interval: 10s
+      timeout: 8s
+      retries: 24
+      start_period: 120s
+
+networks:
+  sanoli_soc:
+    name: sanoli_soc
+
+volumes:
+  wazuh_api_configuration:
+  wazuh_etc:
+  wazuh_logs:
+  wazuh_queue:
+  wazuh_var_multigroups:
+  wazuh_integrations:
+  wazuh_active_response:
+  wazuh_agentless:
+  wazuh_wodles:
+  filebeat_etc:
+  filebeat_var:
+  wazuh_indexer_data:
+  wazuh_dashboard_config:
+  wazuh_dashboard_custom:
+  sanolifood_app_logs:
+    external: true
+    name: sanolifood_app_logs

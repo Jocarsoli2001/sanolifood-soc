@@ -1,0 +1,103 @@
+
+===== auth-login-failed.json =====
+
+Starting wazuh-logtest v4.14.7
+Type one log per line
+
+**Phase 1: Completed pre-decoding.
+	full event: '{"timestamp":"2026-08-19T02:30:00+00:00","level":"INFO","logger":"sanolifood.security","message":"auth.login.failed","sf_event_type":"auth.login.failed","outcome":"failure","actor_username":"operator.test","source_ip":"10.20.0.50","correlation_id":"11111111-1111-4111-8111-111111111111","resource_type":null,"resource_id":null,"details":{"reason":"invalid_credentials"}}'
+
+**Phase 2: Completed decoding.
+	name: 'json'
+	actor_username: 'operator.test'
+	correlation_id: '11111111-1111-4111-8111-111111111111'
+	details.reason: 'invalid_credentials'
+	level: 'INFO'
+	logger: 'sanolifood.security'
+	message: 'auth.login.failed'
+	outcome: 'failure'
+	resource_id: 'null'
+	resource_type: 'null'
+	sf_event_type: 'auth.login.failed'
+	source_ip: '10.20.0.50'
+	timestamp: '2026-08-19T02:30:00+00:00'
+
+**Phase 3: Completed filtering (rules).
+	id: '110010'
+	level: '5'
+	description: 'SanoliFood authentication failure for operator.test from 10.20.0.50'
+
+	groups: '['sanolifood', 'application', 'authentication_failed']'
+	firedtimes: '1'
+	mail: 'False'
+**Alert to be generated.
+
+===== inventory-adjustment.json =====
+Starting wazuh-logtest v4.14.7
+Type one log per line
+
+
+**Phase 1: Completed pre-decoding.
+	full event: '{"timestamp":"2026-08-19T02:31:00+00:00","level":"INFO","logger":"sanolifood.security","message":"inventory.adjustment.high_value","sf_event_type":"inventory.adjustment.high_value","outcome":"success","actor_username":"warehouse.test","source_ip":"10.20.0.40","correlation_id":"22222222-2222-4222-8222-222222222222","resource_type":"ingredient","resource_id":"7","details":{"quantity":"250.00","reason":"cycle_count"}}'
+
+**Phase 2: Completed decoding.
+	name: 'json'
+	actor_username: 'warehouse.test'
+	correlation_id: '22222222-2222-4222-8222-222222222222'
+	details.quantity: '250.00'
+	details.reason: 'cycle_count'
+	level: 'INFO'
+	logger: 'sanolifood.security'
+	message: 'inventory.adjustment.high_value'
+	outcome: 'success'
+	resource_id: '7'
+	resource_type: 'ingredient'
+	sf_event_type: 'inventory.adjustment.high_value'
+	source_ip: '10.20.0.40'
+	timestamp: '2026-08-19T02:31:00+00:00'
+
+**Phase 3: Completed filtering (rules).
+	id: '110020'
+	level: '8'
+	description: 'High-value SanoliFood inventory adjustment by warehouse.test'
+	groups: '['sanolifood', 'application', 'business_anomaly', 'inventory']'
+	firedtimes: '1'
+	mail: 'False'
+**Alert to be generated.
+
+
+===== quality-check-failed.json =====
+Starting wazuh-logtest v4.14.7
+Type one log per line
+
+
+**Phase 1: Completed pre-decoding.
+	full event: '{"timestamp":"2026-08-19T02:32:00+00:00","level":"INFO","logger":"sanolifood.security","message":"quality.check.failed","sf_event_type":"quality.check.failed","outcome":"failure","actor_username":"quality.test","source_ip":"10.20.0.30","correlation_id":"33333333-3333-4333-8333-333333333333","resource_type":"quality_check","resource_id":"14","details":{"lot_code":"LOT-SF-260819","check_type":"temperature","measured_value":"9.2","max_value":"5.0"}}'
+
+**Phase 2: Completed decoding.
+	name: 'json'
+	actor_username: 'quality.test'
+	correlation_id: '33333333-3333-4333-8333-333333333333'
+	details.check_type: 'temperature'
+	details.lot_code: 'LOT-SF-260819'
+	details.max_value: '5.0'
+	details.measured_value: '9.2'
+	level: 'INFO'
+	logger: 'sanolifood.security'
+	message: 'quality.check.failed'
+	outcome: 'failure'
+	resource_id: '14'
+	resource_type: 'quality_check'
+	sf_event_type: 'quality.check.failed'
+	source_ip: '10.20.0.30'
+	timestamp: '2026-08-19T02:32:00+00:00'
+
+**Phase 3: Completed filtering (rules).
+	id: '110030'
+	level: '8'
+	description: 'SanoliFood quality check outside specification for resource 14'
+	groups: '['sanolifood', 'application', 'business_anomaly', 'quality']'
+	firedtimes: '1'
+	mail: 'False'
+
+**Alert to be generated.

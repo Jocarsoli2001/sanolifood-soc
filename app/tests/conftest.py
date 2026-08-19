@@ -13,7 +13,7 @@ if not test_database_url.startswith("sqlite"):
 
 os.environ["DATABASE_URL"] = test_database_url
 os.environ["APP_ENV"] = "test"
-os.environ["APP_VERSION"] = "0.3.0"
+os.environ["APP_VERSION"] = "0.4.0"
 os.environ["SESSION_SECRET"] = "test-session-secret-with-more-than-thirty-two-characters"
 
 from fastapi.testclient import TestClient

@@ -9,10 +9,11 @@ class Settings(BaseSettings):
 
     app_name: str = "SanoliFood Operations"
     app_env: str = "development"
-    app_version: str = "0.3.0"
+    app_version: str = "0.4.0"
     app_debug: bool = False
     app_timezone: str = "UTC"
     log_level: str = "INFO"
+    app_log_file: str | None = None
     database_url: str = "postgresql+psycopg://sanolifood_app:change-me@postgres:5432/sanolifood"
     allowed_hosts: str = "localhost,127.0.0.1"
     session_secret: SecretStr = SecretStr("change-me-before-production")

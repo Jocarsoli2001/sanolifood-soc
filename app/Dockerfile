@@ -1,6 +1,6 @@
 FROM python:3.12.11-slim-bookworm
 
-ARG APP_VERSION=0.3.0
+ARG APP_VERSION=0.4.0
 
 LABEL org.opencontainers.image.title="SanoliFood Operations" \
       org.opencontainers.image.version="${APP_VERSION}" \
@@ -29,8 +29,10 @@ COPY static ./static
 COPY tests ./tests
 COPY entrypoint.sh ./entrypoint.sh
 
-RUN chmod 0555 /app/entrypoint.sh \
-    && chown -R sanolifood:sanolifood /app
+RUN mkdir -p /var/log/sanolifood \
+    && chmod 0750 /var/log/sanolifood \
+    && chmod 0555 /app/entrypoint.sh \
+    && chown -R sanolifood:sanolifood /app /var/log/sanolifood
 
 USER 10001:10001
 
