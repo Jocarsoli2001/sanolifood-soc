@@ -1,0 +1,12 @@
+# SanoliFood SOC local NDR signatures.
+# SID range 9900001-9900099 is reserved for deterministic laboratory validation.
+
+alert http any any -> $HOME_NET any (msg:"SANOLIFOOD NDR validation request"; flow:established,to_server; http.header; content:"X-SanoliFood-Lab|3a 20|ndr-validation"; nocase; classtype:misc-activity; sid:9900001; rev:1;)
+
+alert tcp any any -> $HOME_NET any (msg:"SANOLIFOOD NDR possible TCP service scan"; flags:S; flow:stateless; threshold:type both, track by_src, count 12, seconds 10; classtype:network-scan; sid:9900002; rev:1; metadata:mitre_tactic_id TA0007, mitre_technique_id T1046;)
+
+alert http any any -> $HOME_NET any (msg:"SANOLIFOOD NDR sensitive web path enumeration"; flow:established,to_server; http.uri; pcre:"/^\/(?:\.env(?:$|\?)|\.git(?:\/|$)|phpmyadmin(?:\/|$)|server-status(?:$|\?)|admin(?:\/|$))/i"; classtype:web-application-activity; sid:9900003; rev:1; metadata:mitre_tactic_id TA0043, mitre_technique_id T1595.002;)
+
+alert http any any -> $HOME_NET any (msg:"SANOLIFOOD NDR SQL injection indicator in URI"; flow:established,to_server; http.uri; content:"UNION"; nocase; content:"SELECT"; nocase; distance:0; within:96; classtype:web-application-attack; sid:9900004; rev:1; metadata:mitre_tactic_id TA0001, mitre_technique_id T1190;)
+
+alert http any any -> $HOME_NET any (msg:"SANOLIFOOD NDR high-rate HTTP enumeration"; flow:established,to_server; http.method; content:"GET"; threshold:type both, track by_src, count 25, seconds 10; classtype:network-scan; sid:9900005; rev:1; metadata:mitre_tactic_id TA0043, mitre_technique_id T1595.002;)

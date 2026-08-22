@@ -1,9 +1,10 @@
-<!-- Custom rule IDs 110000-110099 are reserved for SanoliFood Operations. -->
-<group name="sanolifood,application,">
+<!-- Custom rule IDs 110000-110199 are reserved for SanoliFood SOC. -->
+<group name="sanolifood,">
   <rule id="110000" level="3">
     <decoded_as>json</decoded_as>
     <field name="logger" type="pcre2">^sanolifood(?:\.|$)</field>
     <description>SanoliFood application telemetry event</description>
+    <group>application,</group>
     <options>no_full_log</options>
   </rule>
 
@@ -11,7 +12,7 @@
     <if_sid>110000</if_sid>
     <field name="sf_event_type" type="pcre2">^auth\.login\.failed$</field>
     <description>SanoliFood authentication failure for $(actor_username) from $(source_ip)</description>
-    <group>authentication_failed,</group>
+    <group>application,authentication_failed,</group>
   </rule>
 
   <rule id="110011" level="10" frequency="5" timeframe="120">
@@ -22,7 +23,7 @@
       <id>T1110</id>
       <id>T1110.001</id>
     </mitre>
-    <group>authentication_failures,attack,</group>
+    <group>application,authentication_failures,attack,</group>
   </rule>
 
   <rule id="110012" level="9">
@@ -32,27 +33,73 @@
     <mitre>
       <id>T1110</id>
     </mitre>
-    <group>authentication_failures,account_lockout,</group>
+    <group>application,authentication_failures,account_lockout,</group>
   </rule>
 
   <rule id="110020" level="8">
     <if_sid>110000</if_sid>
     <field name="sf_event_type" type="pcre2">^inventory\.adjustment\.high_value$</field>
     <description>High-value SanoliFood inventory adjustment by $(actor_username)</description>
-    <group>business_anomaly,inventory,</group>
+    <group>application,business_anomaly,inventory,</group>
   </rule>
 
   <rule id="110030" level="8">
     <if_sid>110000</if_sid>
     <field name="sf_event_type" type="pcre2">^quality\.check\.failed$</field>
     <description>SanoliFood quality check outside specification for resource $(resource_id)</description>
-    <group>business_anomaly,quality,</group>
+    <group>application,business_anomaly,quality,</group>
   </rule>
 
   <rule id="110040" level="12">
     <if_sid>110000</if_sid>
     <field name="sf_event_type" type="pcre2">^application\.error\.unhandled$</field>
     <description>Unhandled SanoliFood application error with correlation $(correlation_id)</description>
-    <group>application_error,availability,</group>
+    <group>application,application_error,availability,</group>
+  </rule>
+  <rule id="110100" level="5">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id" type="pcre2">^9900001$</field>
+    <description>SanoliFood NDR end-to-end validation request from $(src_ip)</description>
+    <group>suricata,network,ndr_validation,</group>
+  </rule>
+
+  <rule id="110110" level="10">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id" type="pcre2">^9900002$</field>
+    <description>SanoliFood NDR possible TCP service scan from $(src_ip) to $(dest_ip)</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+    <group>suricata,network,network_scan,attack,</group>
+  </rule>
+
+  <rule id="110120" level="9">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id" type="pcre2">^9900003$</field>
+    <description>SanoliFood NDR sensitive web path enumeration from $(src_ip)</description>
+    <mitre>
+      <id>T1595.002</id>
+    </mitre>
+    <group>suricata,network,web_enumeration,reconnaissance,</group>
+  </rule>
+
+  <rule id="110130" level="12">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id" type="pcre2">^9900004$</field>
+    <description>SanoliFood NDR SQL injection indicator from $(src_ip) to $(dest_ip)</description>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+    <group>suricata,network,web_attack,initial_access,</group>
+  </rule>
+
+  <rule id="110140" level="8">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id" type="pcre2">^9900005$</field>
+    <description>SanoliFood NDR high-rate HTTP enumeration from $(src_ip)</description>
+    <mitre>
+      <id>T1595.002</id>
+    </mitre>
+    <group>suricata,network,web_enumeration,reconnaissance,</group>
   </rule>
 </group>
