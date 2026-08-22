@@ -1,2 +1,2 @@
 NAME                             IMAGE                     COMMAND                  SERVICE    CREATED          STATUS                    PORTS
-sanolifood-suricata-suricata-1   jasonish/suricata:8.0.6   "/docker-entrypoint.…"   suricata   11 minutes ago   Up 11 minutes (healthy)   
+sanolifood-suricata-suricata-1   jasonish/suricata:8.0.6   "/docker-entrypoint.…"   suricata   11 minutes ago   Up 11 minutes (healthy)

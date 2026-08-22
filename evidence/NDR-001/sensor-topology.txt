@@ -3,4 +3,4 @@ home_net=192.168.0.23/32
 host_ip=192.168.0.23
 dmz_bridge=br-577f0a63f952
 dmz_subnet=172.19.0.0/16
-enp0s3           UP             08:00:27:22:9d:dd <BROADCAST,MULTICAST,UP,LOWER_UP> 
+enp0s3           UP             08:00:27:22:9d:dd <BROADCAST,MULTICAST,UP,LOWER_UP>
