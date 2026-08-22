@@ -1,8 +1,4 @@
-SanoliFood SOC v0.4.0 package revision: telemetry-hotfix-r3
-Build date: 2026-08-19
-
-Includes:
-- Explicit JAVA_HOME for the Wazuh bcrypt utility.
-- sf_event_type telemetry namespace.
-- wazuh-reload-rules Make target.
-- ADR-005 documenting the Suricata rule 86600 collision.
+SanoliFood_Increment_v0.5.0
+Revision: 2026-08-21.1
+Base: v0.4.0
+Scope: Suricata IDS/NDR, EVE-to-Wazuh integration, deterministic rule tests

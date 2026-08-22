@@ -1,0 +1,4 @@
+0c6135000f6f1958e0f4ad3d324d133332e6301ed25011c42846b92195eceeac  /home/socadmin/sanolifood-soc/suricata/compose.yaml
+432cd0caa755827bab247f00f2dbdf31b7209b2e9097cc326dd79e1c662a6322  /home/socadmin/sanolifood-soc/suricata/rules/local.rules
+1bd5c33685b84f8ceaf32fe3eb1fc4297b7a05118631f4df950171b42ec4277a  /home/socadmin/sanolifood-soc/wazuh/config/manager/ossec.conf
+6fc772fbc0992f55860067706ce3578994f839624f7498b395c34c0099d28c09  /home/socadmin/sanolifood-soc/wazuh/rules/sanolifood_rules.xml

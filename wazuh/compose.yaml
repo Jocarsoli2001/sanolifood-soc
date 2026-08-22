@@ -83,6 +83,7 @@ services:
       - ./runtime/authd.pass:/wazuh-config-mount/etc/authd.pass:ro
       - ./config/manager/entrypoint:/entrypoint-scripts:ro
       - sanolifood_app_logs:/var/log/sanolifood:ro
+      - sanolifood_suricata_logs:/var/log/suricata:ro
     networks:
       - sanoli_soc
     healthcheck:
@@ -153,3 +154,6 @@ volumes:
   sanolifood_app_logs:
     external: true
     name: sanolifood_app_logs
+  sanolifood_suricata_logs:
+    external: true
+    name: sanolifood_suricata_logs

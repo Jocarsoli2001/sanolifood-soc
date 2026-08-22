@@ -1,0 +1,13 @@
+Testing Suricata configuration and local signatures...
+ Container sanolifood-suricata-suricata-run-4c2f6d07b4b2 Creating 
+ Container sanolifood-suricata-suricata-run-4c2f6d07b4b2 Created 
+Checking for capability sys_nice: yes
+Checking for capability net_admin: yes
+i: suricata: This is Suricata version 8.0.6 RELEASE running in SYSTEM mode
+i: suricata: Configuration provided was successfully loaded. Exiting.
+OK   suricata configuration and signatures are valid
+OK   suricata-validation.json           Wazuh-rule=110100
+OK   suricata-port-scan.json            Wazuh-rule=110110
+OK   suricata-web-enumeration.json      Wazuh-rule=110120
+OK   suricata-sqli.json                 Wazuh-rule=110130
+OK   suricata-http-rate.json            Wazuh-rule=110140

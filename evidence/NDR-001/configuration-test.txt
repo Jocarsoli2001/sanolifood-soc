@@ -1,0 +1,8 @@
+Testing Suricata configuration and local signatures...
+ Container sanolifood-suricata-suricata-run-e5b48162cf95 Creating 
+ Container sanolifood-suricata-suricata-run-e5b48162cf95 Created 
+Checking for capability sys_nice: yes
+Checking for capability net_admin: yes
+i: suricata: This is Suricata version 8.0.6 RELEASE running in SYSTEM mode
+i: suricata: Configuration provided was successfully loaded. Exiting.
+OK   suricata configuration and signatures are valid

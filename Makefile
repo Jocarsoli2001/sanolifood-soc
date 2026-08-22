@@ -1,6 +1,12 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild upgrade-0.3 upgrade-0.4 evidence-business reset-lab clean wazuh-preflight wazuh-bootstrap wazuh-up wazuh-down wazuh-ps wazuh-logs wazuh-health wazuh-reload-rules wazuh-test-rules wazuh-credentials evidence-wazuh soc-up soc-health
+.PHONY: bootstrap config build up down logs ps health test migrate validate rebuild \
+	upgrade-0.3 upgrade-0.4 upgrade-0.5 evidence-business reset-lab clean \
+	wazuh-preflight wazuh-bootstrap wazuh-up wazuh-down wazuh-ps wazuh-logs \
+	wazuh-health wazuh-reload-rules wazuh-test-rules wazuh-credentials evidence-wazuh \
+	suricata-preflight suricata-discover suricata-bootstrap suricata-up suricata-down \
+	suricata-ps suricata-logs suricata-health suricata-config-test \
+	suricata-test-rules suricata-check-live evidence-ndr soc-up soc-health
 
 bootstrap:
 	@test -f .env || (cp .env.example .env && echo "Created .env; replace placeholder secrets before starting.")
@@ -50,6 +56,9 @@ upgrade-0.3:
 upgrade-0.4:
 	@./infrastructure/scripts/upgrade-v0.4.0.sh
 
+upgrade-0.5:
+	@./infrastructure/scripts/upgrade-v0.5.0.sh
+
 evidence-business:
 	@./infrastructure/scripts/collect-business-evidence.sh
 
@@ -57,6 +66,7 @@ wazuh-preflight:
 	@./wazuh/scripts/preflight.sh
 
 wazuh-bootstrap wazuh-up:
+	@docker volume inspect sanolifood_suricata_logs >/dev/null 2>&1 || docker volume create sanolifood_suricata_logs >/dev/null
 	@./wazuh/scripts/bootstrap.sh
 
 wazuh-down:
@@ -83,13 +93,48 @@ wazuh-credentials:
 evidence-wazuh:
 	@./wazuh/scripts/collect-evidence.sh
 
+suricata-preflight:
+	@./suricata/scripts/preflight.sh
+
+suricata-discover:
+	@./suricata/scripts/discover-network.sh
+
+suricata-bootstrap suricata-up:
+	@./suricata/scripts/bootstrap.sh
+
+suricata-down:
+	@./suricata/scripts/down.sh
+
+suricata-ps:
+	@./suricata/scripts/ps.sh
+
+suricata-logs:
+	@./suricata/scripts/logs.sh
+
+suricata-health:
+	@./suricata/scripts/healthcheck.sh
+
+suricata-config-test:
+	@./suricata/scripts/config-test.sh
+
+suricata-test-rules:
+	@./suricata/scripts/test-rules.sh
+
+suricata-check-live:
+	@./suricata/scripts/check-live-validation.sh
+
+evidence-ndr:
+	@./suricata/scripts/collect-evidence.sh
+
 soc-up:
 	@$(MAKE) up
+	@$(MAKE) suricata-up
 	@$(MAKE) wazuh-up
 
 soc-health:
 	@$(MAKE) health
 	@$(MAKE) wazuh-health
+	@$(MAKE) suricata-health
 
 reset-lab:
 	@./infrastructure/scripts/reset-lab.sh --confirm
