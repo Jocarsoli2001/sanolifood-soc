@@ -1,0 +1,1 @@
+{"timestamp":"2026-08-21T20:03:00.000000+0000","flow_id":504,"in_iface":"enp0s3","event_type":"alert","src_ip":"192.168.0.50","src_port":52004,"dest_ip":"192.168.0.23","dest_port":8080,"proto":"TCP","alert":{"action":"allowed","gid":1,"signature_id":9900004,"rev":1,"signature":"SANOLIFOOD NDR SQL injection indicator in URI","category":"Web Application Attack","severity":1}}

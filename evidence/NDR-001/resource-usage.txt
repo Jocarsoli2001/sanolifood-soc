@@ -1,0 +1,2 @@
+CONTAINER ID   NAME                             CPU %     MEM USAGE / LIMIT   MEM %     NET I/O   BLOCK I/O     PIDS
+dd7a58ff96d9   sanolifood-suricata-suricata-1   1.78%     42.32MiB / 1GiB     4.13%     0B / 0B   0B / 3.69MB   10

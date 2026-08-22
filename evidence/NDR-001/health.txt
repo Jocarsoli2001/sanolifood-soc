@@ -1,0 +1,4 @@
+OK   suricata         state=running health=healthy
+OK   interface        enp0s3
+OK   EVE telemetry    /var/log/suricata/eve.json
+OK   Wazuh ingestion  EVE volume readable by manager

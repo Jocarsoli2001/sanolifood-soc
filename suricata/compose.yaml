@@ -1,0 +1,47 @@
+name: sanolifood-suricata
+
+services:
+  suricata:
+    image: jasonish/suricata:${SURICATA_VERSION:-8.0.6}
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    command:
+      - -i
+      - ${SURICATA_INTERFACE:?Run make suricata-discover first}
+      - --set
+      - vars.address-groups.HOME_NET=[${SURICATA_HOME_NET:?Run make suricata-discover first}]
+      - -S
+      - /opt/sanolifood/local.rules
+    environment:
+      TZ: UTC
+    volumes:
+      - suricata_logs:/var/log/suricata
+      - suricata_state:/var/lib/suricata
+      - ./rules/local.rules:/opt/sanolifood/local.rules:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          test -s /var/log/suricata/eve.json &&
+          kill -0 1
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 45s
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    cpus: 1.50
+    pids_limit: 256
+    stop_grace_period: 30s
+
+volumes:
+  suricata_logs:
+    external: true
+    name: sanolifood_suricata_logs
+  suricata_state:
+    name: sanolifood_suricata_state
