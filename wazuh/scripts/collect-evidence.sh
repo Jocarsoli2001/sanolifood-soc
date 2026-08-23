@@ -62,4 +62,4 @@ docker run --rm \
 
 printf 'Evidencia textual creada en %s\n' "$evidence_dir"
 printf 'Revisa los archivos antes de incorporarlos a Git. No se recopilaron credenciales ni claves privadas.\n'
-printf 'Las capturas sugeridas están documentadas en docs/IMPLEMENTATION-04-wazuh-central.md.\n'
+printf 'Las capturas sugeridas están documentadas en README.md, sección Evidencias y validación.\n'

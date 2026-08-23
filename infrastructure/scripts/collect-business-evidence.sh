@@ -36,5 +36,5 @@ docker compose exec -T postgres sh -c \
 docker compose logs --no-color --tail=500 app > "$evidence_dir/application-events.jsonl"
 
 printf 'Evidencia textual creada en %s\n' "$evidence_dir"
-printf 'Añade las cinco capturas indicadas en docs/IMPLEMENTATION-03-business-core.md.\n'
+printf 'Añade las capturas indicadas en README.md, sección Evidencias y validación.\n'
 printf 'Revisa el contenido antes de incorporarlo a Git.\n'
