@@ -1,34 +1,35 @@
-# ADR-006: Suricata as a containerized edge IDS sensor
+# ADR-006: Suricata como sensor IDS de borde en contenedor
 
-## Status
+## Estado
 
-Accepted for SOC increment v0.5.0.
+Aceptada para el hito SOC v0.5.0.
 
-## Context
+## Contexto
 
-SanoliFood exposes Nginx through the Ubuntu VM address and port 8080. The
-Docker DMZ bridge contains only Nginx, but observing only that bridge would
-hide probes aimed at other published services of the simulated corporate host.
-The bridge identifier also changes whenever Docker recreates the network.
+SanoliFood publica Nginx mediante la dirección de la VM Ubuntu y el puerto 8080.
+El bridge DMZ de Docker contiene únicamente Nginx, pero observar solo ese bridge
+ocultaría sondeos dirigidos a otros servicios publicados del host corporativo
+simulado. Además, el identificador del bridge cambia cuando Docker recrea la red.
 
-## Decision
+## Decisión
 
-Run one pinned Suricata container with host networking and the capabilities
-`NET_ADMIN`, `NET_RAW`, and `SYS_NICE`. A bootstrap script discovers the
-default-route interface and the current VM IPv4 address. The sensor operates
-only in IDS mode; it cannot drop or modify packets.
+Ejecutar un contenedor Suricata con versión fijada, red del host y las
+capacidades `NET_ADMIN`, `NET_RAW` y `SYS_NICE`. Un script de arranque descubre
+la interfaz de la ruta predeterminada y la dirección IPv4 actual de la VM. El
+sensor opera exclusivamente en modo IDS; no descarta ni modifica paquetes.
 
-The generated EVE JSON log is persisted in the named volume
-`sanolifood_suricata_logs`. Wazuh mounts the same volume read-only and parses
-the single-line JSON events using its standard Suricata rules plus SanoliFood
-child rules.
+El registro EVE JSON se conserva en el volumen
+`sanolifood_suricata_logs`. Wazuh monta el mismo volumen en modo de solo lectura
+y analiza los eventos JSON de una línea mediante sus reglas estándar de
+Suricata y las reglas hijas de SanoliFood.
 
-## Consequences
+## Consecuencias
 
-- External reconnaissance and traffic to published services are observable.
-- Interface names and DHCP addresses are not hard-coded in Git.
-- Live validation must originate from another machine, such as Windows or
-  Kali, because loopback traffic does not cross the monitored interface.
-- The container is capped at 1 GiB RAM and 1.5 CPUs for the available host.
-- Visibility is limited to traffic received or transmitted by this VM; a full
-  network TAP or virtual switch mirror remains a future enhancement.
+- El reconocimiento externo y el tráfico hacia servicios publicados son
+  observables.
+- Los nombres de interfaz y las direcciones DHCP no quedan fijados en Git.
+- La validación en vivo debe originarse en otra máquina, como Windows o Kali,
+  porque el tráfico de loopback no atraviesa la interfaz monitorizada.
+- El contenedor se limita a 1 GiB de RAM y 1.5 CPU para proteger el host.
+- La visibilidad se limita al tráfico recibido o transmitido por esta VM; un TAP
+  de red o mirror del switch virtual permanece como mejora futura.
