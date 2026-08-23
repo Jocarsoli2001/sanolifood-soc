@@ -25,5 +25,5 @@ printf 'Validating the complete SOC stack...\n'
 ./suricata/scripts/healthcheck.sh
 
 printf '\nUpgrade to the Suricata NDR increment completed.\n'
-printf 'From another computer, send the validation request documented in docs/IMPLEMENTATION-05-suricata-ndr.md.\n'
-printf 'Then run: make suricata-check-live\n'
+printf 'Desde otro equipo, envía la petición de validación documentada en README.md.\n'
+printf 'Después ejecuta: make suricata-check-live\n'

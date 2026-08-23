@@ -52,4 +52,4 @@ sha256sum \
 
 printf 'NDR evidence created in %s\n' "$evidence_dir"
 printf 'Review it before Git. Runtime values and packet payloads were not copied.\n'
-printf 'Add the screenshots listed in docs/IMPLEMENTATION-05-suricata-ndr.md to your external evidence archive.\n'
+printf 'Añade al archivo externo las capturas indicadas en README.md, sección Evidencias y validación.\n'

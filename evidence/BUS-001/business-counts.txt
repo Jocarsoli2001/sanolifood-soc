@@ -1,4 +1,4 @@
- suppliers | ingredients | production_lots | quality_checks | audit_events 
+ suppliers | ingredients | production_lots | quality_checks | audit_events
 -----------+-------------+-----------------+----------------+--------------
          3 |           4 |               3 |              2 |           25
 (1 row)
