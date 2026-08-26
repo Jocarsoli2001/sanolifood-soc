@@ -1,0 +1,10 @@
+validated_at_utc=2026-08-26T03:58:46.0411918Z
+
+Status Check                Detail                                           
+------ -----                ------                                           
+OK     Wazuh service        Running                                          
+OK     Sysmon service       Running                                          
+OK     Manager TCP 1514     10.20.0.10:1514                                  
+OK     Manager TCP 1515     10.20.0.10:1515                                  
+OK     FIM probe            C:\SanoliFood\Quality\Config\validation-probe.txt
+OK     Sysmon process probe record=3203

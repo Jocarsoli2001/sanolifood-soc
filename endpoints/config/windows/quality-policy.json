@@ -1,0 +1,10 @@
+{
+  "policy_id": "SF-QA-001",
+  "owner": "quality-operations",
+  "temperature_c": {
+    "minimum": 2,
+    "maximum": 8
+  },
+  "release_requires_approval": true,
+  "revision": 1
+}

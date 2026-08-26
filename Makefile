@@ -1,12 +1,15 @@
 SHELL := /bin/bash
 
 .PHONY: bootstrap config build up down logs ps health test migrate validate rebuild \
-	upgrade-0.3 upgrade-0.4 upgrade-0.5 evidence-business reset-lab clean \
+	upgrade-0.3 upgrade-0.4 upgrade-0.5 upgrade-0.6 evidence-business reset-lab clean \
 	wazuh-preflight wazuh-bootstrap wazuh-up wazuh-down wazuh-ps wazuh-logs \
 	wazuh-health wazuh-reload-rules wazuh-test-rules wazuh-credentials evidence-wazuh \
 	suricata-preflight suricata-discover suricata-bootstrap suricata-up suricata-down \
 	suricata-ps suricata-logs suricata-health suricata-config-test \
-	suricata-test-rules suricata-check-live evidence-ndr soc-up soc-health
+	suricata-test-rules suricata-check-live evidence-ndr \
+	endpoint-preflight endpoint-configure endpoint-registration-password \
+	endpoint-install-ubuntu endpoint-stage-windows endpoint-health \
+	endpoint-test-rules endpoint-check-live evidence-endpoint soc-up soc-health
 
 bootstrap:
 	@test -f .env || (cp .env.example .env && echo "Created .env; replace placeholder secrets before starting.")
@@ -58,6 +61,9 @@ upgrade-0.4:
 
 upgrade-0.5:
 	@./infrastructure/scripts/upgrade-v0.5.0.sh
+
+upgrade-0.6:
+	@./infrastructure/scripts/upgrade-v0.6.0.sh
 
 evidence-business:
 	@./infrastructure/scripts/collect-business-evidence.sh
@@ -125,6 +131,34 @@ suricata-check-live:
 
 evidence-ndr:
 	@./suricata/scripts/collect-evidence.sh
+
+endpoint-preflight:
+	@./endpoints/scripts/preflight.sh
+
+endpoint-configure:
+	@./endpoints/scripts/configure-groups.sh
+
+endpoint-registration-password:
+	@./endpoints/scripts/registration-password.sh
+
+endpoint-install-ubuntu:
+	@sudo ./endpoints/scripts/install-ubuntu-agent.sh
+
+endpoint-stage-windows:
+	@test -n "$(WINDOWS_SSH)" || (echo "Use: make endpoint-stage-windows WINDOWS_SSH=usuario@10.20.0.20"; exit 2)
+	@./endpoints/scripts/stage-windows.sh "$(WINDOWS_SSH)"
+
+endpoint-health:
+	@./endpoints/scripts/healthcheck.sh
+
+endpoint-test-rules:
+	@./wazuh/scripts/test-rules.sh
+
+endpoint-check-live:
+	@./endpoints/scripts/check-live.sh
+
+evidence-endpoint:
+	@WINDOWS_SSH="$(WINDOWS_SSH)" ./endpoints/scripts/collect-evidence.sh
 
 soc-up:
 	@$(MAKE) up
