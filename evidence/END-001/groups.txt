@@ -1,0 +1,7 @@
+/var/ossec/framework/python/lib/python3.10/site-packages/connexion/apps/abstract.py:9: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient
+Groups (3):
+  default (0)
+  sanolifood-linux (1)
+  sanolifood-windows (1)
+Unassigned agents: 0.

@@ -48,6 +48,8 @@ fi
 sha256sum \
   "$wazuh_dir/compose.yaml" \
   "$wazuh_dir/config/manager/ossec.conf" \
+  "$wazuh_dir/config/manager/shared/sanolifood-linux/agent.conf" \
+  "$wazuh_dir/config/manager/shared/sanolifood-windows/agent.conf" \
   "$wazuh_dir/config/indexer/wazuh.indexer.yml" \
   "$wazuh_dir/config/dashboard/opensearch_dashboards.yml" \
   "$wazuh_dir/rules/sanolifood_rules.xml" \

@@ -1,0 +1,23 @@
+● wazuh-agent.service - Wazuh agent
+     Loaded: loaded (/usr/lib/systemd/system/wazuh-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 04:14:10 UTC; 22min ago
+    Process: 362018 ExecStart=/usr/bin/env /var/ossec/bin/wazuh-control start (code=exited, status=0/SUCCESS)
+      Tasks: 34 (limit: 11550)
+     Memory: 99.9M (peak: 103.0M)
+        CPU: 1min 9.355s
+     CGroup: /system.slice/wazuh-agent.service
+             ├─362042 /var/ossec/bin/wazuh-execd
+             ├─362093 /var/ossec/bin/wazuh-agentd
+             ├─362165 /var/ossec/bin/wazuh-syscheckd
+             ├─362211 /var/ossec/bin/wazuh-logcollector
+             └─362225 /var/ossec/bin/wazuh-modulesd
+
+Aug 26 04:14:05 sanolifoodsochost systemd[1]: Starting wazuh-agent.service - Wazuh agent...
+Aug 26 04:14:05 sanolifoodsochost env[362018]: Starting Wazuh v4.14.7...
+Aug 26 04:14:06 sanolifoodsochost env[362018]: Started wazuh-execd...
+Aug 26 04:14:07 sanolifoodsochost env[362018]: Started wazuh-agentd...
+Aug 26 04:14:08 sanolifoodsochost env[362018]: Started wazuh-syscheckd...
+Aug 26 04:14:08 sanolifoodsochost env[362018]: Started wazuh-logcollector...
+Aug 26 04:14:08 sanolifoodsochost env[362018]: Started wazuh-modulesd...
+Aug 26 04:14:10 sanolifoodsochost env[362018]: Completed.
+Aug 26 04:14:10 sanolifoodsochost systemd[1]: Started wazuh-agent.service - Wazuh agent.

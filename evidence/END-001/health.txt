@@ -1,0 +1,6 @@
+OK   Ubuntu endpoint    name=sanolifood-ubuntu-01 state=active
+OK   group assignment   agent=sanolifood-ubuntu-01 group=sanolifood-linux
+OK   Windows endpoint   name=sanolifood-win-01 state=active
+OK   group assignment   agent=sanolifood-win-01 group=sanolifood-windows
+OK   central policy     sanolifood-linux
+OK   central policy     sanolifood-windows

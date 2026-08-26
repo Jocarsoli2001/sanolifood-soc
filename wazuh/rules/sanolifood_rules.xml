@@ -1,4 +1,4 @@
-<!-- Custom rule IDs 110000-110199 are reserved for SanoliFood SOC. -->
+<!-- Custom rule IDs 110000-110299 are reserved for SanoliFood SOC. -->
 <group name="sanolifood,">
   <rule id="110000" level="3">
     <decoded_as>json</decoded_as>
@@ -101,5 +101,39 @@
       <id>T1595.002</id>
     </mitre>
     <group>suricata,network,web_enumeration,reconnaissance,</group>
+  </rule>
+
+  <rule id="110200" level="5">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)SanoliFoodEndpointValidation</field>
+    <description>SanoliFood Windows Sysmon end-to-end validation process on $(win.system.computer)</description>
+    <group>endpoint,windows,sysmon,edr_validation,</group>
+  </rule>
+
+  <rule id="110210" level="8">
+    <if_sid>550,554</if_sid>
+    <field name="file" type="pcre2">^/etc/sanolifood/(?:quality-policy|validation-probe)\.(?:yml|yaml)$</field>
+    <description>SanoliFood Ubuntu quality configuration changed: $(file)</description>
+    <mitre>
+      <id>T1565.001</id>
+    </mitre>
+    <group>endpoint,linux,fim,configuration_change,quality,</group>
+  </rule>
+
+  <rule id="110211" level="8">
+    <if_sid>550,554</if_sid>
+    <field name="file" type="pcre2">(?i)^[A-Z]:\\SanoliFood\\Quality\\Config\\(?:quality-policy\.json|validation-probe\.txt)$</field>
+    <description>SanoliFood Windows quality configuration changed: $(file)</description>
+    <mitre>
+      <id>T1565.001</id>
+    </mitre>
+    <group>endpoint,windows,fim,configuration_change,quality,</group>
+  </rule>
+
+  <rule id="110220" level="5">
+    <program_name type="pcre2">^sanolifood-validation$</program_name>
+    <match type="pcre2">endpoint-validation outcome=success</match>
+    <description>SanoliFood Ubuntu endpoint log-collection validation</description>
+    <group>endpoint,linux,logcollector,edr_validation,</group>
   </rule>
 </group>
