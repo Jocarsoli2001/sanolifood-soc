@@ -1,0 +1,5 @@
+OK   Windows Sysmon probe   rule=110200
+OK   Ubuntu quality FIM     rule=110210
+OK   Windows quality FIM    rule=110211
+OK   Ubuntu log probe       rule=110220
+PASS endpoint telemetry path: host -> Wazuh agent -> manager -> alert.

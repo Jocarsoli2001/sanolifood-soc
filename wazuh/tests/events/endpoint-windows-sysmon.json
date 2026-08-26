@@ -1,0 +1,1 @@
+{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","computer":"SANOLIFOOD-WIN-ENDPOINT"},"eventdata":{"image":"C:\\Windows\\System32\\cmd.exe","commandLine":"cmd.exe /c echo SanoliFoodEndpointValidation > NUL","user":"SANOLIFOOD\\operator"}}}

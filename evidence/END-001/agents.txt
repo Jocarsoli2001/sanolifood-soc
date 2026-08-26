@@ -1,0 +1,4 @@
+000,1c6d0c4ffedd (server),127.0.0.1,Active/Local,
+001,sanolifood-ubuntu-01,any,Active,
+002,sanolifood-win-01,any,Active,
+

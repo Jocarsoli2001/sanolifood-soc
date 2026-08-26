@@ -1,0 +1,7 @@
+
+Name      Status StartType
+----      ------ ---------
+Sysmon64 Running Automatic
+WazuhSvc Running Automatic
+
+

@@ -1,0 +1,6 @@
+===== sanolifood-linux =====
+verify-agent-conf: OK
+
+===== sanolifood-windows =====
+verify-agent-conf: OK
+

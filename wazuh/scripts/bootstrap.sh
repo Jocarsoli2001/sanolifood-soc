@@ -30,6 +30,7 @@ if [[ ! -f "$env_file" ]]; then
     printf 'WAZUH_AGENT_PORT=1514\n'
     printf 'WAZUH_ENROLLMENT_PORT=1515\n'
     printf 'WAZUH_SYSLOG_PORT=514\n'
+    printf 'WAZUH_AGENT_BIND_ADDRESS=0.0.0.0\n'
     printf 'WAZUH_INDEXER_JAVA_OPTS="-Xms1g -Xmx1g"\n'
     printf 'WAZUH_INDEXER_USERNAME=admin\n'
     printf 'WAZUH_INDEXER_PASSWORD=%s\n' "$indexer_password"
@@ -124,6 +125,9 @@ docker compose --env-file "$env_file" -f "$compose_file" \
   up -d --wait --wait-timeout 600
 
 "$script_dir/healthcheck.sh"
+if [[ -x "$project_dir/endpoints/scripts/configure-groups.sh" ]]; then
+  "$project_dir/endpoints/scripts/configure-groups.sh"
+fi
 printf '\nWazuh central está operativo.\n'
 printf 'Dashboard local: https://127.0.0.1:%s\n' "${WAZUH_DASHBOARD_PORT:-8443}"
 printf 'Para consultar las credenciales sin capturarlas: make wazuh-credentials\n'

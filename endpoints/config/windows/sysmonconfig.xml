@@ -1,0 +1,35 @@
+<!--
+  SanoliFood Sysmon profile.
+  The profile favors deterministic endpoint telemetry while limiting lab noise.
+-->
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>SHA256,IMPHASH</HashAlgorithms>
+  <CheckRevocation>true</CheckRevocation>
+  <ArchiveDirectory>Sysmon</ArchiveDirectory>
+
+  <EventFiltering>
+    <!-- Process creation is the primary source for controlled endpoint tests. -->
+    <ProcessCreate onmatch="exclude">
+      <Image condition="end with">\Wazuh\wazuh-agent.exe</Image>
+    </ProcessCreate>
+
+    <!-- Keep network telemetry focused on the isolated SanoliFood segment. -->
+    <NetworkConnect onmatch="include">
+      <DestinationIp condition="begin with">10.20.</DestinationIp>
+    </NetworkConnect>
+
+    <!-- Business configuration changes complement Wazuh FIM. -->
+    <FileCreate onmatch="include">
+      <TargetFilename condition="begin with">C:\SanoliFood\</TargetFilename>
+    </FileCreate>
+    <FileCreateStreamHash onmatch="include">
+      <TargetFilename condition="begin with">C:\SanoliFood\</TargetFilename>
+    </FileCreateStreamHash>
+
+    <!-- Common autostart locations provide a bounded persistence data source. -->
+    <RegistryEvent onmatch="include">
+      <TargetObject condition="contains">\Software\Microsoft\Windows\CurrentVersion\Run</TargetObject>
+      <TargetObject condition="contains">\Software\Microsoft\Windows\CurrentVersion\RunOnce</TargetObject>
+    </RegistryEvent>
+  </EventFiltering>
+</Sysmon>

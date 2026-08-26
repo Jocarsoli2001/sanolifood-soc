@@ -11,9 +11,9 @@ versionadas en un entorno desplegable con Docker Compose.
 
 ## Estado del proyecto
 
-El hito técnico documentado es **SanoliFood SOC v0.5.0**. La aplicación conserva
-la versión **0.4.0** porque el incremento v0.5.0 añade el sensor de red sin
-modificar su código de negocio.
+El incremento técnico en curso es **SanoliFood SOC v0.6.0**. La aplicación
+conserva la versión **0.4.0** porque los hitos posteriores añaden capacidades
+defensivas sin modificar su núcleo de negocio.
 
 | Capacidad | Estado | Validación reproducible |
 |---|---|---|
@@ -22,7 +22,7 @@ modificar su código de negocio.
 | Inventario, producción y calidad | Operativa | Recorrido empresarial de extremo a extremo |
 | Wazuh manager, indexer y dashboard | Operativo | Healthchecks y reglas probadas con `wazuh-logtest` |
 | Suricata IDS/NDR | Operativo | EVE JSON, reglas locales y alerta real en Wazuh |
-| Agentes Wazuh en endpoints | Pendiente | Próximo incremento |
+| Agentes Wazuh en endpoints | Implementado | Ubuntu, Windows, Sysmon, FIM y pruebas en vivo |
 | Automatización semiautomatizada con n8n | Pendiente | Próximo incremento |
 | Campaña completa de escenarios y métricas | Pendiente | Fase de validación final |
 
@@ -39,6 +39,8 @@ no presenta como implementada una capacidad que todavía no ha sido validada.
 - [Recorrido funcional](#recorrido-funcional-de-verificación)
 - [Ingeniería de detección](#ingeniería-de-detección)
 - [Validación NDR en vivo](#validación-ndr-en-vivo)
+- [Despliegue de endpoints](#despliegue-de-endpoints)
+- [Validación EDR en vivo](#validación-edr-en-vivo)
 - [Evidencias y validación](#evidencias-y-validación)
 - [Operación diaria](#operación-diaria)
 - [Resolución de problemas](#resolución-de-problemas)
@@ -66,12 +68,14 @@ proyecto no depende de datos personales ni de información empresarial real.
 
 ```mermaid
 flowchart TD
-    C["Equipo externo<br/>Windows o Kali"] -->|HTTP 8080| N["Nginx<br/>zona DMZ"]
-    C -->|Tráfico observado| S["Suricata IDS/NDR<br/>interfaz del host"]
+    C["Kali / cliente de prueba<br/>10.20.0.50"] -->|HTTP 8080| N["Nginx<br/>10.20.0.10"]
+    C -->|Tráfico observado| S["Suricata IDS/NDR<br/>enp0s8"]
     N --> A["FastAPI<br/>SanoliFood Operations"]
     A --> P["PostgreSQL<br/>datos transaccionales"]
     A -->|JSONL| W["Wazuh manager"]
     S -->|EVE JSON| W
+    U["Ubuntu endpoint<br/>10.20.0.10"] -->|Agente 1514/TCP| W
+    X["Windows + Sysmon<br/>10.20.0.20"] -->|Agente 1514/TCP| W
     W --> I["Wazuh indexer"]
     I --> D["Wazuh dashboard<br/>HTTPS 8443"]
 ```
@@ -92,7 +96,9 @@ segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 | PostgreSQL | 17.6 | Persistencia transaccional |
 | Nginx | 1.28.0 | Punto de entrada y proxy inverso |
 | Wazuh | 4.14.7 | SIEM, análisis, indexación y dashboard |
+| Wazuh Agent | 4.14.7 | Telemetría EDR de Ubuntu y Windows |
 | Suricata | 8.0.6 | IDS/NDR y generación de EVE JSON |
+| Sysmon | 15.21 | Telemetría avanzada de Windows con configuración versionada |
 
 ### Puertos publicados
 
@@ -100,8 +106,8 @@ segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 |---:|---|---|---|
 | 8080 | TCP/HTTP | SanoliFood Operations mediante Nginx | Red del laboratorio |
 | 8443 | TCP/HTTPS | Wazuh Dashboard | Red del laboratorio |
-| 1514 | TCP | Eventos de agentes Wazuh | Endpoints futuros |
-| 1515 | TCP | Enrolamiento de agentes Wazuh | Endpoints futuros |
+| 1514 | TCP | Eventos de agentes Wazuh | Segmento interno `10.20.0.0/24` |
+| 1515 | TCP | Enrolamiento de agentes Wazuh | Segmento interno `10.20.0.0/24` |
 | 514 | UDP | Entrada syslog reservada | Fuentes futuras |
 
 El indexer y la API interna de Wazuh no se publican en el host.
@@ -139,6 +145,7 @@ El indexer y la API interna de Wazuh no se publican en el host.
 ├── infrastructure/      Nginx y scripts operativos
 ├── wazuh/               Compose, configuración, reglas y pruebas SIEM
 ├── suricata/            Sensor, firmas y scripts IDS/NDR
+├── endpoints/           Agentes, políticas centralizadas, Sysmon y validaciones
 ├── evidence/            Evidencia textual revisada y no secreta
 ├── docs/adr/             Decisiones de arquitectura
 ├── detections/          Espacio para casos de detección adicionales
@@ -161,7 +168,8 @@ contienen secretos o datos específicos del host y están excluidos de Git.
 - 4 vCPU como mínimo.
 - 8 GiB de RAM como mínimo; 10–12 GiB recomendados para mayor fluidez.
 - 50 GiB libres como mínimo; 80 GiB recomendados para conservar evidencias.
-- Conectividad entre la VM Ubuntu y un segundo equipo o VM de validación.
+- Una VM Windows 10/11 con 2 vCPU y 4 GiB de RAM recomendados.
+- Una red interna aislada entre Ubuntu, Windows y la futura VM Kali.
 
 Los preflight checks de Wazuh exigen 4 CPU, 8 GiB de RAM, 50 GiB libres y
 `vm.max_map_count >= 262144`. Suricata requiere un host Linux porque utiliza el
@@ -171,7 +179,7 @@ namespace de red del host y capacidades de captura de paquetes.
 
 ```bash
 sudo apt update
-sudo apt install -y git make curl openssl iproute2 ca-certificates
+sudo apt install -y git make curl openssl iproute2 ca-certificates openssh-client
 docker --version
 docker compose version
 git --version
@@ -180,6 +188,24 @@ git --version
 Docker Engine y el complemento Docker Compose deben estar instalados y el
 usuario del laboratorio debe poder ejecutar `docker` sin `sudo`. Siga la
 documentación oficial de Docker para Ubuntu si aún no están disponibles.
+
+### Topología de red del laboratorio
+
+En VirtualBox, los adaptadores internos deben compartir el nombre
+`sanolifood-lab`. No configure puerta de enlace ni DNS en la red interna; cada
+VM conserva un primer adaptador NAT o puente únicamente para administración y
+descarga de paquetes.
+
+| Sistema | Adaptador de gestión | Adaptador interno | Dirección interna |
+|---|---|---|---|
+| Ubuntu SOC | `enp0s3`, DHCP | `enp0s8` | `10.20.0.10/24` |
+| Windows endpoint | NAT, DHCP | `sanolifood-lab` | `10.20.0.20/24` |
+| Kali de validación | NAT, DHCP | `sanolifood-lab` | `10.20.0.50/24` |
+
+Para que Suricata pueda observar también tráfico lateral, configure el modo
+promiscuo del segundo adaptador de Ubuntu como **Permitir todo**. Las pruebas
+de esta fase solo se ejecutan contra activos propios del segmento
+`10.20.0.0/24`.
 
 Prepare el requisito del indexer y hágalo persistente:
 
@@ -200,10 +226,10 @@ git status -sb
 ```
 
 Para una evaluación formal debe utilizarse un tag publicado, no una rama de
-desarrollo. Cuando el tag v0.5.0 esté disponible:
+desarrollo. Cuando el tag v0.6.0 esté disponible:
 
 ```bash
-git checkout v0.5.0
+git checkout v0.6.0
 ```
 
 ### 2. Crear la configuración local de la aplicación
@@ -263,14 +289,15 @@ make wazuh-test-rules
 make suricata-test-rules
 ```
 
-El resultado esperado del hito v0.5.0 es:
+El resultado esperado antes de enrolar los endpoints es:
 
 - PostgreSQL, aplicación, Nginx, Wazuh indexer, manager, dashboard y Suricata en
   estado `healthy`;
 - endpoint HTTP `/health/ready` disponible;
 - 28 pruebas de aplicación superadas;
 - reglas de aplicación 110010, 110020 y 110030 aprobadas;
-- reglas NDR 110100, 110110, 110120, 110130 y 110140 aprobadas.
+- reglas NDR 110100, 110110, 110120, 110130 y 110140 aprobadas;
+- fixtures EDR 110200, 110210, 110211 y 110220 aprobados.
 
 ### 6. Abrir las interfaces
 
@@ -294,6 +321,83 @@ make wazuh-credentials
 ```
 
 El usuario inicial de Wazuh Dashboard es `admin`.
+
+## Despliegue de endpoints
+
+Esta fase registra dos activos reales en el manager y distribuye políticas por
+grupos. El agente Ubuntu observa autenticación y cambios en
+`/etc/sanolifood`; el agente Windows incorpora FIM, eventos de PowerShell,
+OpenSSH y Sysmon. Las contraseñas de enrolamiento permanecen fuera de Git.
+
+### 1. Preparar el manager y el sensor interno
+
+Con Ubuntu y Windows encendidos, ejecute en el repositorio de Ubuntu:
+
+```bash
+make endpoint-preflight
+make upgrade-0.6
+```
+
+El segundo comando fija Suricata en `enp0s8` con `HOME_NET=10.20.0.0/24`,
+recrea el manager con las políticas versionadas y crea los grupos
+`sanolifood-linux` y `sanolifood-windows`. Los valores quedan persistidos en
+`suricata/runtime/.env`, por lo que `make soc-up` no vuelve a seleccionar
+silenciosamente `enp0s3`. Los puertos 1514, 1515 y 514 quedan enlazados a
+`10.20.0.10`, no a la interfaz de gestión.
+
+### 2. Instalar el agente Ubuntu
+
+```bash
+make endpoint-install-ubuntu
+sudo systemctl status wazuh-agent --no-pager
+```
+
+El instalador usa el repositorio oficial, exige exactamente Wazuh Agent
+`4.14.7-1`, conserva la contraseña solo en memoria, activa `rsyslog` y deja el
+paquete retenido para evitar una actualización accidental durante la
+evaluación.
+
+### 3. Transferir el instalador a Windows
+
+Sustituya `USUARIO_WINDOWS` por la cuenta habilitada en OpenSSH:
+
+```bash
+make endpoint-stage-windows \
+  WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
+```
+
+Consulte la contraseña de enrolamiento únicamente en la consola de Ubuntu. No
+la guarde en scripts, capturas ni historial:
+
+```bash
+make endpoint-registration-password
+```
+
+### 4. Instalar el agente Windows y Sysmon
+
+Abra **PowerShell como administrador** dentro de la VM Windows:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+& "$env:USERPROFILE\SanoliFood-Endpoint\Install-SanoliFoodEndpoint.ps1"
+```
+
+Introduzca la contraseña cuando aparezca el prompt seguro. El script descarga
+el MSI Wazuh `4.14.7-1` y Sysmon `15.21` desde sus repositorios oficiales,
+valida sus firmas Authenticode, registra hashes SHA-256, aplica la configuración
+versionada y no escribe la contraseña en el manifiesto.
+
+### 5. Confirmar los dos agentes
+
+Espere hasta 60 segundos y vuelva a Ubuntu:
+
+```bash
+make endpoint-health
+```
+
+El resultado correcto muestra `sanolifood-ubuntu-01` y
+`sanolifood-win-01` en estado `active`, además de ambas políticas centrales.
+En el dashboard también deben aparecer los dos activos en **Agents summary**.
 
 ## Recorrido funcional de verificación
 
@@ -364,7 +468,7 @@ adversaria.
 
 ### Telemetría de red
 
-Suricata captura la interfaz de la ruta predeterminada de Ubuntu, escribe
+Suricata captura la interfaz interna versionada para el laboratorio, escribe
 `eve.json` y Wazuh enriquece las firmas seleccionadas.
 
 | SID Suricata | Regla Wazuh | Caso de uso | MITRE ATT&CK |
@@ -374,6 +478,23 @@ Suricata captura la interfaz de la ruta predeterminada de Ubuntu, escribe
 | 9900003 | 110120 | Enumeración de rutas web sensibles | T1595.002 |
 | 9900004 | 110130 | Indicador de inyección SQL en URI | T1190 |
 | 9900005 | 110140 | Enumeración HTTP de alta frecuencia | T1595.002 |
+
+### Telemetría de endpoint
+
+Las políticas de los agentes se administran de forma centralizada desde
+`wazuh/config/manager/shared`. Ubuntu aporta autenticación, inventario del host
+y FIM; Windows complementa FIM con Sysmon, PowerShell y OpenSSH.
+
+| Regla Wazuh | Nivel | Caso de uso | MITRE ATT&CK |
+|---:|---:|---|---|
+| 110200 | 5 | Marcador inocuo de creación de proceso observado por Sysmon | No aplica |
+| 110210 | 8 | Cambio en configuración de calidad del endpoint Ubuntu | T1565.001 |
+| 110211 | 8 | Cambio en configuración de calidad del endpoint Windows | T1565.001 |
+| 110220 | 5 | Marcador inocuo de recolección de logs Ubuntu | No aplica |
+
+Las reglas 110200 y 110220 validan la ruta de telemetría y no representan un
+ataque. Las reglas FIM indican una modificación que debe investigarse; el
+contexto del escenario determina si es autorizada o adversaria.
 
 ## Validación NDR en vivo
 
@@ -405,6 +526,44 @@ PASS live NDR telemetry path: network -> Suricata -> EVE -> Wazuh.
 
 La regla 110100 confirma la ruta de datos. No debe contabilizarse como ataque en
 las métricas del TFM.
+
+## Validación EDR en vivo
+
+Estas pruebas son benignas y solo crean archivos de validación en las rutas
+sintéticas del laboratorio. No modifican archivos del sistema ni desactivan
+controles de seguridad.
+
+En Ubuntu:
+
+```bash
+sudo ./endpoints/scripts/validate-linux.sh
+```
+
+En una PowerShell elevada de Windows:
+
+```powershell
+& "$env:USERPROFILE\SanoliFood-Endpoint\Test-SanoliFoodEndpoint.ps1"
+```
+
+Espere aproximadamente 30 segundos y ejecute en Ubuntu:
+
+```bash
+make endpoint-check-live
+```
+
+Resultado esperado:
+
+```text
+OK   Windows Sysmon probe   rule=110200
+OK   Ubuntu quality FIM     rule=110210
+OK   Windows quality FIM    rule=110211
+OK   Ubuntu log probe       rule=110220
+PASS endpoint telemetry path: host -> Wazuh agent -> manager -> alert.
+```
+
+En Wazuh Threat Hunting filtre por los identificadores 110200, 110210, 110211
+y 110220. Conserve una captura donde se vean regla, agente, marca temporal y
+ruta o proceso, sin mostrar credenciales.
 
 ## Evidencias y validación
 
@@ -459,6 +618,33 @@ Capturas recomendadas:
 5. salida completa de `make soc-health`;
 6. salida de `docker stats --no-stream`.
 
+### Evidencia de endpoints: END-001
+
+Después de completar las dos validaciones EDR:
+
+```bash
+make endpoint-health
+make endpoint-check-live
+make evidence-endpoint WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
+```
+
+Capturas recomendadas:
+
+1. `make endpoint-health` con ambos agentes activos;
+2. resumen de agentes en Wazuh;
+3. servicio Wazuh Agent y Sysmon en Windows;
+4. evento de creación de proceso en Sysmon Event Viewer;
+5. alerta 110200 en Wazuh;
+6. alertas FIM 110210 y 110211, una por sistema operativo;
+7. inventario del endpoint Windows o Ubuntu en Wazuh;
+8. salida completa de `make endpoint-check-live`.
+
+`WINDOWS_SSH` permite incorporar el manifiesto, los servicios y el resultado de
+validación de Windows sin copiar credenciales. Si se omite, la evidencia del
+manager se genera igualmente. `evidence/END-001` contiene únicamente estado,
+versiones, hashes y alertas revisables. Las capturas se conservan en el archivo
+externo de anexos.
+
 Antes de `git add`, revise siempre:
 
 ```bash
@@ -479,6 +665,7 @@ make soc-health
 make ps
 make wazuh-ps
 make suricata-ps
+make endpoint-health
 
 make logs
 make wazuh-logs
@@ -503,7 +690,11 @@ Después de reiniciar Ubuntu:
 cd ~/sanolifood-soc
 make soc-up
 make soc-health
+make endpoint-health
 ```
+
+El agente Ubuntu arranca mediante `systemd`; el agente Windows y Sysmon
+arrancan como servicios automáticos cuando se enciende su VM.
 
 ### Cambios en reglas
 
@@ -569,18 +760,18 @@ de volver a ejecutar `make wazuh-up`.
 
 ### Suricata detecta una interfaz incorrecta
 
-Compruebe la ruta predeterminada:
+Compruebe las interfaces y el runtime persistido:
 
 ```bash
-ip route show default
 ip -br link
+grep -E 'SURICATA_INTERFACE|SURICATA_HOME_NET' suricata/runtime/.env
 ```
 
 Puede forzar valores solo para el descubrimiento:
 
 ```bash
-SURICATA_INTERFACE_OVERRIDE=enp0s3 \
-SURICATA_HOME_NET_OVERRIDE=192.168.56.20/32 \
+SURICATA_INTERFACE_OVERRIDE=enp0s8 \
+SURICATA_HOME_NET_OVERRIDE=10.20.0.0/24 \
 make suricata-discover
 
 make suricata-up
@@ -588,6 +779,39 @@ make suricata-up
 
 Adapte interfaz e IP a su laboratorio. Los valores se guardan en
 `suricata/runtime/.env` y no se versionan.
+
+### Un endpoint aparece desconectado
+
+En Ubuntu compruebe servicios, puertos y agentes:
+
+```bash
+sudo systemctl status wazuh-agent --no-pager
+make endpoint-preflight
+make endpoint-health
+```
+
+En Windows, desde PowerShell elevada:
+
+```powershell
+Get-Service WazuhSvc,Sysmon64 -ErrorAction SilentlyContinue
+Test-NetConnection 10.20.0.10 -Port 1514
+Test-NetConnection 10.20.0.10 -Port 1515
+Get-Content "${env:ProgramFiles(x86)}\ossec-agent\ossec.log" -Tail 80
+```
+
+No elimine `client.keys` para “probar de nuevo” sin conservar antes el estado y
+el diagnóstico. Un reenrolamiento crea una identidad nueva y debe documentarse.
+
+### Las políticas centralizadas no aparecen
+
+```bash
+make endpoint-configure
+make wazuh-reload-rules
+make endpoint-test-rules
+```
+
+Confirme en el dashboard que cada agente pertenece a su grupo. La sincronización
+puede tardar algunos segundos después del primer enrolamiento.
 
 ### La regla 110100 no aparece
 
@@ -618,7 +842,9 @@ limpio y sin copiar volúmenes del autor:
 4. superar las pruebas de aplicación y reglas;
 5. completar el recorrido empresarial;
 6. generar la alerta NDR 110100 desde un segundo equipo;
-7. producir nuevas evidencias BUS-001, WAZ-001 y NDR-001.
+7. enrolar Ubuntu y Windows desde las fuentes versionadas;
+8. obtener las alertas EDR 110200, 110210, 110211 y 110220;
+9. producir nuevas evidencias BUS-001, WAZ-001, NDR-001 y END-001.
 
 Para la entrega final se recomienda repetir este procedimiento en una VM nueva
 y registrar tiempo de despliegue, incidencias y consumo de recursos.
@@ -632,16 +858,18 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 - transacciones y telemetría de negocio;
 - Wazuh single-node mediante Compose;
 - namespace propio para eventos de aplicación;
-- sensor Suricata en la interfaz de borde del host.
+- sensor Suricata en la interfaz interna del host;
+- telemetría de endpoint con políticas Wazuh centralizadas y Sysmon.
 
-## Limitaciones del hito v0.5.0
+## Limitaciones del hito v0.6.0
 
 - La aplicación se publica por HTTP porque el entorno es un laboratorio aislado;
   no es una configuración apta para Internet.
 - El certificado del dashboard es autofirmado por la CA local del laboratorio.
-- Suricata observa por defecto la interfaz de borde y no pretende sustituir una
+- Suricata observa la interfaz interna de Ubuntu y no pretende sustituir una
   arquitectura física con TAP o SPAN.
-- Wazuh todavía no tiene agentes de endpoint incorporados al despliegue público.
+- Sysmon está configurado para un laboratorio acotado; una organización real
+  necesitaría tuning, retención y gestión de cambios adicionales.
 - n8n, los playbooks de contención y la aprobación humana se incorporarán en un
   incremento posterior.
 - Las firmas locales están diseñadas para pruebas deterministas; un despliegue
@@ -650,13 +878,11 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 
 ## Hoja de ruta
 
-1. agente Wazuh en Ubuntu y endpoint Windows, incluyendo FIM y telemetría de
-   autenticación;
-2. escenarios controlados desde Kali y mapeo formal a MITRE ATT&CK;
-3. flujos n8n con aprobación humana y acciones de contención reversibles;
-4. medición de MTTD, tasa de detección, falsos positivos, cobertura ATT&CK y
+1. escenarios controlados desde Kali y mapeo formal a MITRE ATT&CK;
+2. flujos n8n con aprobación humana y acciones de contención reversibles;
+3. medición de MTTD, tasa de detección, falsos positivos, cobertura ATT&CK y
    reproducibilidad;
-5. documentación final, anexos técnicos y demostración de cinco minutos.
+4. documentación final, anexos técnicos y demostración de cinco minutos.
 
 ## Referencias técnicas
 
@@ -665,7 +891,11 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [PostgreSQL 17](https://www.postgresql.org/docs/17/)
 - [Wazuh Documentation](https://documentation.wazuh.com/current/)
+- [Instalación de Wazuh Agent en Linux](https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh-agent-package-linux.html)
+- [Instalación de Wazuh Agent en Windows](https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh-agent-package-windows.html)
+- [Configuración centralizada de agentes Wazuh](https://documentation.wazuh.com/current/user-manual/reference/centralized-configuration.html)
 - [Suricata 8.0.6 Documentation](https://docs.suricata.io/en/suricata-8.0.6/)
+- [Microsoft Sysmon](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon)
 - [MITRE ATT&CK Enterprise](https://attack.mitre.org/techniques/enterprise/)
 
 La evolución técnica del repositorio se resume en
