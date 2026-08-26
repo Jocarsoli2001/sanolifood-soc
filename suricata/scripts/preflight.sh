@@ -32,11 +32,16 @@ else
   failed=1
 fi
 
-capture_interface="$(ip route show default 2>/dev/null | awk '{print $5; exit}')"
+runtime_env="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/runtime/.env"
+runtime_interface=""
+if [[ -s "$runtime_env" ]]; then
+  runtime_interface="$(awk -F= '$1 == "SURICATA_INTERFACE" {print $2; exit}' "$runtime_env")"
+fi
+capture_interface="${SURICATA_INTERFACE_OVERRIDE:-${runtime_interface:-$(ip route show default 2>/dev/null | awk '{print $5; exit}')}}"
 if [[ -n "$capture_interface" ]] && ip link show "$capture_interface" >/dev/null 2>&1; then
   printf 'OK   interface     %s\n' "$capture_interface"
 else
-  printf 'FAIL interface     unable to discover the default-route interface\n'
+  printf 'FAIL interface     configured capture interface is unavailable\n'
   failed=1
 fi
 

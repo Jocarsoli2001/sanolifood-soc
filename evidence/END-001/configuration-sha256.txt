@@ -1,0 +1,7 @@
+e03f83f37f53d037fa7f11d833c3a81bfdd48e806c28a352cebda927be07fd59  /home/socadmin/sanolifood-soc/wazuh/config/manager/shared/sanolifood-linux/agent.conf
+2a8334ded610b55f0c085172e8db2c22bc5ced984dd45bb8228c39ebb4bdef9e  /home/socadmin/sanolifood-soc/wazuh/config/manager/shared/sanolifood-windows/agent.conf
+2c4ebda49a3d37979d790867741160917740d79edecfb890761a61bd89061162  /home/socadmin/sanolifood-soc/endpoints/config/windows/sysmonconfig.xml
+e4ca77a0d1a1609e2916f64a5cfd4d0e93f9df7a196e168a450947ea8b4c945c  /home/socadmin/sanolifood-soc/endpoints/windows/Install-SanoliFoodEndpoint.ps1
+1eb2ed9994a00233ad985ec9876f487c5d1050fb29050c64141c2d7d874502ab  /home/socadmin/sanolifood-soc/endpoints/windows/Test-SanoliFoodEndpoint.ps1
+88fe554d50d83a85476b5f0ec963e7c50c40b94146fa4fae5b1006d3ca1a752f  /home/socadmin/sanolifood-soc/endpoints/config/linux/quality-policy.yml
+635213f7d3fbc47989b25e4dbfd3c9abebcf56b8222c4b3843c1bc7b40789a7b  /home/socadmin/sanolifood-soc/endpoints/config/windows/quality-policy.json

@@ -23,6 +23,26 @@ test_event() {
   fi
 }
 
+test_native_rule_contract() {
+  local rule_id="$1" parent="$2" required_field="$3" label="$4" block
+
+  block="$(
+    sed -n \
+      "/<rule id=\"$rule_id\" /,/<\/rule>/p" \
+      "$wazuh_dir/rules/sanolifood_rules.xml"
+  )"
+
+  if [[ -n "$block" ]] &&
+     grep -Fq "<if_sid>$parent</if_sid>" <<< "$block" &&
+     grep -Fq "name=\"$required_field\"" <<< "$block"; then
+    printf 'OK   %-34s native-rule=%s parent=%s\n' \
+      "$label" "$rule_id" "$parent"
+  else
+    printf 'FAIL %-34s invalid native rule contract\n' "$label" >&2
+    return 1
+  fi
+}
+
 test_event "$wazuh_dir/tests/events/auth-login-failed.json" 110010
 test_event "$wazuh_dir/tests/events/inventory-adjustment.json" 110020
 test_event "$wazuh_dir/tests/events/quality-check-failed.json" 110030
@@ -31,3 +51,7 @@ test_event "$wazuh_dir/tests/events/suricata-port-scan.json" 110110
 test_event "$wazuh_dir/tests/events/suricata-web-enumeration.json" 110120
 test_event "$wazuh_dir/tests/events/suricata-sqli.json" 110130
 test_event "$wazuh_dir/tests/events/suricata-http-rate.json" 110140
+test_native_rule_contract 110200 61603 win.eventdata.commandLine endpoint-windows-sysmon
+test_native_rule_contract 110210 550,554 file endpoint-linux-fim
+test_native_rule_contract 110211 550,554 file endpoint-windows-fim
+test_event "$wazuh_dir/tests/events/endpoint-linux-validation.txt" 110220

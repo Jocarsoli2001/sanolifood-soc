@@ -5,9 +5,41 @@ instalación y validación vigentes se mantienen únicamente en el `README.md`.
 
 ## En desarrollo
 
-- Agentes Wazuh para endpoints Ubuntu y Windows.
 - Escenarios controlados y métricas de detección.
 - Respuesta semiautomatizada con n8n y aprobación humana.
+
+## 0.6.0 — 2026-08-22
+
+### Añadido
+
+- Agentes Wazuh 4.14.7 reproducibles para Ubuntu y Windows.
+- Grupos `sanolifood-linux` y `sanolifood-windows` con configuración
+  centralizada, etiquetas de activo, FIM y recolección de eventos.
+- Sysmon 15.21 con perfil acotado para procesos, conexiones internas, archivos
+  empresariales y ubicaciones de persistencia.
+- Instaladores firmados/verificados, staging por OpenSSH y hashes de componentes
+  registrados sin almacenar la contraseña de enrolamiento.
+- Reglas 110200, 110210, 110211 y 110220 para pruebas EDR, FIM y logcollector.
+- Healthcheck de agentes, validación en vivo y evidencia END-001 automatizada.
+- Persistencia de la interfaz Suricata seleccionada entre reinicios del stack.
+
+### Seguridad y reproducibilidad
+
+- La contraseña de enrolamiento solo se consulta localmente y no se incorpora a
+  scripts, manifiestos ni evidencias.
+- Las pruebas de endpoint son benignas y operan sobre rutas sintéticas del
+  laboratorio.
+- El README público documenta la topología `10.20.0.0/24`, instalación,
+  validación, diagnóstico y evidencias.
+
+## 0.5.1 — 2026-08-21
+
+### Documentación
+
+- Consolidación de la guía pública en el README principal.
+- Eliminación de instrucciones internas fragmentadas y artefactos temporales.
+- Conservación de ADR, evidencia técnica y scripts necesarios para reproducir
+  el laboratorio.
 
 ## 0.5.0 — 2026-08-21
 
