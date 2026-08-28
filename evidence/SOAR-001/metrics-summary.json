@@ -1,0 +1,21 @@
+{
+  "actions_by_status": {
+    "completed": 5,
+    "rolled_back": 1,
+    "simulated": 3
+  },
+  "generated_at": "2026-08-28T02:42:19.124895+00:00",
+  "incident_count": 5,
+  "incidents_by_priority": {
+    "critical": 4,
+    "low": 1
+  },
+  "incidents_by_status": {
+    "closed": 2,
+    "simulated": 3
+  },
+  "mtta_seconds_average": 0.43,
+  "mttd_seconds_average": 0.415,
+  "response_mode": "dry-run",
+  "response_start_seconds_average": 0.491
+}

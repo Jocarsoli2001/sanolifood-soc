@@ -1,0 +1,8 @@
+{
+  "containment_status": "simulated",
+  "evidence_status": "completed",
+  "incident_id": "be7fa4f8-e4b0-4d40-8eb6-218bca6c3671",
+  "response_mode": "dry-run",
+  "rollback_status": "not-required",
+  "status": "PASS"
+}

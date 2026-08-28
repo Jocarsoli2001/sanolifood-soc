@@ -1,0 +1,5 @@
+CONTAINER                              REPOSITORY                TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+sanolifood-soar-n8n-1                  docker.n8n.io/n8nio/n8n   2.36.7              linux/amd64         14c4285bc303        377MB               2 days ago
+sanolifood-soar-soar-controller-1      sanolifood/app            0.7.0               linux/amd64         37bd9764eaa2        84.9MB              3 hours ago
+sanolifood-soar-soar-db-1              postgres                  17.6-alpine3.22     linux/amd64         ef257d85f76e        111MB               10 months ago
+sanolifood-soar-soar-evidence-init-1   sanolifood/app            0.7.0               linux/amd64         37bd9764eaa2        84.9MB              3 hours ago

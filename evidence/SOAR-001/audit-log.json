@@ -1,0 +1,266 @@
+{
+  "count": 19,
+  "items": [
+    {
+      "action_id": "c7a6c5a7-26c5-4718-be31-ac41dd19d1f9",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "app_ip_block",
+        "attempt_count": 1,
+        "target": "10.20.0.50"
+      },
+      "event_type": "action.simulated",
+      "id": 19,
+      "incident_id": "be7fa4f8-e4b0-4d40-8eb6-218bca6c3671",
+      "occurred_at": "2026-08-28T02:42:18.859758+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "soc.validation",
+      "actor_type": "analyst",
+      "details": {
+        "nonce": "27202142-ed43-4149-803a-2692ff4e603e",
+        "reason": "Controlled end-to-end validation of the SOAR response path"
+      },
+      "event_type": "incident.approved",
+      "id": 18,
+      "incident_id": "be7fa4f8-e4b0-4d40-8eb6-218bca6c3671",
+      "occurred_at": "2026-08-28T02:42:18.801901+00:00"
+    },
+    {
+      "action_id": "50395429-eca1-404c-9709-86f65d68c6e1",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "collect_evidence",
+        "attempt_count": 1,
+        "target": null
+      },
+      "event_type": "action.completed",
+      "id": 17,
+      "incident_id": "be7fa4f8-e4b0-4d40-8eb6-218bca6c3671",
+      "occurred_at": "2026-08-28T02:42:18.620805+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "n8n-intake",
+      "actor_type": "integration",
+      "details": {
+        "playbook_id": "PB-NDR-SQLI-001",
+        "priority": "critical",
+        "rule_id": 110130
+      },
+      "event_type": "incident.created",
+      "id": 16,
+      "incident_id": "be7fa4f8-e4b0-4d40-8eb6-218bca6c3671",
+      "occurred_at": "2026-08-28T02:42:18.571961+00:00"
+    },
+    {
+      "action_id": "fd375ce7-a5c3-4be0-af7b-b258b1dd05a5",
+      "actor": "soc.validation",
+      "actor_type": "analyst",
+      "details": {
+        "action_type": "app_ip_block",
+        "target": "10.20.0.50"
+      },
+      "event_type": "action.rolled_back",
+      "id": 15,
+      "incident_id": "3bc745af-085e-44e1-8923-dfb2d8e12231",
+      "occurred_at": "2026-08-28T02:39:30.151830+00:00"
+    },
+    {
+      "action_id": "fd375ce7-a5c3-4be0-af7b-b258b1dd05a5",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "app_ip_block",
+        "attempt_count": 1,
+        "target": "10.20.0.50"
+      },
+      "event_type": "action.applied",
+      "id": 14,
+      "incident_id": "3bc745af-085e-44e1-8923-dfb2d8e12231",
+      "occurred_at": "2026-08-28T02:39:29.770712+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "soc.validation",
+      "actor_type": "analyst",
+      "details": {
+        "nonce": "9bd88f21-be72-4888-a207-ce187079f3fd",
+        "reason": "Controlled end-to-end validation of the SOAR response path"
+      },
+      "event_type": "incident.approved",
+      "id": 13,
+      "incident_id": "3bc745af-085e-44e1-8923-dfb2d8e12231",
+      "occurred_at": "2026-08-28T02:39:29.029260+00:00"
+    },
+    {
+      "action_id": "63a03f70-65e6-48df-8e0f-da7721379698",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "collect_evidence",
+        "attempt_count": 1,
+        "target": null
+      },
+      "event_type": "action.completed",
+      "id": 12,
+      "incident_id": "3bc745af-085e-44e1-8923-dfb2d8e12231",
+      "occurred_at": "2026-08-28T02:39:28.881068+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "n8n-intake",
+      "actor_type": "integration",
+      "details": {
+        "playbook_id": "PB-NDR-SQLI-001",
+        "priority": "critical",
+        "rule_id": 110130
+      },
+      "event_type": "incident.created",
+      "id": 11,
+      "incident_id": "3bc745af-085e-44e1-8923-dfb2d8e12231",
+      "occurred_at": "2026-08-28T02:39:28.825002+00:00"
+    },
+    {
+      "action_id": "3d600d4e-cce3-42ad-bd39-257b36035068",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "app_ip_block",
+        "attempt_count": 1,
+        "target": "10.20.0.50"
+      },
+      "event_type": "action.simulated",
+      "id": 10,
+      "incident_id": "92181d9e-01a3-4367-abbe-cc9ffa8742f5",
+      "occurred_at": "2026-08-28T02:38:46.544566+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "soc.validation",
+      "actor_type": "analyst",
+      "details": {
+        "nonce": "cec28a88-990c-4129-bff2-abe5ceb68cee",
+        "reason": "Controlled end-to-end validation of the SOAR response path"
+      },
+      "event_type": "incident.approved",
+      "id": 9,
+      "incident_id": "92181d9e-01a3-4367-abbe-cc9ffa8742f5",
+      "occurred_at": "2026-08-28T02:38:46.506350+00:00"
+    },
+    {
+      "action_id": "203a2153-f46f-45e3-8263-0cfbd6641940",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "collect_evidence",
+        "attempt_count": 1,
+        "target": null
+      },
+      "event_type": "action.completed",
+      "id": 8,
+      "incident_id": "92181d9e-01a3-4367-abbe-cc9ffa8742f5",
+      "occurred_at": "2026-08-28T02:38:46.016419+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "n8n-intake",
+      "actor_type": "integration",
+      "details": {
+        "playbook_id": "PB-NDR-SQLI-001",
+        "priority": "critical",
+        "rule_id": 110130
+      },
+      "event_type": "incident.created",
+      "id": 7,
+      "incident_id": "92181d9e-01a3-4367-abbe-cc9ffa8742f5",
+      "occurred_at": "2026-08-28T02:38:45.945981+00:00"
+    },
+    {
+      "action_id": "dd64814e-d25a-48dc-bd27-e2c89d449e33",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "collect_evidence",
+        "attempt_count": 1,
+        "target": null
+      },
+      "event_type": "action.completed",
+      "id": 6,
+      "incident_id": "7061a28c-f521-438e-af7f-c3f313d59ba2",
+      "occurred_at": "2026-08-28T02:21:56.040262+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "n8n-intake",
+      "actor_type": "integration",
+      "details": {
+        "playbook_id": "PB-NDR-VALIDATION-001",
+        "priority": "low",
+        "rule_id": 110100
+      },
+      "event_type": "incident.created",
+      "id": 5,
+      "incident_id": "7061a28c-f521-438e-af7f-c3f313d59ba2",
+      "occurred_at": "2026-08-28T02:21:55.967111+00:00"
+    },
+    {
+      "action_id": "b807438b-92a2-4eef-95ed-d9cff5eab342",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "app_ip_block",
+        "attempt_count": 1,
+        "target": "10.20.0.50"
+      },
+      "event_type": "action.simulated",
+      "id": 4,
+      "incident_id": "d45af45a-a267-41a6-9fa5-997f72a92315",
+      "occurred_at": "2026-08-28T02:12:42.800663+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "soc.validation",
+      "actor_type": "analyst",
+      "details": {
+        "nonce": "1686bda5-3b5e-4d38-8d38-074dfd288894",
+        "reason": "Controlled end-to-end validation of the SOAR response path"
+      },
+      "event_type": "incident.approved",
+      "id": 3,
+      "incident_id": "d45af45a-a267-41a6-9fa5-997f72a92315",
+      "occurred_at": "2026-08-28T02:12:42.725488+00:00"
+    },
+    {
+      "action_id": "4d5537ec-eb4e-4cfb-b18d-7871c50efde8",
+      "actor": "n8n-dispatch",
+      "actor_type": "orchestrator",
+      "details": {
+        "action_type": "collect_evidence",
+        "attempt_count": 1,
+        "target": null
+      },
+      "event_type": "action.completed",
+      "id": 2,
+      "incident_id": "d45af45a-a267-41a6-9fa5-997f72a92315",
+      "occurred_at": "2026-08-28T02:12:42.464856+00:00"
+    },
+    {
+      "action_id": null,
+      "actor": "n8n-intake",
+      "actor_type": "integration",
+      "details": {
+        "playbook_id": "PB-NDR-SQLI-001",
+        "priority": "critical",
+        "rule_id": 110130
+      },
+      "event_type": "incident.created",
+      "id": 1,
+      "incident_id": "d45af45a-a267-41a6-9fa5-997f72a92315",
+      "occurred_at": "2026-08-28T02:12:42.354455+00:00"
+    }
+  ]
+}

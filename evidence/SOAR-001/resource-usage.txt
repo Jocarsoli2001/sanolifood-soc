@@ -1,0 +1,4 @@
+CONTAINER ID   NAME                                CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O         PIDS
+e0686744b348   sanolifood-soar-n8n-1               0.39%     349.3MiB / 1GiB     34.11%    13.7MB / 5.76MB   15MB / 786kB      26
+2aa65a71f839   sanolifood-soar-soar-controller-1   65.79%    63.3MiB / 384MiB    16.48%    130kB / 113kB     8.19kB / 0B       6
+06581db625f8   sanolifood-soar-soar-db-1           0.24%     34.61MiB / 512MiB   6.76%     4.89MB / 18MB     19.5MB / 15.3MB   9
