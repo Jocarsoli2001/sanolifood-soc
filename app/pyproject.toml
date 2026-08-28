@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sanolifood"
-version = "0.4.0"
+version = "0.7.0"
 description = "SanoliFood SA corporate food-processing operations portal"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -32,6 +32,9 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"sanolifood.soar" = ["playbooks.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

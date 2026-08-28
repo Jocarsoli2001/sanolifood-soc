@@ -10,6 +10,15 @@ env_file="$runtime_dir/.env"
 compose_file="$wazuh_dir/compose.yaml"
 
 cd "$project_dir"
+if [[ -x "$project_dir/n8n/scripts/prepare-runtime.sh" ]]; then
+  "$project_dir/n8n/scripts/prepare-runtime.sh"
+fi
+docker network inspect sanoli_soar >/dev/null 2>&1 \
+  || docker network create --internal sanoli_soar >/dev/null
+[[ "$(docker network inspect --format '{{.Internal}}' sanoli_soar)" == "true" ]] || {
+  printf 'The sanoli_soar network must be internal.\n' >&2
+  exit 1
+}
 "$script_dir/preflight.sh"
 
 mkdir -p "$runtime_dir/certs"

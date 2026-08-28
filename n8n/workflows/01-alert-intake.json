@@ -1,0 +1,99 @@
+{
+  "name": "SF-SOAR-01 | Wazuh Alert Intake and Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sanolifood/wazuh-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-760, 0],
+      "id": "27ef9c7a-cf25-4ae1-8d8f-331d1293d584",
+      "name": "Authenticated Wazuh Webhook",
+      "webhookId": "591dfaba-0236-4f79-b832-aa8740a7b0cf"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nfunction canonical(value) {\n  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';\n  if (value && typeof value === 'object') {\n    return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';\n  }\n  return JSON.stringify(value);\n}\n\nfunction pick(object, paths) {\n  for (const path of paths) {\n    if (object && Object.prototype.hasOwnProperty.call(object, path) && object[path] !== '') return object[path];\n    let current = object;\n    for (const part of path.split('.')) current = current && typeof current === 'object' ? current[part] : undefined;\n    if (current !== undefined && current !== null && current !== '') return current;\n  }\n  return null;\n}\n\nconst headers = $json.headers || {};\nconst envelope = $json.body || {};\nconst timestamp = String(headers['x-sanolifood-timestamp'] || '');\nconst supplied = String(headers['x-sanolifood-signature'] || '');\nif (!/^\\d{10}$/.test(timestamp)) throw new Error('Missing or invalid integration timestamp');\nif (Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp)) > 300) throw new Error('Integration request is outside the five-minute replay window');\nif (envelope.schema_version !== 1 || envelope.integration !== 'sanolifood-wazuh' || typeof envelope.alert_json !== 'string') throw new Error('Unsupported Wazuh integration envelope');\nconst secret = String($env.SOAR_WEBHOOK_SECRET || '');\nif (secret.length < 32) throw new Error('SOAR webhook secret is unavailable');\nconst expected = 'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + canonical(envelope)).digest('hex');\nconst expectedBuffer = Buffer.from(expected);\nconst suppliedBuffer = Buffer.from(supplied);\nif (expectedBuffer.length !== suppliedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, suppliedBuffer)) throw new Error('Invalid Wazuh integration signature');\n\nconst triage = {\n  '110011': ['PB-AUTH-001', 'critical'], '110012': ['PB-AUTH-001', 'critical'],\n  '110020': ['PB-BUS-001', 'high'], '110030': ['PB-QUALITY-001', 'high'],\n  '110040': ['PB-APP-001', 'medium'], '110100': ['PB-NDR-VALIDATION-001', 'low'],\n  '110110': ['PB-NDR-RECON-001', 'high'], '110120': ['PB-NDR-RECON-001', 'high'],\n  '110130': ['PB-NDR-SQLI-001', 'critical'], '110140': ['PB-NDR-RECON-001', 'high'],\n  '110200': ['PB-ENDPOINT-VALIDATION-001', 'low'], '110220': ['PB-ENDPOINT-VALIDATION-001', 'low'],\n  '110210': ['PB-ENDPOINT-FIM-001', 'critical'], '110211': ['PB-ENDPOINT-FIM-001', 'critical']\n};\nif (envelope.alert_json.length > 1048576) throw new Error('Wazuh alert exceeds the accepted size');\nlet alert;\ntry { alert = JSON.parse(envelope.alert_json); } catch { throw new Error('Wazuh alert JSON is invalid'); }\nif (!alert || typeof alert !== 'object' || Array.isArray(alert)) throw new Error('Wazuh alert must be a JSON object');\nconst ruleId = Number(pick(alert, ['rule.id']));\nconst policy = triage[String(ruleId)];\nif (!policy) throw new Error('Wazuh rule is not routed by the SOAR catalog');\nconst agentId = pick(alert, ['agent.id']);\nconst agentName = pick(alert, ['agent.name']);\nconst sourceIp = pick(alert, ['data.src_ip', 'data.srcip', 'data.source_ip', 'data.source.ip', 'srcip']);\nconst actorUsername = pick(alert, ['data.actor_username', 'data.audit.user.name', 'data.win.eventdata.user', 'data.win.system.userID']);\nconst resourcePath = pick(alert, ['syscheck.path', 'data.path', 'data.file', 'data.win.eventdata.targetFilename']);\nconst detectedAt = String(pick(alert, ['timestamp']) || envelope.sent_at);\nconst sourceAlertId = pick(alert, ['id']);\nconst ruleDescription = String(pick(alert, ['rule.description']) || 'Wazuh security alert');\nconst ruleLevel = Number(pick(alert, ['rule.level']) || 0);\nconst material = [sourceAlertId, ruleId, agentId, detectedAt, sourceIp, actorUsername, resourcePath].map(v => String(v || '')).join('|');\nconst dedupKey = crypto.createHash('sha256').update(material).digest('hex');\n\nreturn [{ json: {\n  schema_version: 1, workflow_version: '0.7.0', dedup_key: dedupKey, source_alert_id: sourceAlertId ? String(sourceAlertId) : null,\n  rule_id: ruleId, rule_level: ruleLevel, rule_description: ruleDescription, priority: policy[1], playbook_id: policy[0],\n  agent_id: agentId ? String(agentId) : null, agent_name: agentName ? String(agentName) : null, source_ip: sourceIp ? String(sourceIp) : null,\n  actor_username: actorUsername ? String(actorUsername).toLowerCase() : null, resource_path: resourcePath ? String(resourcePath) : null,\n  detected_at: detectedAt, received_at: new Date().toISOString(), raw_alert: alert\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-520, 0],
+      "id": "708de119-3d02-4b57-ac18-879265b167d5",
+      "name": "Verify Normalize and Triage"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://soar-controller:5680/api/v1/incidents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "=Bearer {{$env.SOAR_INTERNAL_TOKEN}}"}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {"timeout": 10000}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-260, 0],
+      "id": "8167bf91-2ee6-4abc-ac2c-f278300a491d",
+      "name": "Create or Deduplicate Incident",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://soar-controller:5680/api/v1/incidents/{{$json.incident.id}}/dispatch?scope=automatic",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "=Bearer {{$env.SOAR_INTERNAL_TOKEN}}"}
+          ]
+        },
+        "options": {"timeout": 10000}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [0, 0],
+      "id": "02f0be49-9143-4706-8784-22284653ad30",
+      "name": "Run Automatic Evidence Actions",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, incident: $json.incident, dispatch_scope: $json.dispatch_scope } }}",
+        "options": {"responseCode": 202}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [260, 0],
+      "id": "5792b385-f6df-41db-9616-294a18625bbd",
+      "name": "Acknowledge Alert"
+    }
+  ],
+  "connections": {
+    "Authenticated Wazuh Webhook": {"main": [[{"node": "Verify Normalize and Triage", "type": "main", "index": 0}]]},
+    "Verify Normalize and Triage": {"main": [[{"node": "Create or Deduplicate Incident", "type": "main", "index": 0}]]},
+    "Create or Deduplicate Incident": {"main": [[{"node": "Run Automatic Evidence Actions", "type": "main", "index": 0}]]},
+    "Run Automatic Evidence Actions": {"main": [[{"node": "Acknowledge Alert", "type": "main", "index": 0}]]}
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {"executionOrder": "v1", "errorWorkflow": "SfSoarError0701"},
+  "versionId": "5be88944-f4b1-48b6-9b9b-b58c6bd0de62",
+  "id": "SfSoarIntake071",
+  "tags": []
+}

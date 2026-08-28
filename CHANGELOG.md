@@ -5,8 +5,43 @@ instalación y validación vigentes se mantienen únicamente en el `README.md`.
 
 ## En desarrollo
 
-- Escenarios controlados y métricas de detección.
-- Respuesta semiautomatizada con n8n y aprobación humana.
+- Escenarios controlados desde Kali y evaluación comparativa final.
+
+## 0.7.0 — 2026-08-26
+
+### Añadido
+
+- n8n 2.36.7 con cinco workflows independientes para ingreso, decisión,
+  errores, caducidad y métricas.
+- Integración Wazuh autenticada mediante HMAC-SHA256, allowlist de reglas y
+  activación posterior a la publicación correcta de los workflows.
+- Controlador durable de incidentes y acciones sobre PostgreSQL, con
+  deduplicación, auditoría, métricas y reintentos acotados.
+- Nueve playbooks versionados para alertas de aplicación, NDR, EDR y FIM.
+- Adaptadores para evidencia, bloqueo temporal de IP, bloqueo de cuenta y guard
+  de liberación de calidad.
+- Cliente operativo para aprobar, rechazar, revertir, reintentar, consultar y
+  exportar casos.
+- Evidencia `SOAR-001`, respaldo local y validación extremo a extremo.
+
+### Seguridad y resiliencia
+
+- `dry-run` obligatorio por defecto y habilitación de modo real con confirmación
+  explícita.
+- Aprobación humana para toda contención, TTL máximo, rollback automático y
+  listas de redes, IP y usuarios protegidos.
+- Secretos generados localmente, redes Docker separadas, controlador publicado
+  solo en loopback y bases persistentes.
+- Wazuh no reenvía alertas hasta que los workflows estén publicados y vuelve a
+  deshabilitarse antes de apagar n8n.
+- Readiness TCP explícito para PostgreSQL evita que el controlador arranque
+  durante el servidor temporal utilizado en la primera inicialización.
+- Puente dedicado de publicación local compatible con Docker Engine 29.x;
+  conserva n8n y el controlador exclusivamente en `127.0.0.1` aunque sus redes
+  operativas permanezcan aisladas con `internal: true`.
+- Separación explícita entre la dirección anunciada por n8n y su interfaz de
+  escucha dentro del contenedor; el healthcheck valida ahora la misma interfaz
+  que utiliza el reenvío de Docker y evita saludables falsos.
 
 ## 0.6.0 — 2026-08-22
 

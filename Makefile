@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 .PHONY: bootstrap config build up down logs ps health test migrate validate rebuild \
-	upgrade-0.3 upgrade-0.4 upgrade-0.5 upgrade-0.6 evidence-business reset-lab clean \
+	upgrade-0.3 upgrade-0.4 upgrade-0.5 upgrade-0.6 upgrade-0.7 evidence-business reset-lab clean \
 	wazuh-preflight wazuh-bootstrap wazuh-up wazuh-down wazuh-ps wazuh-logs \
 	wazuh-health wazuh-reload-rules wazuh-test-rules wazuh-credentials evidence-wazuh \
 	suricata-preflight suricata-discover suricata-bootstrap suricata-up suricata-down \
@@ -9,7 +9,12 @@ SHELL := /bin/bash
 	suricata-test-rules suricata-check-live evidence-ndr \
 	endpoint-preflight endpoint-configure endpoint-registration-password \
 	endpoint-install-ubuntu endpoint-stage-windows endpoint-health \
-	endpoint-test-rules endpoint-check-live evidence-endpoint soc-up soc-health
+	endpoint-test-rules endpoint-check-live evidence-endpoint \
+	soar-static-check soar-prepare soar-preflight soar-bootstrap soar-up soar-down soar-ps soar-logs \
+	soar-health soar-install-workflows soar-disable-integration soar-incidents \
+	soar-show soar-approve soar-reject soar-rollback soar-retry soar-metrics \
+	soar-validate-live soar-enable-live soar-disable-live soar-backup evidence-soar \
+	soc-up soc-health
 
 bootstrap:
 	@test -f .env || (cp .env.example .env && echo "Created .env; replace placeholder secrets before starting.")
@@ -44,7 +49,7 @@ test:
 migrate:
 	docker compose run --rm app alembic upgrade head
 
-validate: config test
+validate: config test soar-static-check
 
 rebuild: config
 	docker compose down --remove-orphans
@@ -64,6 +69,9 @@ upgrade-0.5:
 
 upgrade-0.6:
 	@./infrastructure/scripts/upgrade-v0.6.0.sh
+
+upgrade-0.7:
+	@./infrastructure/scripts/upgrade-v0.7.0.sh
 
 evidence-business:
 	@./infrastructure/scripts/collect-business-evidence.sh
@@ -160,15 +168,97 @@ endpoint-check-live:
 evidence-endpoint:
 	@WINDOWS_SSH="$(WINDOWS_SSH)" ./endpoints/scripts/collect-evidence.sh
 
+soar-static-check:
+	@python3 ./n8n/scripts/validate-static.py
+
+soar-prepare:
+	@./n8n/scripts/prepare-runtime.sh
+
+soar-preflight:
+	@./n8n/scripts/preflight.sh
+
+soar-bootstrap soar-up:
+	@./n8n/scripts/bootstrap.sh
+
+soar-down:
+	@./n8n/scripts/down.sh
+
+soar-ps:
+	@./n8n/scripts/ps.sh
+
+soar-logs:
+	@./n8n/scripts/logs.sh
+
+soar-health:
+	@./n8n/scripts/healthcheck.sh
+
+soar-install-workflows:
+	@./n8n/scripts/install-workflows.sh
+
+soar-disable-integration:
+	@./n8n/scripts/disable-integration.sh
+
+soar-incidents:
+	@python3 ./n8n/tools/soar_client.py list
+
+soar-show:
+	@test -n "$(INCIDENT_ID)" || (echo "Use: make soar-show INCIDENT_ID=uuid"; exit 2)
+	@python3 ./n8n/tools/soar_client.py show "$(INCIDENT_ID)"
+
+soar-approve:
+	@test -n "$(INCIDENT_ID)" -a -n "$(ANALYST)" -a -n "$(REASON)" || \
+		(echo "Use: make soar-approve INCIDENT_ID=uuid ANALYST=nombre REASON='justificación'"; exit 2)
+	@python3 ./n8n/tools/soar_client.py approve "$(INCIDENT_ID)" \
+		--analyst "$(ANALYST)" --reason "$(REASON)"
+
+soar-reject:
+	@test -n "$(INCIDENT_ID)" -a -n "$(ANALYST)" -a -n "$(REASON)" || \
+		(echo "Use: make soar-reject INCIDENT_ID=uuid ANALYST=nombre REASON='justificación'"; exit 2)
+	@python3 ./n8n/tools/soar_client.py reject "$(INCIDENT_ID)" \
+		--analyst "$(ANALYST)" --reason "$(REASON)"
+
+soar-rollback:
+	@test -n "$(ACTION_ID)" -a -n "$(ANALYST)" || \
+		(echo "Use: make soar-rollback ACTION_ID=uuid ANALYST=nombre"; exit 2)
+	@python3 ./n8n/tools/soar_client.py rollback "$(ACTION_ID)" --analyst "$(ANALYST)"
+
+soar-retry:
+	@test -n "$(ACTION_ID)" -a -n "$(ANALYST)" || \
+		(echo "Use: make soar-retry ACTION_ID=uuid ANALYST=nombre"; exit 2)
+	@python3 ./n8n/tools/soar_client.py retry "$(ACTION_ID)" --analyst "$(ANALYST)"
+
+soar-metrics:
+	@python3 ./n8n/tools/soar_client.py metrics
+
+soar-validate-live:
+	@python3 ./n8n/tools/soar_client.py validate
+
+soar-enable-live:
+	@test "$(CONFIRM)" = "live" || (echo "Use: make soar-enable-live CONFIRM=live"; exit 2)
+	@./n8n/scripts/enable-live-responses.sh --confirm
+
+soar-disable-live:
+	@./n8n/scripts/disable-live-responses.sh
+
+soar-backup:
+	@./n8n/scripts/backup.sh
+
+evidence-soar:
+	@./n8n/scripts/collect-evidence.sh
+
 soc-up:
+	@$(MAKE) soar-prepare
 	@$(MAKE) up
 	@$(MAKE) suricata-up
 	@$(MAKE) wazuh-up
+	@$(MAKE) soar-up
 
 soc-health:
 	@$(MAKE) health
 	@$(MAKE) wazuh-health
 	@$(MAKE) suricata-health
+	@$(MAKE) endpoint-health
+	@$(MAKE) soar-health
 
 reset-lab:
 	@./infrastructure/scripts/reset-lab.sh --confirm
