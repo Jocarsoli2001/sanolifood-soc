@@ -1,0 +1,262 @@
+{
+  "catalog_version": "0.7.0",
+  "playbooks": [
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        },
+        {
+          "automatic": false,
+          "optional": false,
+          "reversible": true,
+          "target_field": "source_ip",
+          "target_value": null,
+          "ttl_seconds": 600,
+          "type": "app_ip_block"
+        },
+        {
+          "automatic": false,
+          "optional": true,
+          "reversible": true,
+          "target_field": "actor_username",
+          "target_value": null,
+          "ttl_seconds": 900,
+          "type": "app_account_lock"
+        }
+      ],
+      "id": "PB-AUTH-001",
+      "name": "Fuerza bruta y bloqueo de cuenta",
+      "priority": "critical",
+      "rule_ids": [
+        110011,
+        110012
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        },
+        {
+          "automatic": false,
+          "optional": true,
+          "reversible": true,
+          "target_field": "actor_username",
+          "target_value": null,
+          "ttl_seconds": 900,
+          "type": "app_account_lock"
+        }
+      ],
+      "id": "PB-BUS-001",
+      "name": "Ajuste de inventario de alto valor",
+      "priority": "high",
+      "rule_ids": [
+        110020
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        },
+        {
+          "automatic": false,
+          "optional": false,
+          "reversible": true,
+          "target_field": null,
+          "target_value": "quality-release",
+          "ttl_seconds": 900,
+          "type": "quality_guard"
+        }
+      ],
+      "id": "PB-QUALITY-001",
+      "name": "Anomal\u00eda de calidad empresarial",
+      "priority": "high",
+      "rule_ids": [
+        110030
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        }
+      ],
+      "id": "PB-APP-001",
+      "name": "Error no controlado de aplicaci\u00f3n",
+      "priority": "medium",
+      "rule_ids": [
+        110040
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        }
+      ],
+      "id": "PB-NDR-VALIDATION-001",
+      "name": "Validaci\u00f3n del recorrido NDR",
+      "priority": "low",
+      "rule_ids": [
+        110100
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        },
+        {
+          "automatic": false,
+          "optional": false,
+          "reversible": true,
+          "target_field": "source_ip",
+          "target_value": null,
+          "ttl_seconds": 600,
+          "type": "app_ip_block"
+        }
+      ],
+      "id": "PB-NDR-RECON-001",
+      "name": "Reconocimiento y tasa HTTP an\u00f3mala",
+      "priority": "high",
+      "rule_ids": [
+        110110,
+        110120,
+        110140
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        },
+        {
+          "automatic": false,
+          "optional": false,
+          "reversible": true,
+          "target_field": "source_ip",
+          "target_value": null,
+          "ttl_seconds": 600,
+          "type": "app_ip_block"
+        }
+      ],
+      "id": "PB-NDR-SQLI-001",
+      "name": "Indicador de inyecci\u00f3n SQL",
+      "priority": "critical",
+      "rule_ids": [
+        110130
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        }
+      ],
+      "id": "PB-ENDPOINT-VALIDATION-001",
+      "name": "Validaci\u00f3n de telemetr\u00eda endpoint",
+      "priority": "low",
+      "rule_ids": [
+        110200,
+        110220
+      ]
+    },
+    {
+      "actions": [
+        {
+          "automatic": true,
+          "optional": false,
+          "reversible": false,
+          "target_field": null,
+          "target_value": null,
+          "ttl_seconds": null,
+          "type": "collect_evidence"
+        },
+        {
+          "automatic": false,
+          "optional": false,
+          "reversible": true,
+          "target_field": null,
+          "target_value": "quality-release",
+          "ttl_seconds": 900,
+          "type": "quality_guard"
+        }
+      ],
+      "id": "PB-ENDPOINT-FIM-001",
+      "name": "Integridad de configuraci\u00f3n de calidad",
+      "priority": "critical",
+      "rule_ids": [
+        110210,
+        110211
+      ]
+    }
+  ],
+  "response_mode": "dry-run",
+  "routed_rule_ids": [
+    110011,
+    110012,
+    110020,
+    110030,
+    110040,
+    110100,
+    110110,
+    110120,
+    110130,
+    110140,
+    110200,
+    110210,
+    110211,
+    110220
+  ],
+  "schema_version": 1
+}
