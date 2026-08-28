@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "catalog_version": "0.7.0",
+  "playbooks": [
+    {
+      "id": "PB-AUTH-001",
+      "name": "Fuerza bruta y bloqueo de cuenta",
+      "description": "Conserva evidencia y propone contenciones temporales sobre el origen y la cuenta afectada.",
+      "rule_ids": [110011, 110012],
+      "priority": "critical",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false},
+        {"type": "app_ip_block", "automatic": false, "reversible": true, "ttl_seconds": 600, "target_field": "source_ip"},
+        {"type": "app_account_lock", "automatic": false, "reversible": true, "ttl_seconds": 900, "target_field": "actor_username", "optional": true}
+      ]
+    },
+    {
+      "id": "PB-BUS-001",
+      "name": "Ajuste de inventario de alto valor",
+      "description": "Preserva el contexto empresarial y permite bloquear temporalmente al actor tras revisión.",
+      "rule_ids": [110020],
+      "priority": "high",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false},
+        {"type": "app_account_lock", "automatic": false, "reversible": true, "ttl_seconds": 900, "target_field": "actor_username", "optional": true}
+      ]
+    },
+    {
+      "id": "PB-QUALITY-001",
+      "name": "Anomalía de calidad empresarial",
+      "description": "Conserva evidencia y permite suspender temporalmente la liberación de lotes.",
+      "rule_ids": [110030],
+      "priority": "high",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false},
+        {"type": "quality_guard", "automatic": false, "reversible": true, "ttl_seconds": 900, "target_value": "quality-release"}
+      ]
+    },
+    {
+      "id": "PB-APP-001",
+      "name": "Error no controlado de aplicación",
+      "description": "Crea un caso técnico y conserva la alerta para investigación sin contención automática.",
+      "rule_ids": [110040],
+      "priority": "medium",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false}
+      ]
+    },
+    {
+      "id": "PB-NDR-VALIDATION-001",
+      "name": "Validación del recorrido NDR",
+      "description": "Registra la prueba benigna de integración sin proponer contención.",
+      "rule_ids": [110100],
+      "priority": "low",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false}
+      ]
+    },
+    {
+      "id": "PB-NDR-RECON-001",
+      "name": "Reconocimiento y tasa HTTP anómala",
+      "description": "Preserva evidencia de red y propone un bloqueo temporal del origen.",
+      "rule_ids": [110110, 110120, 110140],
+      "priority": "high",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false},
+        {"type": "app_ip_block", "automatic": false, "reversible": true, "ttl_seconds": 600, "target_field": "source_ip"}
+      ]
+    },
+    {
+      "id": "PB-NDR-SQLI-001",
+      "name": "Indicador de inyección SQL",
+      "description": "Preserva la alerta crítica y propone bloquear temporalmente la dirección observada.",
+      "rule_ids": [110130],
+      "priority": "critical",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false},
+        {"type": "app_ip_block", "automatic": false, "reversible": true, "ttl_seconds": 600, "target_field": "source_ip"}
+      ]
+    },
+    {
+      "id": "PB-ENDPOINT-VALIDATION-001",
+      "name": "Validación de telemetría endpoint",
+      "description": "Conserva pruebas benignas de Sysmon y logcollector sin ejecutar contención.",
+      "rule_ids": [110200, 110220],
+      "priority": "low",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false}
+      ]
+    },
+    {
+      "id": "PB-ENDPOINT-FIM-001",
+      "name": "Integridad de configuración de calidad",
+      "description": "Preserva FIM y WhoData y permite suspender temporalmente decisiones de liberación.",
+      "rule_ids": [110210, 110211],
+      "priority": "critical",
+      "actions": [
+        {"type": "collect_evidence", "automatic": true, "reversible": false},
+        {"type": "quality_guard", "automatic": false, "reversible": true, "ttl_seconds": 900, "target_value": "quality-release"}
+      ]
+    }
+  ]
+}

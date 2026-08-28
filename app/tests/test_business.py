@@ -363,6 +363,63 @@ def test_passed_check_allows_quality_release(client: TestClient, user_factory: C
         assert event is not None
 
 
+def test_approved_soar_guard_temporarily_suspends_quality_release(
+    client: TestClient,
+    user_factory: Callable,
+) -> None:
+    user = user_factory(username="quality.operator", role="quality", full_name="Operador Calidad")
+    identifiers = seed_catalog()
+    lot_id = create_lot(
+        product_id=identifiers["product_id"],
+        recipe_id=identifiers["recipe_id"],
+        status="quality_hold",
+    )
+    with Session(engine) as db:
+        db.add(
+            QualityCheck(
+                production_lot_id=lot_id,
+                check_type="pH",
+                measured_value=Decimal("4.3"),
+                unit="pH",
+                min_value=Decimal("4.0"),
+                max_value=Decimal("4.6"),
+                result="pass",
+                inspected_by_user_id=user.id,
+            )
+        )
+        db.commit()
+
+    control = client.post(
+        "/internal/soar/controls",
+        headers={
+            "Authorization": (
+                "Bearer test-soar-internal-token-with-more-than-thirty-two-characters"
+            )
+        },
+        json={
+            "action_id": "44444444-4444-4444-8444-444444444444",
+            "incident_id": "55555555-5555-4555-8555-555555555555",
+            "control_type": "quality_guard",
+            "target": "quality-release",
+            "ttl_seconds": 600,
+            "reason": "Suspensión temporal aprobada para investigar integridad de configuración.",
+        },
+    )
+    assert control.status_code == 200
+
+    login(client, "quality.operator")
+    page = client.get("/quality")
+    response = client.post(
+        f"/quality/lots/{lot_id}/decision",
+        data={"decision": "released", "csrf_token": csrf_from(page.text)},
+    )
+    assert response.status_code == 422
+    assert "suspendida temporalmente" in response.text
+    with Session(engine) as db:
+        lot = db.get(ProductionLot, lot_id)
+        assert lot is not None and lot.status == "quality_hold"
+
+
 def test_rbac_separates_warehouse_production_and_quality(client: TestClient, user_factory: Callable) -> None:
     user_factory(username="warehouse.operator", role="warehouse", full_name="Operador Almacén")
     identifiers = seed_catalog()

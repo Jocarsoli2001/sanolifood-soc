@@ -28,7 +28,7 @@ def login(client: TestClient, username: str, password: str) -> None:
 def test_login_uses_versioned_corporate_styles(client: TestClient) -> None:
     response = client.get("/auth/login")
     assert response.status_code == 200
-    assert "app.css?v=0.4.0" in response.text
+    assert "app.css?v=0.7.0" in response.text
     assert 'class="auth-shell"' in response.text
 
 
