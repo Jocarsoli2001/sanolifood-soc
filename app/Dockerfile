@@ -1,8 +1,8 @@
 FROM python:3.12.11-slim-bookworm
 
-ARG APP_VERSION=0.4.0
+ARG APP_VERSION=0.7.0
 
-LABEL org.opencontainers.image.title="SanoliFood Operations" \
+LABEL org.opencontainers.image.title="SanoliFood Operations and SOAR Control Plane" \
       org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.description="Corporate food-processing operations portal for the SanoliFood SOC laboratory"
 
@@ -29,14 +29,15 @@ COPY static ./static
 COPY tests ./tests
 COPY entrypoint.sh ./entrypoint.sh
 
-RUN mkdir -p /var/log/sanolifood \
+RUN mkdir -p /var/log/sanolifood /var/lib/sanolifood-soar/evidence \
     && chmod 0750 /var/log/sanolifood \
+    && chmod 0750 /var/lib/sanolifood-soar/evidence \
     && chmod 0555 /app/entrypoint.sh \
-    && chown -R sanolifood:sanolifood /app /var/log/sanolifood
+    && chown -R sanolifood:sanolifood /app /var/log/sanolifood /var/lib/sanolifood-soar
 
 USER 10001:10001
 
-EXPOSE 8000
+EXPOSE 8000 5680
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["uvicorn", "sanolifood.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]

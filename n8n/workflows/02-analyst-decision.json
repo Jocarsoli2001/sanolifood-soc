@@ -1,0 +1,99 @@
+{
+  "name": "SF-SOAR-02 | Analyst Decision and Response Dispatch",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sanolifood/analyst-decision",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-640, 0],
+      "id": "27b3dc61-b24d-4859-a094-8bc2f1035587",
+      "name": "Authenticated Analyst Webhook",
+      "webhookId": "07146fdd-1ea4-41e7-bdc8-f6f8678ebc3d"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nfunction canonical(value) {\n  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';\n  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';\n  return JSON.stringify(value);\n}\n\nconst headers = $json.headers || {};\nconst envelope = $json.body || {};\nconst timestamp = String(headers['x-sanolifood-timestamp'] || '');\nconst supplied = String(headers['x-sanolifood-signature'] || '');\nif (!/^\\d{10}$/.test(timestamp)) throw new Error('Missing or invalid analyst timestamp');\nif (Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp)) > 300) throw new Error('Analyst decision is outside the five-minute replay window');\nif (envelope.schema_version !== 1) throw new Error('Unsupported analyst decision envelope');\nconst secret = String($env.SOAR_ANALYST_SECRET || '');\nif (secret.length < 32) throw new Error('SOAR analyst secret is unavailable');\nconst expected = 'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + canonical(envelope)).digest('hex');\nconst expectedBuffer = Buffer.from(expected);\nconst suppliedBuffer = Buffer.from(supplied);\nif (expectedBuffer.length !== suppliedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, suppliedBuffer)) throw new Error('Invalid analyst decision signature');\nconst decision = String(envelope.decision || '').toLowerCase();\nif (!['approve', 'reject'].includes(decision)) throw new Error('Decision must be approve or reject');\nif (!/^[0-9a-f-]{36}$/i.test(String(envelope.incident_id || ''))) throw new Error('Invalid incident identifier');\nif (!/^[a-zA-Z0-9._@-]{3,128}$/.test(String(envelope.analyst || ''))) throw new Error('Invalid analyst identity');\nif (String(envelope.reason || '').trim().length < 8) throw new Error('An analyst justification of at least eight characters is required');\nreturn [{ json: {\n  incident_id: String(envelope.incident_id), decision, analyst: String(envelope.analyst), reason: String(envelope.reason).trim(),\n  nonce: String(envelope.nonce), requested_at: String(envelope.requested_at)\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-400, 0],
+      "id": "5a082bd8-6361-432d-a102-266e342563c8",
+      "name": "Verify Analyst Decision"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://soar-controller:5680/api/v1/incidents/{{$json.incident_id}}/decision",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "=Bearer {{$env.SOAR_INTERNAL_TOKEN}}"}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ decision: $json.decision, analyst: $json.analyst, reason: $json.reason, nonce: $json.nonce, requested_at: $json.requested_at }) }}",
+        "options": {"timeout": 10000}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-140, 0],
+      "id": "311333d2-2c6b-4180-9bff-e4628d9ee4c4",
+      "name": "Persist Analyst Decision",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://soar-controller:5680/api/v1/incidents/{{$json.incident.id}}/dispatch?scope=approved",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "=Bearer {{$env.SOAR_INTERNAL_TOKEN}}"}
+          ]
+        },
+        "options": {"timeout": 15000}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [120, 0],
+      "id": "b63b67a5-ed13-47b7-af13-7293f794dabc",
+      "name": "Dispatch Approved Responses",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, incident: $json.incident, dispatch_scope: $json.dispatch_scope } }}",
+        "options": {"responseCode": 200}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [380, 0],
+      "id": "80adb11d-32e9-46dd-a831-e238e38fda21",
+      "name": "Return Decision Result"
+    }
+  ],
+  "connections": {
+    "Authenticated Analyst Webhook": {"main": [[{"node": "Verify Analyst Decision", "type": "main", "index": 0}]]},
+    "Verify Analyst Decision": {"main": [[{"node": "Persist Analyst Decision", "type": "main", "index": 0}]]},
+    "Persist Analyst Decision": {"main": [[{"node": "Dispatch Approved Responses", "type": "main", "index": 0}]]},
+    "Dispatch Approved Responses": {"main": [[{"node": "Return Decision Result", "type": "main", "index": 0}]]}
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {"executionOrder": "v1", "errorWorkflow": "SfSoarError0701"},
+  "versionId": "ea958bd8-98d9-4522-9026-b960896f7e1d",
+  "id": "SfSoarDecision1",
+  "tags": []
+}

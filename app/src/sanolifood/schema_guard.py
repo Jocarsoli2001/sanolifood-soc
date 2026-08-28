@@ -20,6 +20,7 @@ REQUIRED_TABLES = frozenset(
         "quality_checks",
         "recipe_items",
         "recipes",
+        "soar_controls",
         "suppliers",
         "users",
     }

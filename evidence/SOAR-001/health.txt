@@ -1,0 +1,6 @@
+OK   soar-db              state=running health=healthy
+OK   soar-controller      state=running health=healthy
+OK   n8n                  state=running health=healthy
+OK   n8n-http             http://127.0.0.1:5678/healthz
+OK   controller-http      response_mode=dry-run
+OK   workflow-publication five workflows present and published

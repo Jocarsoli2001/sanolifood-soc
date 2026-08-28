@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from sanolifood.models import Ingredient, InventoryMovement, ProductionLot, QualityCheck, User
+from sanolifood.services.soar_controls import active_control
 
 
 MOVEMENT_TYPES = {"receipt", "consumption", "adjustment", "quarantine", "release"}
@@ -98,6 +99,10 @@ def transition_lot(
         raise ValueError(f"No se permite pasar de {previous_status} a {target_status}.")
 
     if target_status == "released":
+        if active_control(db, "quality_guard", "quality-release") is not None:
+            raise ValueError(
+                "La liberación está suspendida temporalmente por un control SOAR aprobado."
+            )
         checks = db.scalars(
             select(QualityCheck).where(QualityCheck.production_lot_id == lot.id)
         ).all()

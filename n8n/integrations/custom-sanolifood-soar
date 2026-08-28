@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""Authenticated Wazuh Integrator bridge for SanoliFood n8n workflows."""
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import json
+import os
+import sys
+import time
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
+
+
+MAX_ALERT_BYTES = 1_048_576
+DEFAULT_SECRET_FILE = "/var/ossec/etc/soar/webhook.secret"
+ALLOWED_RULE_IDS = frozenset(
+    {
+        "110011",
+        "110012",
+        "110020",
+        "110030",
+        "110040",
+        "110100",
+        "110110",
+        "110120",
+        "110130",
+        "110140",
+        "110200",
+        "110210",
+        "110211",
+        "110220",
+    }
+)
+
+
+class IntegrationError(RuntimeError):
+    pass
+
+
+def canonical_json(payload: dict[str, Any]) -> str:
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def calculate_signature(secret: bytes, timestamp: str, payload: dict[str, Any]) -> str:
+    message = f"{timestamp}.{canonical_json(payload)}".encode("utf-8")
+    return "sha256=" + hmac.new(secret, message, hashlib.sha256).hexdigest()
+
+
+def read_secret(path: str) -> bytes:
+    secret = Path(path).read_bytes().strip()
+    if len(secret) < 32:
+        raise IntegrationError("SOAR webhook secret is missing or too short")
+    return secret
+
+
+def read_alert(path: str) -> dict[str, Any]:
+    alert_path = Path(path)
+    size = alert_path.stat().st_size
+    if size <= 0 or size > MAX_ALERT_BYTES:
+        raise IntegrationError(f"Alert size {size} is outside the accepted range")
+    with alert_path.open("r", encoding="utf-8") as alert_file:
+        alert = json.load(alert_file)
+    if not isinstance(alert, dict):
+        raise IntegrationError("Wazuh alert must be a JSON object")
+    return alert
+
+
+def validate_webhook_url(url: str) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        raise IntegrationError("SOAR webhook must use HTTP or HTTPS")
+    if parsed.hostname != "n8n" or parsed.port not in {None, 5678}:
+        raise IntegrationError("SOAR webhook must target the internal n8n service")
+    if not parsed.path.startswith("/webhook/sanolifood/"):
+        raise IntegrationError("SOAR webhook path is not authorized")
+    if parsed.username or parsed.password or parsed.fragment:
+        raise IntegrationError("SOAR webhook URL contains unsupported components")
+    return url
+
+
+def build_envelope(alert: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "integration": "sanolifood-wazuh",
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "nonce": str(uuid.uuid4()),
+        # Keep the canonical alert as an exact string. Re-serializing JSON numbers
+        # in JavaScript can otherwise change values such as 1.0 to 1 and break HMAC.
+        "alert_json": canonical_json(alert),
+    }
+
+
+def post_envelope(url: str, secret: bytes, envelope: dict[str, Any], timeout: int = 8) -> int:
+    timestamp = str(int(time.time()))
+    body = canonical_json(envelope).encode("utf-8")
+    signature = calculate_signature(secret, timestamp, envelope)
+    request = Request(
+        url,
+        data=body,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "SanoliFood-Wazuh-Integrator/0.7.0",
+            "X-SanoliFood-Timestamp": timestamp,
+            "X-SanoliFood-Signature": signature,
+        },
+    )
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            response.read(4096)
+            if not 200 <= response.status < 300:
+                raise IntegrationError(f"n8n returned HTTP {response.status}")
+            return response.status
+    except HTTPError as exc:
+        response_body = exc.read(2048).decode("utf-8", errors="replace")
+        raise IntegrationError(f"n8n returned HTTP {exc.code}: {response_body}") from exc
+    except (URLError, TimeoutError) as exc:
+        raise IntegrationError(f"n8n webhook is unavailable: {exc}") from exc
+
+
+def run(argv: list[str]) -> int:
+    if len(argv) < 4:
+        raise IntegrationError("Expected alert file, API key placeholder and webhook URL")
+    alert = read_alert(argv[1])
+    rule_id = str(alert.get("rule", {}).get("id", ""))
+    if rule_id not in ALLOWED_RULE_IDS:
+        return 0
+    webhook_url = validate_webhook_url(argv[3])
+    secret_file = os.environ.get("SANOLIFOOD_SOAR_SECRET_FILE", DEFAULT_SECRET_FILE)
+    secret = read_secret(secret_file)
+    post_envelope(webhook_url, secret, build_envelope(alert))
+    return 0
+
+
+def main() -> int:
+    try:
+        return run(sys.argv)
+    except (IntegrationError, OSError, json.JSONDecodeError) as exc:
+        print(f"custom-sanolifood-soar: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

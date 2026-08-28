@@ -14,7 +14,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from sanolifood import __version__
 from sanolifood.core.config import get_settings
 from sanolifood.core.logging import configure_logging
-from sanolifood.database.session import engine
+from sanolifood.database.session import SessionLocal, engine
 from sanolifood.schema_guard import schema_status
 from sanolifood.web.audit import router as audit_router
 from sanolifood.web.auth import router as auth_router
@@ -23,6 +23,7 @@ from sanolifood.web.inventory import router as inventory_router
 from sanolifood.web.production import router as production_router
 from sanolifood.web.quality import router as quality_router
 from sanolifood.web.router import router as web_router
+from sanolifood.web.soar_internal import router as soar_internal_router
 from sanolifood.web.templates import templates, view_context
 from sanolifood.web.users import router as users_router
 
@@ -72,6 +73,35 @@ app.include_router(audit_router)
 app.include_router(inventory_router)
 app.include_router(production_router)
 app.include_router(quality_router)
+app.include_router(soar_internal_router)
+
+
+@app.middleware("http")
+async def enforce_soar_ip_controls(request: Request, call_next):
+    if request.url.path.startswith(("/health", "/internal/soar")):
+        return await call_next(request)
+    source_ip = request.headers.get("X-Real-IP") or (request.client.host if request.client else "unknown")
+    from sanolifood.services.soar_controls import active_control
+
+    with SessionLocal() as db:
+        blocked = active_control(db, "app_ip_block", source_ip)
+    if blocked is not None:
+        logger.warning(
+            "soar_ip_control_enforced",
+            extra={
+                "event_type": "soar.control.enforced",
+                "control_type": "app_ip_block",
+                "incident_id": blocked.incident_id,
+                "action_id": blocked.action_id,
+                "source_ip": source_ip,
+            },
+        )
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Request blocked by a temporary security control"},
+            headers={"Retry-After": "60"},
+        )
+    return await call_next(request)
 
 
 @app.middleware("http")
