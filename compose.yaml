@@ -28,8 +28,8 @@ services:
       context: ./app
       dockerfile: Dockerfile
       args:
-        APP_VERSION: "0.4.0"
-    image: sanolifood/app:0.4.0
+        APP_VERSION: "0.7.0"
+    image: sanolifood/app:0.7.0
     restart: unless-stopped
     env_file:
       - .env

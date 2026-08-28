@@ -11,19 +11,19 @@ versionadas en un entorno desplegable con Docker Compose.
 
 ## Estado del proyecto
 
-El incremento técnico en curso es **SanoliFood SOC v0.6.0**. La aplicación
-conserva la versión **0.4.0** porque los hitos posteriores añaden capacidades
-defensivas sin modificar su núcleo de negocio.
+El incremento técnico en curso es **SanoliFood SOC v0.7.0**. La aplicación y el
+plano SOAR comparten la versión **0.7.0** porque este hito incorpora controles
+empresariales reversibles en los puntos de entrada, identidad y calidad.
 
 | Capacidad | Estado | Validación reproducible |
 |---|---|---|
-| Aplicación SanoliFood Operations | Operativa | Healthchecks, migraciones y 28 pruebas |
+| Aplicación SanoliFood Operations | Operativa | Healthchecks, migraciones y 39 pruebas |
 | Identidad, sesiones, RBAC y auditoría | Operativa | Cinco roles y eventos correlacionados |
 | Inventario, producción y calidad | Operativa | Recorrido empresarial de extremo a extremo |
 | Wazuh manager, indexer y dashboard | Operativo | Healthchecks y reglas probadas con `wazuh-logtest` |
 | Suricata IDS/NDR | Operativo | EVE JSON, reglas locales y alerta real en Wazuh |
 | Agentes Wazuh en endpoints | Implementado | Ubuntu, Windows, Sysmon, FIM y pruebas en vivo |
-| Automatización semiautomatizada con n8n | Pendiente | Próximo incremento |
+| Automatización semiautomatizada con n8n | Implementada | Cinco workflows, nueve playbooks y validación E2E |
 | Campaña completa de escenarios y métricas | Pendiente | Fase de validación final |
 
 Los elementos pendientes se mantienen visibles deliberadamente: el repositorio
@@ -41,6 +41,7 @@ no presenta como implementada una capacidad que todavía no ha sido validada.
 - [Validación NDR en vivo](#validación-ndr-en-vivo)
 - [Despliegue de endpoints](#despliegue-de-endpoints)
 - [Validación EDR en vivo](#validación-edr-en-vivo)
+- [Respuesta SOAR con n8n](#respuesta-soar-con-n8n)
 - [Evidencias y validación](#evidencias-y-validación)
 - [Operación diaria](#operación-diaria)
 - [Resolución de problemas](#resolución-de-problemas)
@@ -57,7 +58,7 @@ El laboratorio demuestra un flujo defensivo completo y medible:
 4. detección mediante reglas deterministas;
 5. investigación en Wazuh;
 6. conservación de evidencia reproducible;
-7. incorporación posterior de respuesta semiautomatizada y métricas.
+7. respuesta semiautomatizada, reversible y medible con aprobación humana.
 
 El caso de estudio representa a **SanoliFood SA**, una organización ficticia
 que administra ingredientes, recetas, lotes de producción, controles de calidad
@@ -78,6 +79,10 @@ flowchart TD
     X["Windows + Sysmon<br/>10.20.0.20"] -->|Agente 1514/TCP| W
     W --> I["Wazuh indexer"]
     I --> D["Wazuh dashboard<br/>HTTPS 8443"]
+    W -->|"JSON firmado"| O["n8n<br/>orquestación SOAR"]
+    O --> R["Controlador<br/>casos y métricas"]
+    R -->|"control aprobado"| A
+    R --> Q[("PostgreSQL SOAR")]
 ```
 
 La aplicación y el SOC conservan ciclos de vida separados. Los volúmenes
@@ -99,6 +104,7 @@ segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 | Wazuh Agent | 4.14.7 | Telemetría EDR de Ubuntu y Windows |
 | Suricata | 8.0.6 | IDS/NDR y generación de EVE JSON |
 | Sysmon | 15.21 | Telemetría avanzada de Windows con configuración versionada |
+| n8n | 2.36.7 | Orquestación, aprobación, caducidad y recuperación de errores |
 
 ### Puertos publicados
 
@@ -109,6 +115,8 @@ segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 | 1514 | TCP | Eventos de agentes Wazuh | Segmento interno `10.20.0.0/24` |
 | 1515 | TCP | Enrolamiento de agentes Wazuh | Segmento interno `10.20.0.0/24` |
 | 514 | UDP | Entrada syslog reservada | Fuentes futuras |
+| 5678 | TCP/HTTP | Editor y webhooks de n8n | Red del laboratorio |
+| 5680 | TCP/HTTP | API del controlador SOAR | Solo `127.0.0.1` |
 
 El indexer y la API interna de Wazuh no se publican en el host.
 
@@ -150,7 +158,7 @@ El indexer y la API interna de Wazuh no se publican en el host.
 ├── docs/adr/             Decisiones de arquitectura
 ├── detections/          Espacio para casos de detección adicionales
 ├── evaluation/          Métricas y resultados del TFM
-├── n8n/                 Flujos de respuesta futuros
+├── n8n/                 Compose, workflows, playbooks y operación SOAR
 ├── scenarios/           Escenarios controlados futuros
 ├── compose.yaml         Plataforma empresarial
 ├── Makefile             Interfaz operativa común
@@ -226,10 +234,10 @@ git status -sb
 ```
 
 Para una evaluación formal debe utilizarse un tag publicado, no una rama de
-desarrollo. Cuando el tag v0.6.0 esté disponible:
+desarrollo. Cuando el tag v0.7.0 esté disponible:
 
 ```bash
-git checkout v0.6.0
+git checkout v0.7.0
 ```
 
 ### 2. Crear la configuración local de la aplicación
@@ -266,6 +274,7 @@ ignorado. No reutilice estas credenciales en ningún otro sistema.
 make config
 make wazuh-preflight
 make suricata-preflight
+make soar-static-check
 ```
 
 Corrija cualquier resultado `FAIL` antes de iniciar los servicios.
@@ -278,7 +287,25 @@ make soc-up
 
 En el primer arranque se descargan y construyen varias imágenes; la duración
 depende del equipo y de la conexión. El proceso realiza healthchecks y genera
-automáticamente las credenciales y certificados locales de Wazuh.
+automáticamente las credenciales y certificados locales de Wazuh y del plano
+SOAR. n8n comienza en `dry-run` y Wazuh todavía no reenvía alertas.
+
+En el primer despliegue, el editor n8n solo escucha en loopback. Desde el equipo
+de administración abra un túnel SSH y mantenga esa consola abierta:
+
+```bash
+ssh -L 5678:127.0.0.1:5678 socadmin@IP_DE_UBUNTU
+```
+
+Visite `http://127.0.0.1:5678`, cree la cuenta propietaria local de n8n y
+después publique los workflows desde Ubuntu:
+
+```bash
+make soar-install-workflows
+```
+
+El último comando solo habilita el reenvío autenticado de Wazuh si los cinco
+workflows se importan, publican y quedan saludables.
 
 ### 5. Verificar la instalación
 
@@ -287,6 +314,7 @@ make soc-health
 make test
 make wazuh-test-rules
 make suricata-test-rules
+make soar-validate-live
 ```
 
 El resultado esperado antes de enrolar los endpoints es:
@@ -294,10 +322,11 @@ El resultado esperado antes de enrolar los endpoints es:
 - PostgreSQL, aplicación, Nginx, Wazuh indexer, manager, dashboard y Suricata en
   estado `healthy`;
 - endpoint HTTP `/health/ready` disponible;
-- 28 pruebas de aplicación superadas;
+- 39 pruebas de aplicación y del plano SOAR superadas;
 - reglas de aplicación 110010, 110020 y 110030 aprobadas;
 - reglas NDR 110100, 110110, 110120, 110130 y 110140 aprobadas;
 - fixtures EDR 110200, 110210, 110211 y 110220 aprobados.
+- validación SOAR con evidencia `completed` y contención `simulated`.
 
 ### 6. Abrir las interfaces
 
@@ -311,6 +340,7 @@ Desde otro equipo de la red del laboratorio abra:
 
 - SanoliFood Operations: `http://IP_DE_UBUNTU:8080`
 - Wazuh Dashboard: `https://IP_DE_UBUNTU:8443`
+- n8n SOAR: `http://127.0.0.1:5678` mediante túnel SSH
 
 El dashboard utiliza una CA propia del laboratorio. Compruebe que la dirección
 pertenece a su VM antes de aceptar la advertencia del navegador. Consulte las
@@ -565,6 +595,82 @@ En Wazuh Threat Hunting filtre por los identificadores 110200, 110210, 110211
 y 110220. Conserve una captura donde se vean regla, agente, marca temporal y
 ruta o proceso, sin mostrar credenciales.
 
+## Respuesta SOAR con n8n
+
+Wazuh entrega únicamente las reglas seleccionadas a n8n mediante un integrador
+`custom-*`. Cada mensaje se firma con HMAC-SHA256, se acepta durante cinco
+minutos y se deduplica usando los campos estables de la alerta. n8n coordina el
+recorrido; el estado durable permanece en el controlador y PostgreSQL.
+
+```mermaid
+flowchart TD
+    A["Alerta Wazuh"] --> B["Firma y triage n8n"]
+    B --> C["Incidente durable"]
+    C --> D["Evidencia automática"]
+    C --> E{"Decisión humana"}
+    E -->|Aprobar| F["Control temporal"]
+    E -->|Rechazar| G["Cierre documentado"]
+    F --> H["TTL o rollback manual"]
+```
+
+El catálogo incluye nueve playbooks y puede combinar varias respuestas en el
+mismo incidente:
+
+| Respuesta | Ejecución | Salvaguardas |
+|---|---|---|
+| Conservar evidencia | Automática | Archivo por incidente, hash de configuración |
+| Bloquear IP en la aplicación | Tras aprobación | CIDR autorizado, IP protegida, TTL y rollback |
+| Bloquear cuenta | Tras aprobación | Usuario validado, identidades protegidas, TTL y rollback |
+| Suspender liberación de lotes | Tras aprobación | Objetivo fijo, TTL y rollback |
+
+Las reglas de validación 110100, 110200 y 110220 solo crean evidencia. Nunca
+proponen una contención. Las acciones con impacto comienzan en
+`pending_approval`; en el modo inicial `dry-run` terminan como `simulated`.
+
+Operación básica:
+
+```bash
+make soar-health
+make soar-incidents
+make soar-show INCIDENT_ID=UUID
+make soar-metrics
+```
+
+Para aprobar o rechazar un caso, identifique al analista y documente el motivo:
+
+```bash
+make soar-approve \
+  INCIDENT_ID=UUID \
+  ANALYST=soc.analyst \
+  REASON='Origen verificado y contención temporal autorizada'
+
+make soar-reject \
+  INCIDENT_ID=UUID \
+  ANALYST=soc.analyst \
+  REASON='Actividad legítima confirmada durante la investigación'
+```
+
+Un fallo transitorio conserva el caso y el número de intentos. Puede reintentarse
+de forma explícita; una contención aplicada también puede revertirse antes del
+TTL:
+
+```bash
+make soar-retry ACTION_ID=UUID ANALYST=soc.analyst
+make soar-rollback ACTION_ID=UUID ANALYST=soc.analyst
+```
+
+Solo después de superar la validación en seco puede habilitarse el modo real:
+
+```bash
+make soar-validate-live
+make soar-enable-live CONFIRM=live
+make soar-validate-live
+```
+
+La segunda prueba aplica y revierte su propio control. `make soar-disable-live`
+devuelve la plataforma a simulación. La guía completa se encuentra en
+[`n8n/README.md`](n8n/README.md).
+
 ## Evidencias y validación
 
 Las evidencias textuales reproducibles pueden mantenerse en Git después de una
@@ -645,12 +751,37 @@ manager se genera igualmente. `evidence/END-001` contiene únicamente estado,
 versiones, hashes y alertas revisables. Las capturas se conservan en el archivo
 externo de anexos.
 
+### Evidencia SOAR: SOAR-001
+
+Después de publicar los workflows y completar la validación:
+
+```bash
+make soar-health
+make soar-validate-live
+make evidence-soar
+```
+
+Capturas recomendadas:
+
+1. los cinco workflows publicados en n8n;
+2. un incidente con regla, prioridad, playbook y acciones;
+3. decisión aprobada con identidad y justificación del analista;
+4. contención `simulated` en modo seco;
+5. contención `applied` y `rolled_back` en la validación real;
+6. salida completa de `make soar-health`;
+7. métricas de MTTD, MTTA y comienzo de respuesta;
+8. error workflow y auditoría sin credenciales visibles.
+
+`evidence/SOAR-001` conserva estado, versión, casos normalizados, auditoría,
+errores, métricas y hashes. No exporta secretos, cookies ni el contenido de las
+bases de datos.
+
 Antes de `git add`, revise siempre:
 
 ```bash
 git status --short
 git diff --check
-git check-ignore .env wazuh/runtime/.env suricata/runtime/.env
+git check-ignore .env wazuh/runtime/.env suricata/runtime/.env n8n/runtime/.env
 ```
 
 Nunca publique `.env`, contraseñas, cookies, claves privadas, certificados
@@ -666,10 +797,12 @@ make ps
 make wazuh-ps
 make suricata-ps
 make endpoint-health
+make soar-ps
 
 make logs
 make wazuh-logs
 make suricata-logs
+make soar-logs
 ```
 
 Los objetivos `*-logs` permanecen en primer plano; salga con `Ctrl+C`.
@@ -680,6 +813,7 @@ El apagado siguiente conserva todos los volúmenes:
 
 ```bash
 make suricata-down
+make soar-down
 make wazuh-down
 make down
 ```
@@ -695,6 +829,15 @@ make endpoint-health
 
 El agente Ubuntu arranca mediante `systemd`; el agente Windows y Sysmon
 arrancan como servicios automáticos cuando se enciende su VM.
+
+Antes de cambios de versión o de configuración SOAR, cree un respaldo local:
+
+```bash
+make soar-backup
+```
+
+El respaldo contiene secretos y queda excluido de Git. Consérvelo en una
+ubicación protegida distinta del repositorio.
 
 ### Cambios en reglas
 
@@ -724,7 +867,10 @@ make reset-lab
 Este comando elimina únicamente los contenedores, redes y volúmenes declarados
 por el stack principal de SanoliFood, genera secretos nuevos, reconstruye la
 aplicación y ejecuta las pruebas. **Destruye los usuarios y datos empresariales
-de PostgreSQL.** No elimina los volúmenes de Wazuh o Suricata.
+de PostgreSQL.** No elimina los volúmenes de Wazuh, Suricata o SOAR. Por
+seguridad se negará a continuar mientras el controlador SOAR esté desplegado;
+ejecute antes `make soar-down` y, después de la reconstrucción, vuelva a iniciar
+y publicar el plano con `make soar-up` y `make soar-install-workflows`.
 
 No utilice `docker compose down -v` ni `docker volume prune` como parte del flujo
 operativo normal.
@@ -831,6 +977,45 @@ make wazuh-credentials
 Las credenciales se generan en el primer arranque y permanecen en
 `wazuh/runtime/.env`, con permisos restrictivos y fuera de Git.
 
+### n8n está healthy pero Wazuh no crea incidentes
+
+```bash
+make soar-health
+make soar-static-check
+cat n8n/runtime/integration.state
+make soar-install-workflows
+make wazuh-logs
+```
+
+El estado debe ser `enabled`. Si es `disabled`, no edite `ossec.conf`
+manualmente: vuelva a publicar los workflows. Una petición sin firma al webhook
+debe ser rechazada; ese rechazo confirma que el endpoint existe y que la
+autenticación funciona.
+
+### Una acción SOAR queda en `failed`
+
+```bash
+make soar-show INCIDENT_ID=UUID
+make soar-logs
+make soar-retry ACTION_ID=UUID ANALYST=soc.analyst
+```
+
+Revise primero el error persistido. El reintento mantiene el mismo `action_id` y
+está limitado a cinco intentos. No cree manualmente un segundo bloqueo para el
+mismo incidente.
+
+### Se necesita detener n8n de inmediato
+
+```bash
+make soar-disable-integration
+make soar-disable-live
+make soar-down
+```
+
+Los incidentes y volúmenes se conservan. Los controles ya aplicados siguen
+teniendo su vencimiento en la aplicación; si n8n permanecerá apagado más allá
+del TTL, reviértalos antes de detener el controlador.
+
 ## Reproducibilidad
 
 Una reproducción se considera válida cuando un tercero puede, desde un clon
@@ -844,7 +1029,9 @@ limpio y sin copiar volúmenes del autor:
 6. generar la alerta NDR 110100 desde un segundo equipo;
 7. enrolar Ubuntu y Windows desde las fuentes versionadas;
 8. obtener las alertas EDR 110200, 110210, 110211 y 110220;
-9. producir nuevas evidencias BUS-001, WAZ-001, NDR-001 y END-001.
+9. publicar los cinco workflows y superar la validación SOAR en `dry-run`;
+10. aplicar y revertir la contención controlada en modo real;
+11. producir nuevas evidencias BUS-001, WAZ-001, NDR-001, END-001 y SOAR-001.
 
 Para la entrega final se recomienda repetir este procedimiento en una VM nueva
 y registrar tiempo de despliegue, incidencias y consumo de recursos.
@@ -860,8 +1047,9 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 - namespace propio para eventos de aplicación;
 - sensor Suricata en la interfaz interna del host;
 - telemetría de endpoint con políticas Wazuh centralizadas y Sysmon.
+- plano SOAR durable con aprobación, TTL, idempotencia y rollback.
 
-## Limitaciones del hito v0.6.0
+## Limitaciones del hito v0.7.0
 
 - La aplicación se publica por HTTP porque el entorno es un laboratorio aislado;
   no es una configuración apta para Internet.
@@ -870,8 +1058,10 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
   arquitectura física con TAP o SPAN.
 - Sysmon está configurado para un laboratorio acotado; una organización real
   necesitaría tuning, retención y gestión de cambios adicionales.
-- n8n, los playbooks de contención y la aprobación humana se incorporarán en un
-  incremento posterior.
+- Las contenciones se limitan deliberadamente a la aplicación empresarial; no
+  modifican firewalls del host ni ejecutan comandos remotos sobre endpoints.
+- La cuenta propietaria inicial de n8n se crea manualmente para no versionar ni
+  automatizar una credencial administrativa.
 - Las firmas locales están diseñadas para pruebas deterministas; un despliegue
   productivo requeriría gestión adicional de reglas, tuning y reducción de
   falsos positivos.
@@ -879,9 +1069,9 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 ## Hoja de ruta
 
 1. escenarios controlados desde Kali y mapeo formal a MITRE ATT&CK;
-2. flujos n8n con aprobación humana y acciones de contención reversibles;
-3. medición de MTTD, tasa de detección, falsos positivos, cobertura ATT&CK y
+2. medición de MTTD, tasa de detección, falsos positivos, cobertura ATT&CK y
    reproducibilidad;
+3. comparación cuantitativa de respuesta manual frente a respuesta SOAR;
 4. documentación final, anexos técnicos y demostración de cinco minutos.
 
 ## Referencias técnicas
@@ -896,6 +1086,8 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 - [Configuración centralizada de agentes Wazuh](https://documentation.wazuh.com/current/user-manual/reference/centralized-configuration.html)
 - [Suricata 8.0.6 Documentation](https://docs.suricata.io/en/suricata-8.0.6/)
 - [Microsoft Sysmon](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon)
+- [n8n self-hosting](https://docs.n8n.io/hosting/)
+- [Wazuh: integración con APIs externas](https://documentation.wazuh.com/current/user-manual/manager/integration-with-external-apis.html)
 - [MITRE ATT&CK Enterprise](https://attack.mitre.org/techniques/enterprise/)
 
 La evolución técnica del repositorio se resume en

@@ -13,8 +13,12 @@ if not test_database_url.startswith("sqlite"):
 
 os.environ["DATABASE_URL"] = test_database_url
 os.environ["APP_ENV"] = "test"
-os.environ["APP_VERSION"] = "0.4.0"
+os.environ["APP_VERSION"] = "0.7.0"
 os.environ["SESSION_SECRET"] = "test-session-secret-with-more-than-thirty-two-characters"
+os.environ["SOAR_INTERNAL_TOKEN"] = "test-soar-internal-token-with-more-than-thirty-two-characters"
+os.environ["SOAR_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
+os.environ["SOAR_RESPONSE_MODE"] = "dry-run"
+os.environ["SOAR_EVIDENCE_DIR"] = "/tmp/sanolifood-soar-test-evidence"
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -24,12 +28,15 @@ from sanolifood.database.base import Base
 from sanolifood.database.session import engine
 from sanolifood.main import app
 from sanolifood.models import User
+from sanolifood.soar.database import SoarBase, soar_engine
 
 
 @pytest.fixture(autouse=True)
 def reset_database():
     Base.metadata.create_all(engine)
+    SoarBase.metadata.create_all(soar_engine)
     yield
+    SoarBase.metadata.drop_all(soar_engine)
     Base.metadata.drop_all(engine)
 
 

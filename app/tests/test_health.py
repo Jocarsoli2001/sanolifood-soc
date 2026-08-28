@@ -8,7 +8,7 @@ def test_liveness_returns_version_and_correlation_id(client: TestClient) -> None
     response = client.get("/health/live", headers={"X-Correlation-ID": "test-run-001"})
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["version"] == "0.4.0"
+    assert response.json()["version"] == "0.7.0"
     assert response.headers["X-Correlation-ID"] == "test-run-001"
 
 

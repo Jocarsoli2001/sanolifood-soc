@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     app_name: str = "SanoliFood Operations"
     app_env: str = "development"
-    app_version: str = "0.4.0"
+    app_version: str = "0.7.0"
     app_debug: bool = False
     app_timezone: str = "UTC"
     log_level: str = "INFO"
@@ -24,10 +24,27 @@ class Settings(BaseSettings):
     bootstrap_admin_email: str = "admin@sanolifood.local"
     bootstrap_admin_full_name: str = "Administrador SanoliFood"
     bootstrap_admin_password: SecretStr = SecretStr("")
+    soar_internal_token: SecretStr = SecretStr("")
+    soar_allowed_containment_cidrs: str = "10.20.0.0/24"
+    soar_protected_ips: str = "10.20.0.10,10.20.0.20,127.0.0.1"
+    soar_protected_users: str = "admin.sanolifood,socadmin"
+    soar_max_ttl_seconds: int = 1800
 
     @property
     def allowed_hosts_list(self) -> list[str]:
         return [item.strip() for item in self.allowed_hosts.split(",") if item.strip()]
+
+    @property
+    def soar_allowed_cidrs_list(self) -> list[str]:
+        return [item.strip() for item in self.soar_allowed_containment_cidrs.split(",") if item.strip()]
+
+    @property
+    def soar_protected_ips_set(self) -> set[str]:
+        return {item.strip() for item in self.soar_protected_ips.split(",") if item.strip()}
+
+    @property
+    def soar_protected_users_set(self) -> set[str]:
+        return {item.strip().lower() for item in self.soar_protected_users.split(",") if item.strip()}
 
 
 @lru_cache

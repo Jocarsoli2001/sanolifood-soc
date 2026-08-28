@@ -17,6 +17,7 @@ from sanolifood.core.security import (
 )
 from sanolifood.database.session import get_db
 from sanolifood.models import User
+from sanolifood.services.soar_controls import active_control
 from sanolifood.web.dependencies import PermissionDenied, get_current_user
 from sanolifood.web.templates import templates, view_context
 
@@ -91,6 +92,23 @@ def login(
         )
 
     now = utcnow()
+    soar_lock = active_control(db, "app_account_lock", normalized_username, at=now)
+    if soar_lock is not None:
+        record_event(
+            db,
+            request=request,
+            event_type="auth.login.blocked",
+            outcome="blocked",
+            actor=user,
+            details={"reason": "soar_temporary_control", "incident_id": soar_lock.incident_id},
+        )
+        db.commit()
+        return login_response(
+            request,
+            error="La cuenta está temporalmente bloqueada. Intenta nuevamente más tarde.",
+            username=normalized_username,
+            status_code=423,
+        )
     locked_until = normalized_datetime(user.locked_until)
     if locked_until and locked_until > now:
         record_event(

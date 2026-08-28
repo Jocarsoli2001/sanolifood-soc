@@ -83,10 +83,14 @@ services:
       - ./rules/sanolifood_rules.xml:/wazuh-config-mount/etc/rules/sanolifood_rules.xml:ro
       - ./runtime/authd.pass:/wazuh-config-mount/etc/authd.pass:ro
       - ./config/manager/entrypoint:/entrypoint-scripts:ro
+      - ../n8n/integrations/custom-sanolifood-soar:/wazuh-config-mount/integrations/custom-sanolifood-soar:ro
+      - ../n8n/runtime/secrets/webhook.secret:/wazuh-config-mount/soar/webhook.secret:ro
+      - ../n8n/runtime/integration.state:/wazuh-config-mount/soar/integration.state:ro
       - sanolifood_app_logs:/var/log/sanolifood:ro
       - sanolifood_suricata_logs:/var/log/suricata:ro
     networks:
       - sanoli_soc
+      - sanoli_soar
     healthcheck:
       test:
         - CMD-SHELL
@@ -136,6 +140,9 @@ services:
 networks:
   sanoli_soc:
     name: sanoli_soc
+  sanoli_soar:
+    external: true
+    name: sanoli_soar
 
 volumes:
   wazuh_api_configuration:
