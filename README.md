@@ -11,9 +11,9 @@ versionadas en un entorno desplegable con Docker Compose.
 
 ## Estado del proyecto
 
-El incremento técnico en curso es **SanoliFood SOC v0.7.0**. La aplicación y el
-plano SOAR comparten la versión **0.7.0** porque este hito incorpora controles
-empresariales reversibles en los puntos de entrada, identidad y calidad.
+El incremento técnico en curso es **SanoliFood SOC v0.8.0**. La aplicación y el
+plano SOAR conservan la versión **0.7.0**; el nuevo hito añade una capa de
+evaluación atribuible sin modificar sus datos ni controles operativos.
 
 | Capacidad | Estado | Validación reproducible |
 |---|---|---|
@@ -24,7 +24,7 @@ empresariales reversibles en los puntos de entrada, identidad y calidad.
 | Suricata IDS/NDR | Operativo | EVE JSON, reglas locales y alerta real en Wazuh |
 | Agentes Wazuh en endpoints | Implementado | Ubuntu, Windows, Sysmon, FIM y pruebas en vivo |
 | Automatización semiautomatizada con n8n | Implementada | Cinco workflows, nueve playbooks y validación E2E |
-| Campaña completa de escenarios y métricas | Pendiente | Fase de validación final |
+| Campaña completa de escenarios y métricas | Framework implementado | Ocho recorridos con marcador único y resultados aislados |
 
 Los elementos pendientes se mantienen visibles deliberadamente: el repositorio
 no presenta como implementada una capacidad que todavía no ha sido validada.
@@ -42,6 +42,7 @@ no presenta como implementada una capacidad que todavía no ha sido validada.
 - [Despliegue de endpoints](#despliegue-de-endpoints)
 - [Validación EDR en vivo](#validación-edr-en-vivo)
 - [Respuesta SOAR con n8n](#respuesta-soar-con-n8n)
+- [Campaña final de evaluación](#campaña-final-de-evaluación)
 - [Evidencias y validación](#evidencias-y-validación)
 - [Operación diaria](#operación-diaria)
 - [Resolución de problemas](#resolución-de-problemas)
@@ -69,7 +70,7 @@ proyecto no depende de datos personales ni de información empresarial real.
 
 ```mermaid
 flowchart TD
-    C["Kali / cliente de prueba<br/>10.20.0.50"] -->|HTTP 8080| N["Nginx<br/>10.20.0.10"]
+    C["Kali / cliente de prueba<br/>10.20.0.30"] -->|HTTP 8080| N["Nginx<br/>10.20.0.10"]
     C -->|Tráfico observado| S["Suricata IDS/NDR<br/>enp0s8"]
     N --> A["FastAPI<br/>SanoliFood Operations"]
     A --> P["PostgreSQL<br/>datos transaccionales"]
@@ -115,7 +116,7 @@ segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 | 1514 | TCP | Eventos de agentes Wazuh | Segmento interno `10.20.0.0/24` |
 | 1515 | TCP | Enrolamiento de agentes Wazuh | Segmento interno `10.20.0.0/24` |
 | 514 | UDP | Entrada syslog reservada | Fuentes futuras |
-| 5678 | TCP/HTTP | Editor y webhooks de n8n | Red del laboratorio |
+| 5678 | TCP/HTTP | Editor y webhooks de n8n | Solo `127.0.0.1`; acceso administrativo por túnel SSH |
 | 5680 | TCP/HTTP | API del controlador SOAR | Solo `127.0.0.1` |
 
 El indexer y la API interna de Wazuh no se publican en el host.
@@ -157,9 +158,9 @@ El indexer y la API interna de Wazuh no se publican en el host.
 ├── evidence/            Evidencia textual revisada y no secreta
 ├── docs/adr/             Decisiones de arquitectura
 ├── detections/          Espacio para casos de detección adicionales
-├── evaluation/          Métricas y resultados del TFM
+├── evaluation/          Catálogo, orquestador, métricas y evidencia final
 ├── n8n/                 Compose, workflows, playbooks y operación SOAR
-├── scenarios/           Escenarios controlados futuros
+├── scenarios/           Estímulos acotados para Kali y negocio
 ├── compose.yaml         Plataforma empresarial
 ├── Makefile             Interfaz operativa común
 └── CHANGELOG.md         Evolución pública del proyecto
@@ -177,7 +178,7 @@ contienen secretos o datos específicos del host y están excluidos de Git.
 - 8 GiB de RAM como mínimo; 10–12 GiB recomendados para mayor fluidez.
 - 50 GiB libres como mínimo; 80 GiB recomendados para conservar evidencias.
 - Una VM Windows 10/11 con 2 vCPU y 4 GiB de RAM recomendados.
-- Una red interna aislada entre Ubuntu, Windows y la futura VM Kali.
+- Una red interna aislada entre Ubuntu, Windows y la VM Kali.
 
 Los preflight checks de Wazuh exigen 4 CPU, 8 GiB de RAM, 50 GiB libres y
 `vm.max_map_count >= 262144`. Suricata requiere un host Linux porque utiliza el
@@ -208,7 +209,7 @@ descarga de paquetes.
 |---|---|---|---|
 | Ubuntu SOC | `enp0s3`, DHCP | `enp0s8` | `10.20.0.10/24` |
 | Windows endpoint | NAT, DHCP | `sanolifood-lab` | `10.20.0.20/24` |
-| Kali de validación | NAT, DHCP | `sanolifood-lab` | `10.20.0.50/24` |
+| Kali de validación | NAT temporal | `sanolifood-lab` | `10.20.0.30/24` |
 
 Para que Suricata pueda observar también tráfico lateral, configure el modo
 promiscuo del segundo adaptador de Ubuntu como **Permitir todo**. Las pruebas
@@ -234,7 +235,7 @@ git status -sb
 ```
 
 Para una evaluación formal debe utilizarse un tag publicado, no una rama de
-desarrollo. Cuando el tag v0.7.0 esté disponible:
+desarrollo. La base SOAR validada es:
 
 ```bash
 git checkout v0.7.0
@@ -671,6 +672,42 @@ La segunda prueba aplica y revierte su propio control. `make soar-disable-live`
 devuelve la plataforma a simulación. La guía completa se encuentra en
 [`n8n/README.md`](n8n/README.md).
 
+## Campaña final de evaluación
+
+El catálogo `evaluation/config/scenarios.json` define ocho recorridos. Cada
+ejecución crea un identificador `SF-EVAL-SCN-*` y exige encontrarlo en una
+alerta nueva; después relaciona el incidente n8n por `source_alert_id`. Por
+ello, una alerta histórica con la misma regla no puede aprobar una prueba.
+
+Kali participa solo en SCN-001 a SCN-004 como cliente HTTP fijo
+`10.20.0.30 -> 10.20.0.10:8080`. El ejecutor no acepta otros destinos, aplica
+un presupuesto de solicitudes y usa únicamente estímulos deterministas del
+laboratorio. SCN-005 y SCN-006 se originan en la aplicación; SCN-007 y SCN-008
+se originan en los endpoints Ubuntu y Windows.
+
+```bash
+make upgrade-0.8
+make eval-list
+make eval-preflight KALI_SSH=usuario@10.20.0.30
+make eval-run SCENARIO=SCN-001 KALI_SSH=usuario@10.20.0.30
+```
+
+Las ejecuciones que requieren juicio terminan primero en
+`PASS_PENDING_DECISION`. La decisión se registra con el `RUN_ID` exacto:
+
+```bash
+make eval-decide \
+  RUN_ID=SF-EVAL-SCN-... \
+  DECISION=approve \
+  ANALYST=nombre.apellido \
+  REASON='Decisión documentada para la ejecución controlada'
+```
+
+La campaña comienza en `dry-run`. Si se autoriza una ejecución supervisada en
+modo real, `CONFIRM=live` es obligatorio y el orquestador revierte
+inmediatamente cada acción reversible aplicada. La guía y la matriz completa
+están en [`evaluation/README.md`](evaluation/README.md).
+
 ## Evidencias y validación
 
 Las evidencias textuales reproducibles pueden mantenerse en Git después de una
@@ -775,6 +812,19 @@ Capturas recomendadas:
 `evidence/SOAR-001` conserva estado, versión, casos normalizados, auditoría,
 errores, métricas y hashes. No exporta secretos, cookies ni el contenido de las
 bases de datos.
+
+### Evidencia de evaluación: EVAL-001
+
+Después de completar los ocho escenarios y sus decisiones:
+
+```bash
+make eval-summary
+make evidence-evaluation
+```
+
+`EVAL-001` conserva el catálogo, resultados CSV/JSON, métricas agregadas,
+alertas nuevas, incidentes relacionados, estados de contenedores y hashes. No
+incorpora las credenciales locales, secretos SOAR ni volcados de bases de datos.
 
 Antes de `git add`, revise siempre:
 
@@ -1031,7 +1081,9 @@ limpio y sin copiar volúmenes del autor:
 8. obtener las alertas EDR 110200, 110210, 110211 y 110220;
 9. publicar los cinco workflows y superar la validación SOAR en `dry-run`;
 10. aplicar y revertir la contención controlada en modo real;
-11. producir nuevas evidencias BUS-001, WAZ-001, NDR-001, END-001 y SOAR-001.
+11. ejecutar SCN-001 a SCN-008 con marcadores únicos y decisiones registradas;
+12. producir nuevas evidencias BUS-001, WAZ-001, NDR-001, END-001, SOAR-001 y
+    EVAL-001.
 
 Para la entrega final se recomienda repetir este procedimiento en una VM nueva
 y registrar tiempo de despliegue, incidencias y consumo de recursos.
@@ -1046,10 +1098,11 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 - Wazuh single-node mediante Compose;
 - namespace propio para eventos de aplicación;
 - sensor Suricata en la interfaz interna del host;
-- telemetría de endpoint con políticas Wazuh centralizadas y Sysmon.
+- telemetría de endpoint con políticas Wazuh centralizadas y Sysmon;
 - plano SOAR durable con aprobación, TTL, idempotencia y rollback.
+- campaña atribuible con objetivo fijo, presupuestos y resultados aislados.
 
-## Limitaciones del hito v0.7.0
+## Limitaciones del hito v0.8.0
 
 - La aplicación se publica por HTTP porque el entorno es un laboratorio aislado;
   no es una configuración apta para Internet.
@@ -1068,11 +1121,10 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 
 ## Hoja de ruta
 
-1. escenarios controlados desde Kali y mapeo formal a MITRE ATT&CK;
-2. medición de MTTD, tasa de detección, falsos positivos, cobertura ATT&CK y
-   reproducibilidad;
-3. comparación cuantitativa de respuesta manual frente a respuesta SOAR;
-4. documentación final, anexos técnicos y demostración de cinco minutos.
+1. ejecutar y repetir los ocho escenarios desde el entorno limpio;
+2. analizar MTTD, tiempos de triage, decisión, respuesta y rollback;
+3. documentar los controles negativos y la cobertura MITRE ATT&CK;
+4. cerrar la memoria, anexos técnicos y demostración de cinco minutos.
 
 ## Referencias técnicas
 
