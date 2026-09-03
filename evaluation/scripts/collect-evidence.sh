@@ -45,7 +45,9 @@ find "$results_dir/runs" -mindepth 1 -maxdepth 1 -type d -print0 \
       run_name="${run_dir##*/}"
       mkdir -p "$evidence_dir/runs/$run_name"
       for artifact in result.json scenario.json stimulus-receipt.json wazuh-alert.json soar-incident.json live-control-verification.json rollback-receipts.json rollback-errors.json; do
-        [[ -f "$run_dir/$artifact" ]] && cp "$run_dir/$artifact" "$evidence_dir/runs/$run_name/$artifact"
+        if [[ -f "$run_dir/$artifact" ]]; then
+          cp "$run_dir/$artifact" "$evidence_dir/runs/$run_name/$artifact"
+        fi
       done
     done
 
