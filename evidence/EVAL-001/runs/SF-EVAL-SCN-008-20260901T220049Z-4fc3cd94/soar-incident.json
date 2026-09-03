@@ -1,0 +1,70 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T22:01:04.953503+00:00",
+      "expires_at": null,
+      "id": "2ec8cf0d-5466-47be-a89e-c19d52195398",
+      "incident_id": "92a9c968-d696-4598-9bc4-feeb993ed71b",
+      "optional": false,
+      "result": {
+        "bytes": 5572,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/92a9c968-d696-4598-9bc4-feeb993ed71b/2ec8cf0d-5466-47be-a89e-c19d52195398.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "quality_guard",
+      "approved_at": "2026-09-01T22:01:29.723040+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-01T22:01:29.758161+00:00",
+      "expires_at": null,
+      "id": "b41ce539-24d5-4dc2-8537-73ad075af712",
+      "incident_id": "92a9c968-d696-4598-9bc4-feeb993ed71b",
+      "optional": false,
+      "result": {
+        "mode": "dry-run",
+        "target": "quality-release",
+        "ttl_seconds": 900,
+        "would_apply": "quality_guard"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "simulated",
+      "target": "quality-release",
+      "ttl_seconds": 900
+    }
+  ],
+  "actor_username": null,
+  "agent_id": "002",
+  "agent_name": "sanolifood-win-01",
+  "analyst": "jose.santizo",
+  "contained_at": null,
+  "decided_at": "2026-09-01T22:01:29.723040+00:00",
+  "decision": "approve",
+  "decision_reason": "Cambio FIM WhoData confirmado en Windows; se autoriza validar el quality guard en dry-run",
+  "dedup_key": "4088ed5230289c7f8d8c49b5bdb0692df5445b847087ba0acd569b851bf7006e",
+  "detected_at": "2026-09-01T22:01:03.718000+00:00",
+  "id": "92a9c968-d696-4598-9bc4-feeb993ed71b",
+  "playbook_id": "PB-ENDPOINT-FIM-001",
+  "priority": "critical",
+  "received_at": "2026-09-01T22:01:04.872000+00:00",
+  "resource_path": "c:\\sanolifood\\quality\\config\\validation-probe.txt",
+  "response_started_at": "2026-09-01T22:01:29.758161+00:00",
+  "rolled_back_at": null,
+  "rule_description": "SanoliFood Windows quality configuration changed: c:\\sanolifood\\quality\\config\\validation-probe.txt",
+  "rule_id": 110211,
+  "rule_level": 8,
+  "source_alert_id": "1788300063.36271169",
+  "source_ip": null,
+  "status": "simulated",
+  "triaged_at": "2026-09-01T22:01:04.912337+00:00"
+}

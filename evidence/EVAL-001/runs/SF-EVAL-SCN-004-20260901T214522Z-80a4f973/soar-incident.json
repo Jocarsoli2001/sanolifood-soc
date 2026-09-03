@@ -1,0 +1,70 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T21:45:32.671867+00:00",
+      "expires_at": null,
+      "id": "e99eb1b7-5ae0-4b1c-bb02-83b0cd24038c",
+      "incident_id": "c4e5d0cf-cd32-44e4-9958-ad9e59f5e616",
+      "optional": false,
+      "result": {
+        "bytes": 4699,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/c4e5d0cf-cd32-44e4-9958-ad9e59f5e616/e99eb1b7-5ae0-4b1c-bb02-83b0cd24038c.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "app_ip_block",
+      "approved_at": "2026-09-01T21:46:00.889810+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-01T21:46:00.952962+00:00",
+      "expires_at": null,
+      "id": "4c053016-6fc9-4432-a6c5-e124c28db10a",
+      "incident_id": "c4e5d0cf-cd32-44e4-9958-ad9e59f5e616",
+      "optional": false,
+      "result": {
+        "mode": "dry-run",
+        "target": "10.20.0.30",
+        "ttl_seconds": 600,
+        "would_apply": "app_ip_block"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "simulated",
+      "target": "10.20.0.30",
+      "ttl_seconds": 600
+    }
+  ],
+  "actor_username": null,
+  "agent_id": "000",
+  "agent_name": "46cfdde86674",
+  "analyst": "jose.santizo",
+  "contained_at": null,
+  "decided_at": "2026-09-01T21:46:00.889810+00:00",
+  "decision": "approve",
+  "decision_reason": "Indicador SQLi crítico confirmado como estímulo controlado; se autoriza validar el bloqueo de IP en dry-run",
+  "dedup_key": "7bd0ddc97eeb25ab375dce24cebe10364c4103e48b965077d8b144057f842773",
+  "detected_at": "2026-09-01T21:45:31.334000+00:00",
+  "id": "c4e5d0cf-cd32-44e4-9958-ad9e59f5e616",
+  "playbook_id": "PB-NDR-SQLI-001",
+  "priority": "critical",
+  "received_at": "2026-09-01T21:45:32.579000+00:00",
+  "resource_path": null,
+  "response_started_at": "2026-09-01T21:46:00.952962+00:00",
+  "rolled_back_at": null,
+  "rule_description": "SanoliFood NDR SQL injection indicator from 10.20.0.30 to 10.20.0.10",
+  "rule_id": 110130,
+  "rule_level": 12,
+  "source_alert_id": "1788299131.35734489",
+  "source_ip": "10.20.0.30",
+  "status": "simulated",
+  "triaged_at": "2026-09-01T21:45:32.623427+00:00"
+}

@@ -1,0 +1,81 @@
+{
+  "catalog_scenario_count": 8,
+  "complete_scenario_count": 8,
+  "complete_scenarios": [
+    "SCN-001",
+    "SCN-002",
+    "SCN-003",
+    "SCN-004",
+    "SCN-005",
+    "SCN-006",
+    "SCN-007",
+    "SCN-008"
+  ],
+  "fail_count": 0,
+  "generated_at": "2026-09-03T19:13:44.683266+00:00",
+  "invalid_timing_count": 0,
+  "live_rollback_count": 3,
+  "live_verified_run_count": 2,
+  "metrics": {
+    "analyst_decision_seconds": {
+      "mean": 49.314,
+      "median": 38.752,
+      "p95": 140.756,
+      "samples": 8
+    },
+    "containment_to_rollback_seconds": {
+      "mean": 28.368,
+      "median": 28.368,
+      "p95": 56.513,
+      "samples": 2
+    },
+    "decision_to_containment_seconds": {
+      "mean": 0.055,
+      "median": 0.055,
+      "p95": 0.057,
+      "samples": 2
+    },
+    "decision_to_response_seconds": {
+      "mean": 0.053,
+      "median": 0.056,
+      "p95": 0.065,
+      "samples": 7
+    },
+    "end_to_end_triage_seconds": {
+      "mean": 2.139,
+      "median": 2.264,
+      "p95": 3.512,
+      "samples": 10
+    },
+    "soar_triage_seconds": {
+      "mean": 0.069,
+      "median": 0.057,
+      "p95": 0.132,
+      "samples": 10
+    },
+    "stimulus_to_wazuh_seconds": {
+      "mean": 0.969,
+      "median": 1.032,
+      "p95": 2.008,
+      "samples": 10
+    },
+    "wazuh_to_soar_seconds": {
+      "mean": 1.101,
+      "median": 1.099,
+      "p95": 1.992,
+      "samples": 10
+    }
+  },
+  "mitre_techniques_observed": [
+    "T1110",
+    "T1110.001",
+    "T1190",
+    "T1565.001",
+    "T1595.002"
+  ],
+  "pass_count": 10,
+  "pending_decision_count": 0,
+  "run_count": 10,
+  "scenario_coverage_percent": 100.0,
+  "simulated_action_count": 6
+}

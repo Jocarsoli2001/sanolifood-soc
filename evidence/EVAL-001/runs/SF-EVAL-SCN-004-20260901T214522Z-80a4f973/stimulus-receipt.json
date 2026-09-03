@@ -1,0 +1,15 @@
+{
+  "completed_at": "2026-09-01T21:45:30.162798+00:00",
+  "http_statuses": [
+    404
+  ],
+  "marker": "SF-EVAL-SCN-004-20260901T214522Z-80a4f973",
+  "request_count": 1,
+  "run_id": "SF-EVAL-SCN-004-20260901T214522Z-80a4f973",
+  "source_ip": "10.20.0.30",
+  "started_at": "2026-09-01T21:45:30.143943+00:00",
+  "status": "completed",
+  "stimulus": "sqli_signature_validation",
+  "target_ip": "10.20.0.10",
+  "target_port": 8080
+}

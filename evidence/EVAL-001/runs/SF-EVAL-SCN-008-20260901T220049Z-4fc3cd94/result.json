@@ -1,0 +1,52 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "2ec8cf0d-5466-47be-a89e-c19d52195398",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "quality_guard",
+      "id": "b41ce539-24d5-4dc2-8537-73ad075af712",
+      "reversible": true,
+      "status": "simulated"
+    }
+  ],
+  "decision": "approve",
+  "dispatch_started_at": "2026-09-01T22:00:49.513260+00:00",
+  "incident_id": "92a9c968-d696-4598-9bc4-feeb993ed71b",
+  "incident_status": "simulated",
+  "marker": "SF-EVAL-SCN-008-20260901T220049Z-4fc3cd94",
+  "metrics": {
+    "analyst_decision_seconds": 24.811,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": 0.035,
+    "end_to_end_triage_seconds": 2.798,
+    "soar_triage_seconds": 0.04,
+    "stimulus_to_wazuh_seconds": 1.604,
+    "wazuh_to_soar_seconds": 1.154
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-008-20260901T220049Z-4fc3cd94",
+  "scenario_id": "SCN-008",
+  "scenario_name": "FIM WhoData de configuración de calidad en Windows",
+  "schema_version": 1,
+  "source": "windows_endpoint",
+  "status": "PASS",
+  "stimulus": "windows_fim",
+  "stimulus_completed_at": "2026-09-01T22:01:09.578606+00:00",
+  "stimulus_started_at": "2026-09-01T22:01:02.114383+00:00",
+  "stimulus_timing_source": "endpoint_marker",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T22:01:29.799938+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence"
+  ],
+  "wazuh_alert_id": "1788300063.36271169",
+  "wazuh_detected_at": "2026-09-01T22:01:03.718+0000"
+}

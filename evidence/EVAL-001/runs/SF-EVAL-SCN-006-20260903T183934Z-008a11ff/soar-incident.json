@@ -1,0 +1,93 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-03T18:39:41.467924+00:00",
+      "expires_at": null,
+      "id": "e0cf7e89-8b6f-4b98-bb10-08e948bb130b",
+      "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+      "optional": false,
+      "result": {
+        "bytes": 2821,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/674b4061-640b-4ee0-ae43-25208f85d277/e0cf7e89-8b6f-4b98-bb10-08e948bb130b.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "quality_guard",
+      "approved_at": "2026-09-03T18:40:30.533860+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-03T18:40:30.587193+00:00",
+      "expires_at": "2026-09-03T18:55:30.670937+00:00",
+      "id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+      "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+      "optional": false,
+      "result": {
+        "business_control": {
+          "control": {
+            "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+            "active": true,
+            "applied_at": "2026-09-03T18:40:30.670937+00:00",
+            "control_type": "quality_guard",
+            "expires_at": "2026-09-03T18:55:30.670937+00:00",
+            "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+            "revoked_at": null,
+            "target": "quality-release"
+          },
+          "created": true
+        },
+        "mode": "live",
+        "rollback": {
+          "changed": true,
+          "control": {
+            "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+            "active": false,
+            "applied_at": "2026-09-03T18:40:30.670937+00:00",
+            "control_type": "quality_guard",
+            "expires_at": "2026-09-03T18:55:30.670937+00:00",
+            "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+            "revoked_at": "2026-09-03T18:40:30.798265+00:00",
+            "target": "quality-release"
+          }
+        }
+      },
+      "reversible": true,
+      "rolled_back_at": "2026-09-03T18:40:30.811561+00:00",
+      "status": "rolled_back",
+      "target": "quality-release",
+      "ttl_seconds": 900
+    }
+  ],
+  "actor_username": "admin.sanolifood",
+  "agent_id": "000",
+  "agent_name": "e4827c51b90c",
+  "analyst": "jose.santizo",
+  "contained_at": "2026-09-03T18:40:30.587193+00:00",
+  "decided_at": "2026-09-03T18:40:30.533860+00:00",
+  "decision": "approve",
+  "decision_reason": "Anomalía de calidad confirmada; se autoriza comprobar la suspensión real y restauración de liberaciones",
+  "dedup_key": "46cf9a9e4e27fda22c8a198a3186011f7103bd4e5c8d1f4d341fa5fcc7d962d8",
+  "detected_at": "2026-09-03T18:39:39.791000+00:00",
+  "id": "674b4061-640b-4ee0-ae43-25208f85d277",
+  "playbook_id": "PB-QUALITY-001",
+  "priority": "high",
+  "received_at": "2026-09-03T18:39:41.197000+00:00",
+  "resource_path": null,
+  "response_started_at": "2026-09-03T18:40:30.587193+00:00",
+  "rolled_back_at": "2026-09-03T18:40:30.811561+00:00",
+  "rule_description": "SanoliFood quality check outside specification for resource 5",
+  "rule_id": 110030,
+  "rule_level": 8,
+  "source_alert_id": "1788460779.27762452",
+  "source_ip": "172.19.0.1",
+  "status": "closed",
+  "triaged_at": "2026-09-03T18:39:41.294841+00:00"
+}

@@ -1,0 +1,70 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T21:57:28.842700+00:00",
+      "expires_at": null,
+      "id": "64459732-f240-4401-a6a3-17c1a610f6d2",
+      "incident_id": "4c0cf662-0e06-4ffa-ad5e-a4578d609394",
+      "optional": false,
+      "result": {
+        "bytes": 3703,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/4c0cf662-0e06-4ffa-ad5e-a4578d609394/64459732-f240-4401-a6a3-17c1a610f6d2.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "quality_guard",
+      "approved_at": "2026-09-01T21:57:45.593817+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-01T21:57:45.649773+00:00",
+      "expires_at": null,
+      "id": "d0e3d640-6654-4576-9bd0-f36174f3090d",
+      "incident_id": "4c0cf662-0e06-4ffa-ad5e-a4578d609394",
+      "optional": false,
+      "result": {
+        "mode": "dry-run",
+        "target": "quality-release",
+        "ttl_seconds": 900,
+        "would_apply": "quality_guard"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "simulated",
+      "target": "quality-release",
+      "ttl_seconds": 900
+    }
+  ],
+  "actor_username": null,
+  "agent_id": "001",
+  "agent_name": "sanolifood-ubuntu-01",
+  "analyst": "jose.santizo",
+  "contained_at": null,
+  "decided_at": "2026-09-01T21:57:45.593817+00:00",
+  "decision": "approve",
+  "decision_reason": "Cambio FIM confirmado en la configuración de calidad de Ubuntu; se autoriza validar el quality guard en dry-run",
+  "dedup_key": "bee302be33f3b7764cb77d95dfb425c39ad2f2b2f39b4814ca7f617519f9a3e4",
+  "detected_at": "2026-09-01T21:57:28.055000+00:00",
+  "id": "4c0cf662-0e06-4ffa-ad5e-a4578d609394",
+  "playbook_id": "PB-ENDPOINT-FIM-001",
+  "priority": "critical",
+  "received_at": "2026-09-01T21:57:28.590000+00:00",
+  "resource_path": "/etc/sanolifood/validation-probe.yml",
+  "response_started_at": "2026-09-01T21:57:45.649773+00:00",
+  "rolled_back_at": null,
+  "rule_description": "SanoliFood Ubuntu quality configuration changed: /etc/sanolifood/validation-probe.yml",
+  "rule_id": 110210,
+  "rule_level": 8,
+  "source_alert_id": "1788299848.36052740",
+  "source_ip": null,
+  "status": "simulated",
+  "triaged_at": "2026-09-01T21:57:28.703042+00:00"
+}

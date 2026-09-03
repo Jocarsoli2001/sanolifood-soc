@@ -1,0 +1,1 @@
+PASS evaluation static validation: 8 scenarios, 8 unique rules, fixed lab target 10.20.0.10.
