@@ -1,0 +1,17 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "app_ip_block"
+  ],
+  "expected_playbook_id": "PB-NDR-SQLI-001",
+  "expected_rule_id": 110130,
+  "id": "SCN-004",
+  "mitre": [
+    "T1190"
+  ],
+  "name": "Cadena inerte de validación SQLi en ruta inexistente",
+  "request_budget": 1,
+  "requires_decision": true,
+  "source": "kali",
+  "stimulus": "sqli_signature_validation"
+}

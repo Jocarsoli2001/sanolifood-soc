@@ -1,0 +1,82 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "46cfdde86674"
+  },
+  "data": {
+    "@source": "suricata-ndr",
+    "alert": {
+      "action": "allowed",
+      "category": "Misc activity",
+      "gid": "1",
+      "rev": "1",
+      "severity": "3",
+      "signature": "SANOLIFOOD NDR validation request",
+      "signature_id": "9900001"
+    },
+    "app_proto": "http",
+    "dest_ip": "10.20.0.10",
+    "dest_port": "8080",
+    "direction": "to_server",
+    "event_type": "alert",
+    "flow": {
+      "bytes_toclient": "963",
+      "bytes_toserver": "564",
+      "dest_ip": "10.20.0.10",
+      "dest_port": "8080",
+      "pkts_toclient": "4",
+      "pkts_toserver": "4",
+      "src_ip": "10.20.0.30",
+      "src_port": "52702",
+      "start": "2026-09-01T17:14:00.660877+0000"
+    },
+    "flow_id": "23697094895369.000000",
+    "http": {
+      "hostname": "10.20.0.10",
+      "http_content_type": "application/json",
+      "http_method": "GET",
+      "http_port": "8080",
+      "http_user_agent": "SanoliFood-Evaluation/0.8",
+      "length": "59",
+      "protocol": "HTTP/1.1",
+      "status": "200",
+      "url": "/health/ready?sf_run_id=SF-EVAL-SCN-001-20260901T171353Z-75a50821"
+    },
+    "in_iface": "enp0s8",
+    "ip_v": "4",
+    "pkt_src": "wire/pcap",
+    "proto": "TCP",
+    "sensor": {
+      "zone": "edge"
+    },
+    "src_ip": "10.20.0.30",
+    "src_port": "52702",
+    "tc_progress": "response_complete",
+    "timestamp": "2026-09-01T17:14:00.692442+0000",
+    "ts_progress": "request_complete",
+    "tx_id": "0"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-01T17:14:00.692442+0000\",\"flow_id\":23697094895369,\"in_iface\":\"enp0s8\",\"event_type\":\"alert\",\"src_ip\":\"10.20.0.30\",\"src_port\":52702,\"dest_ip\":\"10.20.0.10\",\"dest_port\":8080,\"proto\":\"TCP\",\"ip_v\":4,\"pkt_src\":\"wire/pcap\",\"tx_id\":0,\"alert\":{\"action\":\"allowed\",\"gid\":1,\"signature_id\":9900001,\"rev\":1,\"signature\":\"SANOLIFOOD NDR validation request\",\"category\":\"Misc activity\",\"severity\":3},\"ts_progress\":\"request_complete\",\"tc_progress\":\"response_complete\",\"http\":{\"hostname\":\"10.20.0.10\",\"http_port\":8080,\"url\":\"/health/ready?sf_run_id=SF-EVAL-SCN-001-20260901T171353Z-75a50821\",\"http_user_agent\":\"SanoliFood-Evaluation/0.8\",\"http_content_type\":\"application/json\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"status\":200,\"length\":59},\"app_proto\":\"http\",\"direction\":\"to_server\",\"flow\":{\"pkts_toserver\":4,\"pkts_toclient\":4,\"bytes_toserver\":564,\"bytes_toclient\":963,\"start\":\"2026-09-01T17:14:00.660877+0000\",\"src_ip\":\"10.20.0.30\",\"dest_ip\":\"10.20.0.10\",\"src_port\":52702,\"dest_port\":8080},\"@source\":\"suricata-ndr\",\"sensor\":{\"zone\":\"edge\"}}",
+  "id": "1788282841.28406013",
+  "location": "/var/log/suricata/eve.json",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "SanoliFood NDR end-to-end validation request from 10.20.0.30",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "suricata",
+      "network",
+      "ndr_validation"
+    ],
+    "id": "110100",
+    "level": 5,
+    "mail": false
+  },
+  "timestamp": "2026-09-01T17:14:01.533+0000"
+}

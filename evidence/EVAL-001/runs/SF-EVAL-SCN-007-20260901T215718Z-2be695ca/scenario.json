@@ -1,0 +1,18 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "quality_guard"
+  ],
+  "expected_agent_name": "sanolifood-ubuntu-01",
+  "expected_playbook_id": "PB-ENDPOINT-FIM-001",
+  "expected_rule_id": 110210,
+  "id": "SCN-007",
+  "mitre": [
+    "T1565.001"
+  ],
+  "name": "FIM de configuración de calidad en Ubuntu",
+  "request_budget": 0,
+  "requires_decision": true,
+  "source": "linux_endpoint",
+  "stimulus": "linux_fim"
+}

@@ -1,0 +1,64 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "e0cf7e89-8b6f-4b98-bb10-08e948bb130b",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "quality_guard",
+      "id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+      "reversible": true,
+      "status": "rolled_back"
+    }
+  ],
+  "decision": "approve",
+  "dispatch_started_at": "2026-09-03T18:39:34.047287+00:00",
+  "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+  "incident_status": "closed",
+  "live_control_verification": {
+    "active": "PASS",
+    "after_rollback": "PASS",
+    "before": "PASS",
+    "evidence_file": "live-control-verification.json",
+    "status": "PASS",
+    "verified_actions": [
+      "quality_guard"
+    ]
+  },
+  "marker": "SF-EVAL-SCN-006-20260903T183934Z-008a11ff",
+  "metrics": {
+    "analyst_decision_seconds": 49.239,
+    "containment_to_rollback_seconds": 0.224,
+    "decision_to_containment_seconds": 0.053,
+    "decision_to_response_seconds": 0.053,
+    "end_to_end_triage_seconds": 3.512,
+    "soar_triage_seconds": 0.098,
+    "stimulus_to_wazuh_seconds": 2.008,
+    "wazuh_to_soar_seconds": 1.406
+  },
+  "response_mode": "live",
+  "run_id": "SF-EVAL-SCN-006-20260903T183934Z-008a11ff",
+  "scenario_id": "SCN-006",
+  "scenario_name": "Control de calidad fuera de especificación",
+  "schema_version": 1,
+  "source": "business",
+  "status": "PASS",
+  "stimulus": "quality_failure",
+  "stimulus_completed_at": "2026-09-03T18:39:38.076415+00:00",
+  "stimulus_started_at": "2026-09-03T18:39:37.783033+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-03T18:40:30.875257+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence",
+    "live_control_effect",
+    "rollback_restoration"
+  ],
+  "wazuh_alert_id": "1788460779.27762452",
+  "wazuh_detected_at": "2026-09-03T18:39:39.791+0000"
+}

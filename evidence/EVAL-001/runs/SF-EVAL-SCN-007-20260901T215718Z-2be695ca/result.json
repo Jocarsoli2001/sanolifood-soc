@@ -1,0 +1,52 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "64459732-f240-4401-a6a3-17c1a610f6d2",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "quality_guard",
+      "id": "d0e3d640-6654-4576-9bd0-f36174f3090d",
+      "reversible": true,
+      "status": "simulated"
+    }
+  ],
+  "decision": "approve",
+  "dispatch_started_at": "2026-09-01T21:57:18.018346+00:00",
+  "incident_id": "4c0cf662-0e06-4ffa-ad5e-a4578d609394",
+  "incident_status": "simulated",
+  "marker": "SF-EVAL-SCN-007-20260901T215718Z-2be695ca",
+  "metrics": {
+    "analyst_decision_seconds": 16.891,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": 0.056,
+    "end_to_end_triage_seconds": 0.703,
+    "soar_triage_seconds": 0.113,
+    "stimulus_to_wazuh_seconds": 0.055,
+    "wazuh_to_soar_seconds": 0.535
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-007-20260901T215718Z-2be695ca",
+  "scenario_id": "SCN-007",
+  "scenario_name": "FIM de configuración de calidad en Ubuntu",
+  "schema_version": 1,
+  "source": "linux_endpoint",
+  "status": "PASS",
+  "stimulus": "linux_fim",
+  "stimulus_completed_at": "2026-09-01T21:57:28.027632+00:00",
+  "stimulus_started_at": "2026-09-01T21:57:28+00:00",
+  "stimulus_timing_source": "endpoint_marker",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T21:57:45.727185+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence"
+  ],
+  "wazuh_alert_id": "1788299848.36052740",
+  "wazuh_detected_at": "2026-09-01T21:57:28.055+0000"
+}

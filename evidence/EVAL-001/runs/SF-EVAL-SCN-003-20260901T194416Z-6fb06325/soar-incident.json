@@ -1,0 +1,67 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T19:44:26.798481+00:00",
+      "expires_at": null,
+      "id": "f0d1bc6f-e8bb-4a25-a61e-afcb38114da3",
+      "incident_id": "86f5491d-36d5-408a-b8ea-73baa35e9767",
+      "optional": false,
+      "result": {
+        "bytes": 4647,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/86f5491d-36d5-408a-b8ea-73baa35e9767/f0d1bc6f-e8bb-4a25-a61e-afcb38114da3.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "app_ip_block",
+      "approved_at": null,
+      "attempt_count": 0,
+      "automatic": false,
+      "executed_at": null,
+      "expires_at": null,
+      "id": "97365cc8-219b-4cb1-ab89-dace64274bc6",
+      "incident_id": "86f5491d-36d5-408a-b8ea-73baa35e9767",
+      "optional": false,
+      "result": {
+        "reason": "analyst_rejected"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "skipped",
+      "target": "10.20.0.30",
+      "ttl_seconds": 600
+    }
+  ],
+  "actor_username": null,
+  "agent_id": "000",
+  "agent_name": "46cfdde86674",
+  "analyst": "jose.santizo",
+  "contained_at": null,
+  "decided_at": "2026-09-01T19:45:21.083475+00:00",
+  "decision": "reject",
+  "decision_reason": "Solicitud autorizada de la campaña de evaluación; no requiere contención del origen",
+  "dedup_key": "1deefc7af94867e5e7860b403084091ab3cc3df8d34122c20633bcbce6121519",
+  "detected_at": "2026-09-01T19:44:24.605000+00:00",
+  "id": "86f5491d-36d5-408a-b8ea-73baa35e9767",
+  "playbook_id": "PB-NDR-RECON-001",
+  "priority": "high",
+  "received_at": "2026-09-01T19:44:26.597000+00:00",
+  "resource_path": null,
+  "response_started_at": null,
+  "rolled_back_at": null,
+  "rule_description": "SanoliFood NDR sensitive web path enumeration from 10.20.0.30",
+  "rule_id": 110120,
+  "rule_level": 9,
+  "source_alert_id": "1788291864.32379963",
+  "source_ip": "10.20.0.30",
+  "status": "rejected",
+  "triaged_at": "2026-09-01T19:44:26.672267+00:00"
+}

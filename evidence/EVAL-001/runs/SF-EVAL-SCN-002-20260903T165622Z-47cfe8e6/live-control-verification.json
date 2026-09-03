@@ -1,0 +1,160 @@
+{
+  "active": {
+    "controls": [
+      {
+        "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+        "action_type": "app_ip_block",
+        "application_guard": {
+          "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+          "control_type": "app_ip_block",
+          "decision": "deny",
+          "enforced": true,
+          "guard": "http_request",
+          "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+          "schema_version": 1,
+          "target": "10.20.0.30"
+        },
+        "network_probe": {
+          "observed_at": "2026-09-03T16:59:50.009497+00:00",
+          "path": "/auth/login",
+          "probe": "kali_http_request",
+          "source_ip": "10.20.0.30",
+          "status_code": 403,
+          "target": "10.20.0.10:8080"
+        },
+        "target": "10.20.0.30"
+      },
+      {
+        "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+        "action_type": "app_account_lock",
+        "application_guard": {
+          "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+          "control_type": "app_account_lock",
+          "decision": "deny",
+          "enforced": true,
+          "guard": "authentication",
+          "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+          "schema_version": 1,
+          "target": "eval.47cfe8e6"
+        },
+        "target": "eval.47cfe8e6"
+      }
+    ],
+    "expected_decision": "deny",
+    "observed_at": "2026-09-03T16:59:50.060963+00:00",
+    "phase": "active",
+    "status": "PASS"
+  },
+  "after_rollback": {
+    "controls": [
+      {
+        "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+        "action_type": "app_ip_block",
+        "application_guard": {
+          "action_id": null,
+          "control_type": "app_ip_block",
+          "decision": "allow",
+          "enforced": false,
+          "guard": "http_request",
+          "incident_id": null,
+          "schema_version": 1,
+          "target": "10.20.0.30"
+        },
+        "network_probe": {
+          "observed_at": "2026-09-03T17:00:03.570564+00:00",
+          "path": "/auth/login",
+          "probe": "kali_http_request",
+          "source_ip": "10.20.0.30",
+          "status_code": 200,
+          "target": "10.20.0.10:8080"
+        },
+        "target": "10.20.0.30"
+      },
+      {
+        "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+        "action_type": "app_account_lock",
+        "application_guard": {
+          "action_id": null,
+          "control_type": "app_account_lock",
+          "decision": "allow",
+          "enforced": false,
+          "guard": "authentication",
+          "incident_id": null,
+          "schema_version": 1,
+          "target": "eval.47cfe8e6"
+        },
+        "target": "eval.47cfe8e6"
+      }
+    ],
+    "expected_decision": "allow",
+    "observed_at": "2026-09-03T17:00:03.600433+00:00",
+    "phase": "after_rollback",
+    "status": "PASS"
+  },
+  "before": {
+    "controls": [
+      {
+        "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+        "action_type": "app_ip_block",
+        "application_guard": {
+          "action_id": null,
+          "control_type": "app_ip_block",
+          "decision": "allow",
+          "enforced": false,
+          "guard": "http_request",
+          "incident_id": null,
+          "schema_version": 1,
+          "target": "10.20.0.30"
+        },
+        "network_probe": {
+          "observed_at": "2026-09-03T16:58:53.208108+00:00",
+          "path": "/auth/login",
+          "probe": "kali_http_request",
+          "source_ip": "10.20.0.30",
+          "status_code": 200,
+          "target": "10.20.0.10:8080"
+        },
+        "target": "10.20.0.30"
+      },
+      {
+        "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+        "action_type": "app_account_lock",
+        "application_guard": {
+          "action_id": null,
+          "control_type": "app_account_lock",
+          "decision": "allow",
+          "enforced": false,
+          "guard": "authentication",
+          "incident_id": null,
+          "schema_version": 1,
+          "target": "eval.47cfe8e6"
+        },
+        "target": "eval.47cfe8e6"
+      }
+    ],
+    "expected_decision": "allow",
+    "observed_at": "2026-09-03T16:58:53.398105+00:00",
+    "phase": "before",
+    "status": "PASS"
+  },
+  "completed_at": "2026-09-03T17:00:03.600453+00:00",
+  "controls": [
+    {
+      "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+      "action_type": "app_ip_block",
+      "target": "10.20.0.30"
+    },
+    {
+      "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+      "action_type": "app_account_lock",
+      "target": "eval.47cfe8e6"
+    }
+  ],
+  "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+  "rollback_errors": [],
+  "rollback_receipt_count": 2,
+  "run_id": "SF-EVAL-SCN-002-20260903T165622Z-47cfe8e6",
+  "schema_version": 1,
+  "started_at": "2026-09-03T16:58:48.462267+00:00",
+  "status": "PASS"
+}

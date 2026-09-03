@@ -1,0 +1,19 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "app_ip_block",
+    "app_account_lock"
+  ],
+  "expected_playbook_id": "PB-AUTH-001",
+  "expected_rule_id": 110011,
+  "id": "SCN-002",
+  "mitre": [
+    "T1110",
+    "T1110.001"
+  ],
+  "name": "Fallos de autenticación correlacionados",
+  "request_budget": 6,
+  "requires_decision": true,
+  "source": "kali",
+  "stimulus": "auth_failures"
+}

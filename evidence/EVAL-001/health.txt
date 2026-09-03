@@ -1,0 +1,37 @@
+make[1]: Entering directory '/home/socadmin/sanolifood-soc'
+make[2]: Entering directory '/home/socadmin/sanolifood-soc'
+OK   postgres     state=running health=healthy
+OK   app          state=running health=healthy
+OK   nginx        state=running health=healthy
+OK   HTTP         http://127.0.0.1:8080/health/ready
+make[2]: Leaving directory '/home/socadmin/sanolifood-soc'
+make[2]: Entering directory '/home/socadmin/sanolifood-soc'
+OK   wazuh.indexer      state=running health=healthy
+OK   wazuh.manager      state=running health=healthy
+OK   wazuh.dashboard    state=running health=healthy
+OK   HTTPS              https://127.0.0.1:8443/app/wz-home
+OK   telemetry          /var/log/sanolifood/sanolifood.jsonl
+make[2]: Leaving directory '/home/socadmin/sanolifood-soc'
+make[2]: Entering directory '/home/socadmin/sanolifood-soc'
+OK   suricata         state=running health=healthy
+OK   interface        enp0s8
+OK   EVE telemetry    /var/log/suricata/eve.json
+OK   Wazuh ingestion  EVE volume readable by manager
+make[2]: Leaving directory '/home/socadmin/sanolifood-soc'
+make[2]: Entering directory '/home/socadmin/sanolifood-soc'
+OK   Ubuntu endpoint    name=sanolifood-ubuntu-01 state=active
+OK   group assignment   agent=sanolifood-ubuntu-01 group=sanolifood-linux
+OK   Windows endpoint   name=sanolifood-win-01 state=active
+OK   group assignment   agent=sanolifood-win-01 group=sanolifood-windows
+OK   central policy     sanolifood-linux
+OK   central policy     sanolifood-windows
+make[2]: Leaving directory '/home/socadmin/sanolifood-soc'
+make[2]: Entering directory '/home/socadmin/sanolifood-soc'
+OK   soar-db              state=running health=healthy
+OK   soar-controller      state=running health=healthy
+OK   n8n                  state=running health=healthy
+OK   n8n-http             http://127.0.0.1:5678/healthz
+OK   controller-http      response_mode=dry-run
+OK   workflow-publication five workflows present and published
+make[2]: Leaving directory '/home/socadmin/sanolifood-soc'
+make[1]: Leaving directory '/home/socadmin/sanolifood-soc'

@@ -1,0 +1,156 @@
+{
+  "agent": {
+    "id": "002",
+    "ip": "10.20.0.20",
+    "labels": {
+      "sf": {
+        "asset": {
+          "organization": "SanoliFood-SA",
+          "platform": "windows",
+          "zone": "corporate"
+        },
+        "telemetry": {
+          "profile": "endpoint-v1"
+        }
+      }
+    },
+    "name": "sanolifood-win-01"
+  },
+  "decoder": {
+    "name": "syscheck_integrity_changed"
+  },
+  "full_log": "File 'c:\\sanolifood\\quality\\config\\validation-probe.txt' modified\nMode: whodata\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1788269412', now it is '1788300062'\nOld md5sum was: 'ec5042377fe1e0c0b414a476da4029a0'\nNew md5sum is : '2ee48a81b65b80f8287d0d5b6dfb5ab4'\nOld sha1sum was: '06f8e60ba4d0026d69249115ec6a82f01943f9f5'\nNew sha1sum is : 'b7ea36ea76918fa0551dace265450acf4081e449'\nOld sha256sum was: '74830f373e636169222d8d68f4d31381ac1f3781ab4678a62110d463682d0360'\nNew sha256sum is : '71d544479bbb3ded0e573621d429493559a1095327ede5759982eec67ad09c6e'\n",
+  "id": "1788300063.36271169",
+  "location": "syscheck",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "SanoliFood Windows quality configuration changed: c:\\sanolifood\\quality\\config\\validation-probe.txt",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "endpoint",
+      "windows",
+      "fim",
+      "configuration_change",
+      "quality"
+    ],
+    "id": "110211",
+    "level": 8,
+    "mail": false,
+    "mitre": {
+      "id": [
+        "T1565.001"
+      ],
+      "tactic": [
+        "Impact"
+      ],
+      "technique": [
+        "Stored Data Manipulation"
+      ]
+    }
+  },
+  "syscheck": {
+    "attrs_after": [
+      "ARCHIVE"
+    ],
+    "audit": {
+      "process": {
+        "id": "1152",
+        "name": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+      },
+      "user": {
+        "id": "S-1-5-21-1607767368-1388823349-1346296317-1001",
+        "name": "jose"
+      }
+    },
+    "changed_attributes": [
+      "mtime",
+      "md5",
+      "sha1",
+      "sha256"
+    ],
+    "diff": "< ﻿SanoliFood endpoint validation 2026-09-01T13:30:12.7387544Z\n< run_id=SF-EVAL-SCN-008-20260901T132955Z-c95b65dd\n---\n> ﻿SanoliFood endpoint validation 2026-09-01T22:01:02.1143836Z\n> run_id=SF-EVAL-SCN-008-20260901T220049Z-4fc3cd94\n",
+    "event": "modified",
+    "md5_after": "2ee48a81b65b80f8287d0d5b6dfb5ab4",
+    "md5_before": "ec5042377fe1e0c0b414a476da4029a0",
+    "mode": "whodata",
+    "mtime_after": "2026-09-01T22:01:02",
+    "mtime_before": "2026-09-01T13:30:12",
+    "path": "c:\\sanolifood\\quality\\config\\validation-probe.txt",
+    "sha1_after": "b7ea36ea76918fa0551dace265450acf4081e449",
+    "sha1_before": "06f8e60ba4d0026d69249115ec6a82f01943f9f5",
+    "sha256_after": "71d544479bbb3ded0e573621d429493559a1095327ede5759982eec67ad09c6e",
+    "sha256_before": "74830f373e636169222d8d68f4d31381ac1f3781ab4678a62110d463682d0360",
+    "size_after": "114",
+    "uid_after": "S-1-5-32-544",
+    "uname_after": "Administrators",
+    "win_perm_after": [
+      {
+        "allowed": [
+          "DELETE",
+          "READ_CONTROL",
+          "WRITE_DAC",
+          "WRITE_OWNER",
+          "SYNCHRONIZE",
+          "READ_DATA",
+          "WRITE_DATA",
+          "APPEND_DATA",
+          "READ_EA",
+          "WRITE_EA",
+          "EXECUTE",
+          "READ_ATTRIBUTES",
+          "WRITE_ATTRIBUTES"
+        ],
+        "name": "Administrators"
+      },
+      {
+        "allowed": [
+          "DELETE",
+          "READ_CONTROL",
+          "WRITE_DAC",
+          "WRITE_OWNER",
+          "SYNCHRONIZE",
+          "READ_DATA",
+          "WRITE_DATA",
+          "APPEND_DATA",
+          "READ_EA",
+          "WRITE_EA",
+          "EXECUTE",
+          "READ_ATTRIBUTES",
+          "WRITE_ATTRIBUTES"
+        ],
+        "name": "SYSTEM"
+      },
+      {
+        "allowed": [
+          "READ_CONTROL",
+          "SYNCHRONIZE",
+          "READ_DATA",
+          "READ_EA",
+          "EXECUTE",
+          "READ_ATTRIBUTES"
+        ],
+        "name": "Users"
+      },
+      {
+        "allowed": [
+          "DELETE",
+          "READ_CONTROL",
+          "SYNCHRONIZE",
+          "READ_DATA",
+          "WRITE_DATA",
+          "APPEND_DATA",
+          "READ_EA",
+          "WRITE_EA",
+          "EXECUTE",
+          "READ_ATTRIBUTES",
+          "WRITE_ATTRIBUTES"
+        ],
+        "name": "Authenticated Users"
+      }
+    ]
+  },
+  "timestamp": "2026-09-01T22:01:03.718+0000"
+}

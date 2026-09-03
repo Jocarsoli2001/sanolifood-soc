@@ -1,0 +1,17 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "app_ip_block"
+  ],
+  "expected_playbook_id": "PB-NDR-RECON-001",
+  "expected_rule_id": 110120,
+  "id": "SCN-003",
+  "mitre": [
+    "T1595.002"
+  ],
+  "name": "Solicitud controlada de ruta sensible inexistente",
+  "request_budget": 1,
+  "requires_decision": true,
+  "source": "kali",
+  "stimulus": "web_path_validation"
+}

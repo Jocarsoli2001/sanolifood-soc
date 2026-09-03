@@ -1,0 +1,49 @@
+[
+  {
+    "action": {
+      "action_type": "quality_guard",
+      "approved_at": "2026-09-03T18:40:30.533860+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-03T18:40:30.587193+00:00",
+      "expires_at": "2026-09-03T18:55:30.670937+00:00",
+      "id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+      "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+      "optional": false,
+      "result": {
+        "business_control": {
+          "control": {
+            "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+            "active": true,
+            "applied_at": "2026-09-03T18:40:30.670937+00:00",
+            "control_type": "quality_guard",
+            "expires_at": "2026-09-03T18:55:30.670937+00:00",
+            "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+            "revoked_at": null,
+            "target": "quality-release"
+          },
+          "created": true
+        },
+        "mode": "live",
+        "rollback": {
+          "changed": true,
+          "control": {
+            "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+            "active": false,
+            "applied_at": "2026-09-03T18:40:30.670937+00:00",
+            "control_type": "quality_guard",
+            "expires_at": "2026-09-03T18:55:30.670937+00:00",
+            "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+            "revoked_at": "2026-09-03T18:40:30.798265+00:00",
+            "target": "quality-release"
+          }
+        }
+      },
+      "reversible": true,
+      "rolled_back_at": "2026-09-03T18:40:30.811561+00:00",
+      "status": "rolled_back",
+      "target": "quality-release",
+      "ttl_seconds": 900
+    }
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "f0d1bc6f-e8bb-4a25-a61e-afcb38114da3",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "app_ip_block",
+      "id": "97365cc8-219b-4cb1-ab89-dace64274bc6",
+      "reversible": true,
+      "status": "skipped"
+    }
+  ],
+  "decision": "reject",
+  "dispatch_started_at": "2026-09-01T19:44:16.859920+00:00",
+  "incident_id": "86f5491d-36d5-408a-b8ea-73baa35e9767",
+  "incident_status": "rejected",
+  "marker": "SF-EVAL-SCN-003-20260901T194416Z-6fb06325",
+  "metrics": {
+    "analyst_decision_seconds": 54.411,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": null,
+    "end_to_end_triage_seconds": 2.484,
+    "soar_triage_seconds": 0.075,
+    "stimulus_to_wazuh_seconds": 0.417,
+    "wazuh_to_soar_seconds": 1.992
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-003-20260901T194416Z-6fb06325",
+  "scenario_id": "SCN-003",
+  "scenario_name": "Solicitud controlada de ruta sensible inexistente",
+  "schema_version": 1,
+  "source": "kali",
+  "status": "PASS",
+  "stimulus": "web_path_validation",
+  "stimulus_completed_at": "2026-09-01T19:44:24.275045+00:00",
+  "stimulus_started_at": "2026-09-01T19:44:24.188499+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T19:45:21.223689+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence"
+  ],
+  "wazuh_alert_id": "1788291864.32379963",
+  "wazuh_detected_at": "2026-09-01T19:44:24.605+0000"
+}

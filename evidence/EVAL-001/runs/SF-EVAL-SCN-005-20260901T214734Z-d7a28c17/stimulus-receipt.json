@@ -1,0 +1,19 @@
+{
+  "actor_username": "admin.sanolifood",
+  "completed_at": "2026-09-01T21:47:37.516629+00:00",
+  "effect": {
+    "ingredient_sku": "ING-TOM-001",
+    "net_quantity_delta": "0.000"
+  },
+  "http_statuses": [
+    200,
+    200,
+    200,
+    200
+  ],
+  "request_count": 4,
+  "run_id": "SF-EVAL-SCN-005-20260901T214734Z-d7a28c17",
+  "started_at": "2026-09-01T21:47:37.189174+00:00",
+  "status": "completed",
+  "stimulus": "inventory_adjustment"
+}

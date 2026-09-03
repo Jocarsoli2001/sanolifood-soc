@@ -1,0 +1,52 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "e99eb1b7-5ae0-4b1c-bb02-83b0cd24038c",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "app_ip_block",
+      "id": "4c053016-6fc9-4432-a6c5-e124c28db10a",
+      "reversible": true,
+      "status": "simulated"
+    }
+  ],
+  "decision": "approve",
+  "dispatch_started_at": "2026-09-01T21:45:22.687296+00:00",
+  "incident_id": "c4e5d0cf-cd32-44e4-9958-ad9e59f5e616",
+  "incident_status": "simulated",
+  "marker": "SF-EVAL-SCN-004-20260901T214522Z-80a4f973",
+  "metrics": {
+    "analyst_decision_seconds": 28.266,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": 0.063,
+    "end_to_end_triage_seconds": 2.479,
+    "soar_triage_seconds": 0.044,
+    "stimulus_to_wazuh_seconds": 1.19,
+    "wazuh_to_soar_seconds": 1.245
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-004-20260901T214522Z-80a4f973",
+  "scenario_id": "SCN-004",
+  "scenario_name": "Cadena inerte de validación SQLi en ruta inexistente",
+  "schema_version": 1,
+  "source": "kali",
+  "status": "PASS",
+  "stimulus": "sqli_signature_validation",
+  "stimulus_completed_at": "2026-09-01T21:45:30.185827+00:00",
+  "stimulus_started_at": "2026-09-01T21:45:30.143943+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T21:46:01.009411+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence"
+  ],
+  "wazuh_alert_id": "1788299131.35734489",
+  "wazuh_detected_at": "2026-09-01T21:45:31.334+0000"
+}

@@ -1,0 +1,102 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "46cfdde86674"
+  },
+  "data": {
+    "@source": "suricata-ndr",
+    "alert": {
+      "action": "allowed",
+      "category": "access to a potentially vulnerable web application",
+      "gid": "1",
+      "metadata": {
+        "mitre_tactic_id": [
+          "TA0043"
+        ],
+        "mitre_technique_id": [
+          "T1595.002"
+        ]
+      },
+      "rev": "1",
+      "severity": "2",
+      "signature": "SANOLIFOOD NDR sensitive web path enumeration",
+      "signature_id": "9900003"
+    },
+    "app_proto": "http",
+    "dest_ip": "10.20.0.10",
+    "dest_port": "8080",
+    "direction": "to_server",
+    "event_type": "alert",
+    "flow": {
+      "bytes_toclient": "933",
+      "bytes_toserver": "522",
+      "dest_ip": "10.20.0.10",
+      "dest_port": "8080",
+      "pkts_toclient": "4",
+      "pkts_toserver": "4",
+      "src_ip": "10.20.0.30",
+      "src_port": "54174",
+      "start": "2026-09-01T19:44:24.190409+0000"
+    },
+    "flow_id": "254850964918194.000000",
+    "http": {
+      "hostname": "10.20.0.10",
+      "http_content_type": "application/json",
+      "http_method": "GET",
+      "http_port": "8080",
+      "http_user_agent": "SanoliFood-Evaluation/0.8",
+      "length": "22",
+      "protocol": "HTTP/1.1",
+      "status": "404",
+      "url": "/.env?sf_run_id=SF-EVAL-SCN-003-20260901T194416Z-6fb06325"
+    },
+    "in_iface": "enp0s8",
+    "ip_v": "4",
+    "pkt_src": "wire/pcap",
+    "proto": "TCP",
+    "sensor": {
+      "zone": "edge"
+    },
+    "src_ip": "10.20.0.30",
+    "src_port": "54174",
+    "tc_progress": "response_complete",
+    "timestamp": "2026-09-01T19:44:24.245132+0000",
+    "ts_progress": "request_complete",
+    "tx_id": "0"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-01T19:44:24.245132+0000\",\"flow_id\":254850964918194,\"in_iface\":\"enp0s8\",\"event_type\":\"alert\",\"src_ip\":\"10.20.0.30\",\"src_port\":54174,\"dest_ip\":\"10.20.0.10\",\"dest_port\":8080,\"proto\":\"TCP\",\"ip_v\":4,\"pkt_src\":\"wire/pcap\",\"tx_id\":0,\"alert\":{\"action\":\"allowed\",\"gid\":1,\"signature_id\":9900003,\"rev\":1,\"signature\":\"SANOLIFOOD NDR sensitive web path enumeration\",\"category\":\"access to a potentially vulnerable web application\",\"severity\":2,\"metadata\":{\"mitre_tactic_id\":[\"TA0043\"],\"mitre_technique_id\":[\"T1595.002\"]}},\"ts_progress\":\"request_complete\",\"tc_progress\":\"response_complete\",\"http\":{\"hostname\":\"10.20.0.10\",\"http_port\":8080,\"url\":\"/.env?sf_run_id=SF-EVAL-SCN-003-20260901T194416Z-6fb06325\",\"http_user_agent\":\"SanoliFood-Evaluation/0.8\",\"http_content_type\":\"application/json\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"status\":404,\"length\":22},\"app_proto\":\"http\",\"direction\":\"to_server\",\"flow\":{\"pkts_toserver\":4,\"pkts_toclient\":4,\"bytes_toserver\":522,\"bytes_toclient\":933,\"start\":\"2026-09-01T19:44:24.190409+0000\",\"src_ip\":\"10.20.0.30\",\"dest_ip\":\"10.20.0.10\",\"src_port\":54174,\"dest_port\":8080},\"@source\":\"suricata-ndr\",\"sensor\":{\"zone\":\"edge\"}}",
+  "id": "1788291864.32379963",
+  "location": "/var/log/suricata/eve.json",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "SanoliFood NDR sensitive web path enumeration from 10.20.0.30",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "suricata",
+      "network",
+      "web_enumeration",
+      "reconnaissance"
+    ],
+    "id": "110120",
+    "level": 9,
+    "mail": false,
+    "mitre": {
+      "id": [
+        "T1595.002"
+      ],
+      "tactic": [
+        "Reconnaissance"
+      ],
+      "technique": [
+        "Vulnerability Scanning"
+      ]
+    }
+  },
+  "timestamp": "2026-09-01T19:44:24.605+0000"
+}

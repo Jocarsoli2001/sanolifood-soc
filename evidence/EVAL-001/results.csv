@@ -1,0 +1,11 @@
+run_id,scenario_id,status,response_mode,wazuh_alert_id,incident_id,incident_status,decision,timing_integrity,live_verification_status,simulated_actions,rolled_back_actions,stimulus_to_wazuh_seconds,wazuh_to_soar_seconds,soar_triage_seconds,end_to_end_triage_seconds,analyst_decision_seconds,decision_to_response_seconds,decision_to_containment_seconds,containment_to_rollback_seconds
+SF-EVAL-SCN-001-20260901T171353Z-75a50821,SCN-001,PASS,dry-run,1788282841.28406013,cb8dc9d9-67b9-4dc0-a711-632c448850c3,closed,,valid,,0,0,0.875,1.102,0.057,2.034,,,,
+SF-EVAL-SCN-002-20260901T173517Z-9d94c8fd,SCN-002,PASS,dry-run,1788284126.28960374,f1a3a041-9d2a-4eb0-bc2b-a95a18bf762f,simulated,approve,valid,,2,0,1.625,0.745,0.132,2.503,59.034,0.065,,
+SF-EVAL-SCN-002-20260903T165622Z-47cfe8e6,SCN-002,PASS,live,1788454592.25127379,50a00c74-e815-4b55-b20e-87d87a687ee9,closed,approve,valid,PASS,0,2,1.354,0.64,0.056,2.05,140.756,0.057,0.057,56.513
+SF-EVAL-SCN-003-20260901T194416Z-6fb06325,SCN-003,PASS,dry-run,1788291864.32379963,86f5491d-36d5-408a-b8ea-73baa35e9767,rejected,reject,valid,,0,0,0.417,1.992,0.075,2.484,54.411,,,
+SF-EVAL-SCN-004-20260901T214522Z-80a4f973,SCN-004,PASS,dry-run,1788299131.35734489,c4e5d0cf-cd32-44e4-9958-ad9e59f5e616,simulated,approve,valid,,1,0,1.19,1.245,0.044,2.479,28.266,0.063,,
+SF-EVAL-SCN-005-20260901T214734Z-d7a28c17,SCN-005,PASS,dry-run,1788299257.35815303,ed3fc5b8-1f51-4d55-af38-de3eaa5d46d0,closed,,valid,,0,0,0.401,1.096,0.021,1.517,,,,
+SF-EVAL-SCN-006-20260901T215458Z-5da0fcdb,SCN-006,PASS,dry-run,1788299701.35993971,60e47fda-1be1-4e0f-b5da-886d493ce436,simulated,approve,valid,,1,0,0.157,1.095,0.057,1.309,21.105,0.039,,
+SF-EVAL-SCN-006-20260903T183934Z-008a11ff,SCN-006,PASS,live,1788460779.27762452,674b4061-640b-4ee0-ae43-25208f85d277,closed,approve,valid,PASS,0,1,2.008,1.406,0.098,3.512,49.239,0.053,0.053,0.224
+SF-EVAL-SCN-007-20260901T215718Z-2be695ca,SCN-007,PASS,dry-run,1788299848.36052740,4c0cf662-0e06-4ffa-ad5e-a4578d609394,simulated,approve,valid,,1,0,0.055,0.535,0.113,0.703,16.891,0.056,,
+SF-EVAL-SCN-008-20260901T220049Z-4fc3cd94,SCN-008,PASS,dry-run,1788300063.36271169,92a9c968-d696-4598-9bc4-feeb993ed71b,simulated,approve,valid,,1,0,1.604,1.154,0.04,2.798,24.811,0.035,,

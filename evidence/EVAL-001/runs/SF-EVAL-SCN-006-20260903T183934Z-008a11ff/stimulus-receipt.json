@@ -1,0 +1,18 @@
+{
+  "actor_username": "admin.sanolifood",
+  "completed_at": "2026-09-03T18:39:38.045802+00:00",
+  "effect": {
+    "lot": "SF26-SAL-0017 · Salsa de tomate Sanoli 500 g · quality_hold",
+    "persistent_record": true,
+    "result": "fail"
+  },
+  "http_statuses": [
+    200,
+    200
+  ],
+  "request_count": 2,
+  "run_id": "SF-EVAL-SCN-006-20260903T183934Z-008a11ff",
+  "started_at": "2026-09-03T18:39:37.783033+00:00",
+  "status": "completed",
+  "stimulus": "quality_failure"
+}

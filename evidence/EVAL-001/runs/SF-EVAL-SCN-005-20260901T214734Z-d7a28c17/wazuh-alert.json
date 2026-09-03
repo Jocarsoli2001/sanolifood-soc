@@ -1,0 +1,52 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "46cfdde86674"
+  },
+  "data": {
+    "actor_username": "admin.sanolifood",
+    "correlation_id": "73ba9044762b96052934c80897f35bd3",
+    "details": {
+      "balance_after": "920.000",
+      "ingredient_id": "1",
+      "movement_type": "adjustment",
+      "previous_balance": "820.000",
+      "quantity_delta": "100.000",
+      "reference": "SF-EVAL-SCN-005-20260901T214734Z-d7a28c17"
+    },
+    "environment": "corporate-lab",
+    "level": "INFO",
+    "logger": "sanolifood.security",
+    "message": "inventory.adjustment.high_value",
+    "outcome": "success",
+    "resource_id": "8",
+    "resource_type": "inventory_movement",
+    "sf_event_type": "inventory.adjustment.high_value",
+    "source_ip": "172.19.0.1",
+    "source_product": "sanolifood-operations",
+    "timestamp": "2026-09-01T21:47:37.281579+00:00"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-01T21:47:37.281579+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"inventory.adjustment.high_value\",\"sf_event_type\":\"inventory.adjustment.high_value\",\"outcome\":\"success\",\"actor_username\":\"admin.sanolifood\",\"source_ip\":\"172.19.0.1\",\"correlation_id\":\"73ba9044762b96052934c80897f35bd3\",\"resource_type\":\"inventory_movement\",\"resource_id\":\"8\",\"details\":{\"ingredient_id\":1,\"movement_type\":\"adjustment\",\"quantity_delta\":\"100.000\",\"previous_balance\":\"820.000\",\"balance_after\":\"920.000\",\"reference\":\"SF-EVAL-SCN-005-20260901T214734Z-d7a28c17\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}",
+  "id": "1788299257.35815303",
+  "location": "/var/log/sanolifood/sanolifood.jsonl",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "High-value SanoliFood inventory adjustment by admin.sanolifood",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "application",
+      "business_anomaly",
+      "inventory"
+    ],
+    "id": "110020",
+    "level": 8,
+    "mail": false
+  },
+  "timestamp": "2026-09-01T21:47:37.590+0000"
+}
