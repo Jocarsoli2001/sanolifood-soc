@@ -711,10 +711,13 @@ make eval-decide \
   REASON='Decisión documentada para la ejecución controlada'
 ```
 
-La campaña comienza en `dry-run`. Si se autoriza una ejecución supervisada en
-modo real, `CONFIRM=live` es obligatorio y el orquestador revierte
-inmediatamente cada acción reversible aplicada. La guía y la matriz completa
-están en [`evaluation/README.md`](evaluation/README.md).
+La campaña comienza en `dry-run`. Para una ejecución supervisada en modo real,
+`CONFIRM=live` es obligatorio. El evaluador verifica automáticamente la
+secuencia `permitido -> denegado -> restaurado` y solo entonces acepta el
+rollback como evidencia funcional. En bloqueos de IP, Kali confirma además el
+cambio HTTP `200 -> 403 -> 200`. La limpieza intenta el rollback incluso si una
+comprobación intermedia falla. La guía y la matriz completa están en
+[`evaluation/README.md`](evaluation/README.md).
 
 ## Evidencias y validación
 

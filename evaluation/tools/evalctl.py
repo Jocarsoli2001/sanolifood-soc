@@ -39,6 +39,9 @@ CORE_TIMING_METRICS = (
     "soar_triage_seconds",
     "end_to_end_triage_seconds",
 )
+LIVE_CONTROL_TYPES = frozenset(
+    {"app_ip_block", "app_account_lock", "quality_guard"}
+)
 
 
 class EvaluationError(RuntimeError):
@@ -168,6 +171,7 @@ class SoarClient:
         self.env = env
         self.controller = f"http://127.0.0.1:{env.get('SOAR_CONTROLLER_PORT', '5680')}"
         self.n8n = f"http://127.0.0.1:{env.get('SOAR_PUBLIC_PORT', '5678')}"
+        self.app = "http://127.0.0.1:8080"
         self.token = self.required("SOAR_INTERNAL_TOKEN")
         self.opener = build_opener(ProxyHandler({}))
 
@@ -258,6 +262,14 @@ class SoarClient:
         return self.request(
             "POST",
             f"{self.controller}/api/v1/actions/{quote(action_id)}/rollback?actor={quote(analyst)}",
+            internal=True,
+        )
+
+    def enforcement_probe(self, control_type: str, target: str) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            f"{self.app}/internal/soar/enforcement-probe",
+            payload={"control_type": control_type, "target": target},
             internal=True,
         )
 
@@ -675,6 +687,152 @@ def locate_result(run_id: str) -> tuple[Path, dict[str, Any], dict[str, Any]]:
     return destination, result, scenario_by_id(result["scenario_id"])
 
 
+def live_control_plan(incident: dict[str, Any]) -> list[dict[str, Any]]:
+    plan = [
+        {
+            "id": action.get("id"),
+            "action_type": action.get("action_type"),
+            "target": action.get("target"),
+        }
+        for action in incident.get("actions", [])
+        if action.get("reversible")
+        and not action.get("automatic")
+        and action.get("status") != "blocked_by_policy"
+    ]
+    if not plan:
+        raise EvaluationError("the live incident has no reversible control to verify")
+    for action in plan:
+        if action["action_type"] not in LIVE_CONTROL_TYPES:
+            raise EvaluationError(
+                f"unsupported live verification control: {action['action_type']}"
+            )
+        if not action["id"] or not action["target"]:
+            raise EvaluationError("live verification requires an action id and target")
+    return plan
+
+
+def require_live_action_status(
+    plan: list[dict[str, Any]],
+    incident: dict[str, Any],
+    expected_status: str,
+) -> None:
+    current = {action.get("id"): action for action in incident.get("actions", [])}
+    invalid = [
+        action["id"]
+        for action in plan
+        if current.get(action["id"], {}).get("status") != expected_status
+    ]
+    if invalid:
+        raise EvaluationError(
+            f"live actions did not reach {expected_status}: {', '.join(invalid)}"
+        )
+
+
+def kali_application_probe(kali_ssh: str, run_id: str) -> dict[str, Any]:
+    if not KALI_SSH_RE.fullmatch(kali_ssh):
+        raise EvaluationError(
+            "KALI_SSH=usuario@10.20.0.30 is required to verify a live IP block"
+        )
+    probe_script = r'''import json
+import sys
+from datetime import datetime, timezone
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote
+from urllib.request import ProxyHandler, Request, build_opener
+
+run_id = sys.argv[1]
+url = "http://10.20.0.10:8080/auth/login?sf_live_probe=" + quote(run_id, safe="")
+request = Request(url, headers={"User-Agent": "SanoliFood-Live-Control-Probe/0.8"})
+try:
+    with build_opener(ProxyHandler({})).open(request, timeout=8) as response:
+        status = response.status
+        response.read(4096)
+except HTTPError as exc:
+    status = exc.code
+    exc.read(4096)
+except (URLError, TimeoutError) as exc:
+    raise SystemExit("application probe failed: " + str(exc))
+print(json.dumps({
+    "probe": "kali_http_request",
+    "source_ip": "10.20.0.30",
+    "target": "10.20.0.10:8080",
+    "path": "/auth/login",
+    "status_code": status,
+    "observed_at": datetime.now(timezone.utc).isoformat(),
+}, sort_keys=True))
+'''
+    completed = command(
+        [
+            "ssh",
+            "-o",
+            "ConnectTimeout=8",
+            kali_ssh,
+            "python3",
+            "-",
+            run_id,
+        ],
+        timeout=60,
+        input_text=probe_script,
+    )
+    for line in reversed(completed.stdout.splitlines()):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict) and payload.get("probe") == "kali_http_request":
+            return payload
+    raise EvaluationError("Kali did not return a valid live HTTP probe receipt")
+
+
+def verify_live_control_phase(
+    client: SoarClient,
+    plan: list[dict[str, Any]],
+    *,
+    phase: str,
+    expected_enforced: bool,
+    kali_ssh: str,
+    run_id: str,
+) -> dict[str, Any]:
+    observations: list[dict[str, Any]] = []
+    for action in plan:
+        application = client.enforcement_probe(
+            str(action["action_type"]), str(action["target"])
+        )
+        if application.get("enforced") is not expected_enforced:
+            expected = "deny" if expected_enforced else "allow"
+            raise EvaluationError(
+                f"{action['action_type']} application guard did not report {expected} during {phase}"
+            )
+        if expected_enforced and application.get("action_id") != action["id"]:
+            raise EvaluationError(
+                f"{action['action_type']} was enforced by an unexpected action"
+            )
+        observation: dict[str, Any] = {
+            "action_id": action["id"],
+            "action_type": action["action_type"],
+            "target": action["target"],
+            "application_guard": application,
+        }
+        if action["action_type"] == "app_ip_block":
+            network_probe = kali_application_probe(kali_ssh, run_id)
+            expected_status = 403 if expected_enforced else 200
+            if network_probe.get("status_code") != expected_status:
+                raise EvaluationError(
+                    "Kali HTTP request did not demonstrate the expected IP-control effect "
+                    f"during {phase} (expected={expected_status}, "
+                    f"actual={network_probe.get('status_code')})"
+                )
+            observation["network_probe"] = network_probe
+        observations.append(observation)
+    return {
+        "phase": phase,
+        "expected_decision": "deny" if expected_enforced else "allow",
+        "observed_at": iso(utc_now()),
+        "status": "PASS",
+        "controls": observations,
+    }
+
+
 def decide_run(args: argparse.Namespace) -> int:
     if not re.fullmatch(r"[A-Za-z0-9._-]{3,80}", args.analyst):
         raise EvaluationError("analyst name must be 3-80 safe characters")
@@ -692,6 +850,51 @@ def decide_run(args: argparse.Namespace) -> int:
     if mode == "live" and not args.allow_live:
         raise EvaluationError("SOAR is live; repeat with explicit live confirmation")
     client = SoarClient(env)
+    incident_before = client.incident(result["incident_id"])
+    live_plan: list[dict[str, Any]] = []
+    live_verification: dict[str, Any] | None = None
+    live_errors: list[str] = []
+    if mode == "live" and args.decision == "approve":
+        live_plan = live_control_plan(incident_before)
+        live_verification = {
+            "schema_version": 1,
+            "run_id": args.run_id,
+            "incident_id": result["incident_id"],
+            "started_at": iso(utc_now()),
+            "status": "RUNNING",
+            "controls": [
+                {
+                    "action_id": action["id"],
+                    "action_type": action["action_type"],
+                    "target": action["target"],
+                }
+                for action in live_plan
+            ],
+        }
+        try:
+            live_verification["before"] = verify_live_control_phase(
+                client,
+                live_plan,
+                phase="before",
+                expected_enforced=False,
+                kali_ssh=args.kali_ssh,
+                run_id=args.run_id,
+            )
+        except EvaluationError as exc:
+            live_verification["status"] = "FAIL"
+            live_verification["error"] = str(exc)
+            live_verification["completed_at"] = iso(utc_now())
+            write_json(destination / "live-control-verification.json", live_verification)
+            result["status"] = "FAIL"
+            result["error"] = str(exc)
+            result["live_control_verification"] = {
+                "status": "FAIL",
+                "evidence_file": "live-control-verification.json",
+            }
+            result["updated_at"] = iso(utc_now())
+            write_json(destination / "result.json", result)
+            raise
+
     decision_error: EvaluationError | None = None
     try:
         client.decide(result["incident_id"], args.decision, args.analyst, args.reason.strip())
@@ -701,22 +904,75 @@ def decide_run(args: argparse.Namespace) -> int:
     rollback_receipts: list[dict[str, Any]] = []
     rollback_errors: list[str] = []
     if mode == "live" and args.decision == "approve":
-        for action in incident.get("actions", []):
-            if action.get("reversible") and action.get("status") == "applied":
-                try:
-                    rollback_receipts.append(client.rollback(action["id"], args.analyst))
-                except EvaluationError as exc:
-                    rollback_errors.append(f"{action['id']}: {exc}")
+        try:
+            require_live_action_status(live_plan, incident, "applied")
+            assert live_verification is not None
+            live_verification["active"] = verify_live_control_phase(
+                client,
+                live_plan,
+                phase="active",
+                expected_enforced=True,
+                kali_ssh=args.kali_ssh,
+                run_id=args.run_id,
+            )
+        except EvaluationError as exc:
+            live_errors.append(str(exc))
+            if live_verification is not None:
+                live_verification["active"] = {
+                    "phase": "active",
+                    "status": "FAIL",
+                    "error": str(exc),
+                    "observed_at": iso(utc_now()),
+                }
+        finally:
+            for action in incident.get("actions", []):
+                if action.get("reversible") and action.get("status") == "applied":
+                    try:
+                        rollback_receipts.append(
+                            client.rollback(action["id"], args.analyst)
+                        )
+                    except EvaluationError as exc:
+                        rollback_errors.append(f"{action['id']}: {exc}")
         incident = client.incident(result["incident_id"])
+        try:
+            require_live_action_status(live_plan, incident, "rolled_back")
+            assert live_verification is not None
+            live_verification["after_rollback"] = verify_live_control_phase(
+                client,
+                live_plan,
+                phase="after_rollback",
+                expected_enforced=False,
+                kali_ssh=args.kali_ssh,
+                run_id=args.run_id,
+            )
+        except EvaluationError as exc:
+            live_errors.append(str(exc))
+            if live_verification is not None:
+                live_verification["after_rollback"] = {
+                    "phase": "after_rollback",
+                    "status": "FAIL",
+                    "error": str(exc),
+                    "observed_at": iso(utc_now()),
+                }
+        assert live_verification is not None
+        live_verification["rollback_receipt_count"] = len(rollback_receipts)
+        live_verification["rollback_errors"] = rollback_errors
+        live_verification["status"] = (
+            "PASS" if not live_errors and not rollback_errors else "FAIL"
+        )
+        live_verification["completed_at"] = iso(utc_now())
+        write_json(destination / "live-control-verification.json", live_verification)
     if rollback_receipts:
         write_json(destination / "rollback-receipts.json", rollback_receipts)
     if rollback_errors:
         write_json(destination / "rollback-errors.json", rollback_errors)
     save_incident(destination, incident)
+    errors: list[str] = []
     if decision_error is not None:
-        raise decision_error
+        errors.append(str(decision_error))
+    errors.extend(live_errors)
     if rollback_errors:
-        raise EvaluationError(
+        errors.append(
             "one or more live controls could not be rolled back immediately; "
             "inspect rollback-errors.json and use make soar-rollback"
         )
@@ -728,17 +984,55 @@ def decide_run(args: argparse.Namespace) -> int:
     if args.decision == "reject" and any(
         action.get("status") != "skipped" for action in response_actions
     ):
-        raise EvaluationError("rejected actions did not enter the skipped state")
+        errors.append("rejected actions did not enter the skipped state")
     if args.decision == "approve" and mode == "dry-run" and any(
         action.get("status") != "simulated" for action in response_actions
     ):
-        raise EvaluationError("approved dry-run actions were not simulated")
+        errors.append("approved dry-run actions were not simulated")
     if args.decision == "approve" and mode == "live" and any(
         action.get("reversible") and action.get("status") != "rolled_back"
         for action in response_actions
     ):
-        raise EvaluationError("an approved live action was not rolled back")
-    update_result(destination, result, incident, scenario, final=True)
+        errors.append("an approved live action was not rolled back")
+    try:
+        update_result(destination, result, incident, scenario, final=True)
+    except EvaluationError as exc:
+        errors.append(str(exc))
+        result["incident_status"] = incident.get("status")
+        result["decision"] = incident.get("decision")
+        result["actions"] = [
+            {
+                "id": item.get("id"),
+                "action_type": item.get("action_type"),
+                "status": item.get("status"),
+                "reversible": item.get("reversible"),
+            }
+            for item in incident.get("actions", [])
+        ]
+    if live_verification is not None:
+        result["live_control_verification"] = {
+            "status": live_verification["status"],
+            "evidence_file": "live-control-verification.json",
+            "verified_actions": [
+                action["action_type"] for action in live_plan
+            ],
+            "before": live_verification.get("before", {}).get("status"),
+            "active": live_verification.get("active", {}).get("status"),
+            "after_rollback": live_verification.get("after_rollback", {}).get(
+                "status"
+            ),
+        }
+        if live_verification["status"] == "PASS":
+            result.setdefault("validations", []).extend(
+                ("live_control_effect", "rollback_restoration")
+            )
+    if errors:
+        result["status"] = "FAIL"
+        result["error"] = "; ".join(errors)
+    result["updated_at"] = iso(utc_now())
+    write_json(destination / "result.json", result)
+    if errors:
+        raise EvaluationError(result["error"])
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
@@ -787,6 +1081,9 @@ def build_summary() -> dict[str, Any]:
             "incident_status": item.get("incident_status"),
             "decision": item.get("decision"),
             "timing_integrity": item.get("timing_integrity"),
+            "live_verification_status": item.get(
+                "live_control_verification", {}
+            ).get("status"),
             "simulated_actions": sum(
                 1 for action in item.get("actions", []) if action.get("status") == "simulated"
             ),
@@ -808,6 +1105,7 @@ def build_summary() -> dict[str, Any]:
         "incident_status",
         "decision",
         "timing_integrity",
+        "live_verification_status",
         "simulated_actions",
         "rolled_back_actions",
         *metric_names,
@@ -821,6 +1119,10 @@ def build_summary() -> dict[str, Any]:
         row
         for row in rows
         if row["status"] == "PASS" and row["timing_integrity"] == "valid"
+        and (
+            row["response_mode"] != "live"
+            or row["live_verification_status"] == "PASS"
+        )
     ]
     metric_summary: dict[str, dict[str, float | int | None]] = {}
     for name in metric_names:
@@ -868,6 +1170,13 @@ def build_summary() -> dict[str, Any]:
         ),
         "simulated_action_count": sum(int(row["simulated_actions"]) for row in rows),
         "live_rollback_count": sum(int(row["rolled_back_actions"]) for row in rows),
+        "live_verified_run_count": sum(
+            1
+            for row in rows
+            if row["response_mode"] == "live"
+            and row["status"] == "PASS"
+            and row["live_verification_status"] == "PASS"
+        ),
         "mitre_techniques_observed": completed_techniques,
         "metrics": metric_summary,
     }
@@ -885,6 +1194,7 @@ def build_summary() -> dict[str, Any]:
         f"- Escenarios completos: {', '.join(summary['complete_scenarios']) or 'ninguno'}",
         f"- Cobertura del catálogo: {summary['scenario_coverage_percent']}%",
         f"- Acciones reales revertidas: {summary['live_rollback_count']}",
+        f"- Ejecuciones live con efecto y restauración comprobados: {summary['live_verified_run_count']}",
         "",
         "| Métrica | n | Media (s) | Mediana (s) | p95 (s) |",
         "|---|---:|---:|---:|---:|",
@@ -1019,6 +1329,7 @@ def parser() -> argparse.ArgumentParser:
     decision_parser.add_argument("--decision", choices=("approve", "reject"), required=True)
     decision_parser.add_argument("--analyst", required=True)
     decision_parser.add_argument("--reason", required=True)
+    decision_parser.add_argument("--kali-ssh", default="")
     decision_parser.add_argument("--allow-live", action="store_true")
 
     refresh_parser = sub.add_parser("refresh")

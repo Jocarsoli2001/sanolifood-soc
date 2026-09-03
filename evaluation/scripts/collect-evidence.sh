@@ -28,8 +28,10 @@ if completed != expected:
     raise SystemExit(f"Evaluation campaign is incomplete; missing: {missing}")
 if summary.get("pending_decision_count"):
     raise SystemExit("Evaluation campaign still has runs awaiting an analyst decision")
-if summary.get("live_rollback_count", 0) < 1:
-    raise SystemExit("Complete at least one supervised live run with rollback before EVAL-001")
+if summary.get("live_verified_run_count", 0) < 1:
+    raise SystemExit(
+        "Complete at least one supervised live run with verified effect and restoration before EVAL-001"
+    )
 PY
 
 mkdir -p "$evidence_dir/runs"
@@ -42,7 +44,7 @@ find "$results_dir/runs" -mindepth 1 -maxdepth 1 -type d -print0 \
   | while IFS= read -r -d '' run_dir; do
       run_name="${run_dir##*/}"
       mkdir -p "$evidence_dir/runs/$run_name"
-      for artifact in result.json scenario.json stimulus-receipt.json wazuh-alert.json soar-incident.json rollback-receipts.json rollback-errors.json; do
+      for artifact in result.json scenario.json stimulus-receipt.json wazuh-alert.json soar-incident.json live-control-verification.json rollback-receipts.json rollback-errors.json; do
         [[ -f "$run_dir/$artifact" ]] && cp "$run_dir/$artifact" "$evidence_dir/runs/$run_name/$artifact"
       done
     done

@@ -36,6 +36,66 @@ def test_internal_soar_api_requires_bearer_token(client: TestClient) -> None:
     response = client.get("/internal/soar/status", headers=AUTHORIZATION)
     assert response.status_code == 200
     assert response.json() == {"status": "ready", "active_controls": 0, "schema_version": 1}
+    assert (
+        client.post(
+            "/internal/soar/enforcement-probe",
+            json={"control_type": "quality_guard", "target": "quality-release"},
+        ).status_code
+        == 401
+    )
+
+
+def test_enforcement_probe_proves_allow_deny_restore_without_business_mutation(
+    client: TestClient,
+) -> None:
+    payload = {
+        "control_type": "quality_guard",
+        "target": "quality-release",
+    }
+    before = client.post(
+        "/internal/soar/enforcement-probe",
+        headers=AUTHORIZATION,
+        json=payload,
+    )
+    assert before.status_code == 200
+    assert before.json()["decision"] == "allow"
+    assert before.json()["enforced"] is False
+
+    created = client.post(
+        "/internal/soar/controls",
+        headers=AUTHORIZATION,
+        json=control_payload(
+            action_id="66666666-6666-4666-8666-666666666666",
+            control_type="quality_guard",
+            target="quality-release",
+        ),
+    )
+    assert created.status_code == 200
+
+    active = client.post(
+        "/internal/soar/enforcement-probe",
+        headers=AUTHORIZATION,
+        json=payload,
+    )
+    assert active.status_code == 200
+    assert active.json()["decision"] == "deny"
+    assert active.json()["enforced"] is True
+    assert active.json()["action_id"] == "66666666-6666-4666-8666-666666666666"
+
+    rollback = client.post(
+        "/internal/soar/controls/66666666-6666-4666-8666-666666666666/rollback",
+        headers=AUTHORIZATION,
+    )
+    assert rollback.status_code == 200
+
+    restored = client.post(
+        "/internal/soar/enforcement-probe",
+        headers=AUTHORIZATION,
+        json=payload,
+    )
+    assert restored.status_code == 200
+    assert restored.json()["decision"] == "allow"
+    assert restored.json()["enforced"] is False
 
 
 def test_ip_control_is_idempotent_enforced_and_reversible(client: TestClient) -> None:
@@ -110,3 +170,46 @@ def test_account_control_temporarily_blocks_login(
     )
     assert login.status_code == 423
     assert "temporalmente bloqueada" in login.text
+
+
+def test_account_control_enforces_synthetic_evaluation_identity_and_restores(
+    client: TestClient,
+) -> None:
+    created = client.post(
+        "/internal/soar/controls",
+        headers=AUTHORIZATION,
+        json=control_payload(
+            action_id="77777777-7777-4777-8777-777777777777",
+            control_type="app_account_lock",
+            target="eval.control",
+        ),
+    )
+    assert created.status_code == 200
+
+    page = client.get("/auth/login")
+    blocked = client.post(
+        "/auth/login",
+        data={
+            "username": "eval.control",
+            "password": "Evaluation-Only-Invalid-Password",
+            "csrf_token": csrf_from(page.text),
+        },
+    )
+    assert blocked.status_code == 423
+
+    rollback = client.post(
+        "/internal/soar/controls/77777777-7777-4777-8777-777777777777/rollback",
+        headers=AUTHORIZATION,
+    )
+    assert rollback.status_code == 200
+
+    page = client.get("/auth/login")
+    restored = client.post(
+        "/auth/login",
+        data={
+            "username": "eval.control",
+            "password": "Evaluation-Only-Invalid-Password",
+            "csrf_token": csrf_from(page.text),
+        },
+    )
+    assert restored.status_code == 401
