@@ -71,10 +71,45 @@ pilotos. Deben conservarse fuera de `evaluation/results/runs/` antes de iniciar
 una campaña final limpia; solo resultados `PASS` con `timing_integrity=valid`
 aportan cobertura y muestras estadísticas.
 
-`EVAL-001` exige al menos una ejecución supervisada en modo real cuyo control
-reversible haya quedado en `rolled_back`. Para esa única repetición se usan
-`make soar-enable-live CONFIRM=live`, `CONFIRM=live` tanto en `eval-run` como en
-`eval-decide`, y finalmente `make soar-disable-live`.
+`EVAL-001` exige al menos una ejecución supervisada en modo real que demuestre
+las tres fases del control: operación permitida antes de responder, operación
+denegada mientras el control está activo y operación permitida nuevamente tras
+el rollback. El evaluador guarda esta secuencia en
+`live-control-verification.json`; un control que solo cambie de estado en la
+base de datos no supera la prueba.
+
+Antes de activar live debe desplegarse el endpoint de comprobación de solo
+lectura y ejecutarse la regresión completa:
+
+```bash
+make eval-deploy-live-verification
+make eval-preflight \
+  KALI_SSH=usuario@10.20.0.30 \
+  WINDOWS_SSH=usuario@10.20.0.20
+```
+
+En un escenario con `app_ip_block`, `eval-decide` exige nuevamente
+`KALI_SSH`. Kali prueba una ruta real y debe observar HTTP `200 -> 403 -> 200`.
+Los guards de cuenta y calidad se evalúan mediante el endpoint interno
+autenticado que comparte la misma consulta de controles que la aplicación, sin
+crear intentos de acceso ni cambiar lotes. El rollback se ejecuta en una
+cláusula de limpieza aunque falle la comprobación activa.
+
+```bash
+make soar-enable-live CONFIRM=live
+make eval-run \
+  SCENARIO=SCN-002 \
+  KALI_SSH=usuario@10.20.0.30 \
+  CONFIRM=live
+make eval-decide \
+  RUN_ID=SF-EVAL-SCN-... \
+  DECISION=approve \
+  ANALYST=nombre.apellido \
+  REASON='Validación supervisada del efecto y rollback de los controles' \
+  KALI_SSH=usuario@10.20.0.30 \
+  CONFIRM=live
+make soar-disable-live
+```
 
 `evaluation/results/` es runtime ignorado por Git. `evidence/EVAL-001` contiene
 la selección textual revisable para el hito.

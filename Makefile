@@ -14,7 +14,7 @@ SHELL := /bin/bash
 	soar-health soar-install-workflows soar-disable-integration soar-incidents \
 	soar-show soar-approve soar-reject soar-rollback soar-retry soar-metrics \
 	soar-validate-live soar-enable-live soar-disable-live soar-backup evidence-soar \
-	eval-static-check eval-test eval-list eval-preflight eval-run eval-decide eval-refresh eval-summary evidence-evaluation \
+	eval-static-check eval-test eval-list eval-preflight eval-run eval-decide eval-refresh eval-summary eval-deploy-live-verification evidence-evaluation \
 	soc-up soc-health
 
 bootstrap:
@@ -279,7 +279,11 @@ eval-decide:
 	@python3 ./evaluation/tools/evalctl.py decide \
 		--run-id "$(RUN_ID)" --decision "$(DECISION)" \
 		--analyst "$(ANALYST)" --reason "$(REASON)" \
+		$(if $(KALI_SSH),--kali-ssh "$(KALI_SSH)",) \
 		$(if $(filter live,$(CONFIRM)),--allow-live,)
+
+eval-deploy-live-verification:
+	@./evaluation/scripts/deploy-live-verification.sh
 
 eval-refresh:
 	@test -n "$(RUN_ID)" || (echo "Use: make eval-refresh RUN_ID=..."; exit 2)

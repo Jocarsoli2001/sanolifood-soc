@@ -76,9 +76,27 @@ def main() -> int:
             fail(f"Kali runner contains prohibited primitive: {token}")
 
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
-    for target in ("eval-preflight:", "eval-run:", "eval-decide:", "eval-summary:"):
+    for target in (
+        "eval-preflight:",
+        "eval-run:",
+        "eval-decide:",
+        "eval-deploy-live-verification:",
+        "eval-summary:",
+    ):
         if target not in makefile:
             fail(f"Makefile target missing: {target[:-1]}")
+
+    internal_api = (
+        ROOT / "app" / "src" / "sanolifood" / "web" / "soar_internal.py"
+    ).read_text(encoding="utf-8")
+    evaluator = (ROOT / "evaluation" / "tools" / "evalctl.py").read_text(
+        encoding="utf-8"
+    )
+    if '"/enforcement-probe"' not in internal_api:
+        fail("the application read-only enforcement probe is missing")
+    for phase in ("before", "active", "after_rollback"):
+        if f'phase="{phase}"' not in evaluator:
+            fail(f"the live evaluator is missing phase {phase}")
 
     linux_probe = (ROOT / "endpoints" / "scripts" / "validate-linux.sh").read_text(
         encoding="utf-8"

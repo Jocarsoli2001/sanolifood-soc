@@ -9,7 +9,13 @@ from sqlalchemy.orm import Session
 from sanolifood.core.config import get_settings
 from sanolifood.core.events import record_event
 from sanolifood.database.session import get_db
-from sanolifood.services.soar_controls import active_control_count, apply_control, rollback_control
+from sanolifood.services.soar_controls import (
+    active_control,
+    active_control_count,
+    apply_control,
+    rollback_control,
+    validate_control_target,
+)
 
 
 router = APIRouter(prefix="/internal/soar", tags=["soar-internal"])
@@ -23,6 +29,11 @@ class ControlRequest(BaseModel):
     ttl_seconds: int
     reason: str = Field(min_length=8, max_length=500)
     details: dict[str, Any] = Field(default_factory=dict)
+
+
+class EnforcementProbeRequest(BaseModel):
+    control_type: str
+    target: str = Field(min_length=1, max_length=255)
 
 
 def require_soar_token(
@@ -57,6 +68,43 @@ def serialize_control(control) -> dict[str, Any]:
 @router.get("/status", dependencies=[Depends(require_soar_token)])
 def soar_status(db: Session = Depends(get_db)) -> dict[str, Any]:
     return {"status": "ready", "active_controls": active_control_count(db), "schema_version": 1}
+
+
+@router.post("/enforcement-probe", dependencies=[Depends(require_soar_token)])
+def enforcement_probe(
+    payload: EnforcementProbeRequest,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Evaluate the same application guard used by the live control paths.
+
+    The probe is read-only: it confirms whether the application would allow or
+    deny the requested operation without creating a login attempt, releasing a
+    production lot or changing any business record.
+    """
+    try:
+        target = validate_control_target(
+            payload.control_type,
+            payload.target,
+            get_settings(),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    control = active_control(db, payload.control_type, target)
+    guard_names = {
+        "app_ip_block": "http_request",
+        "app_account_lock": "authentication",
+        "quality_guard": "quality_release",
+    }
+    return {
+        "schema_version": 1,
+        "control_type": payload.control_type,
+        "target": target,
+        "guard": guard_names[payload.control_type],
+        "decision": "deny" if control is not None else "allow",
+        "enforced": control is not None,
+        "action_id": control.action_id if control is not None else None,
+        "incident_id": control.incident_id if control is not None else None,
+    }
 
 
 @router.post("/controls", dependencies=[Depends(require_soar_token)])
