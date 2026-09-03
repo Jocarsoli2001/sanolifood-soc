@@ -3,9 +3,27 @@
 Este archivo resume los hitos funcionales de SanoliFood SOC. Las notas de
 instalación y validación vigentes se mantienen únicamente en el `README.md`.
 
-## En desarrollo
+## 0.8.0 — 2026-08-31
 
-- Escenarios controlados desde Kali y evaluación comparativa final.
+### Añadido
+
+- Catálogo versionado de ocho escenarios desde Kali, aplicación y endpoints.
+- Orquestador de campaña con marcador único, correlación Wazuh/n8n y estados
+  por ejecución.
+- Métricas separadas para estímulo, detección, recepción SOAR, triage, decisión,
+  respuesta, contención y rollback.
+- Resúmenes CSV, JSON y Markdown y paquete textual `EVAL-001`.
+- Identificadores de ejecución en las pruebas FIM de Ubuntu y Windows.
+
+### Seguridad y validez experimental
+
+- Kali queda fijado a `10.20.0.30` y al único destino `10.20.0.10:8080`, sin
+  parámetros de objetivo ni herramientas genéricas.
+- Presupuestos de solicitudes, tiempos máximos y `dry-run` predeterminado.
+- Correlación obligatoria por marcador actual y `source_alert_id`, evitando
+  falsos aprobados por alertas históricas.
+- Ajuste de inventario compensado exactamente y rollback inmediato para toda
+  acción real reversible ejecutada por la campaña.
 
 ## 0.7.0 — 2026-08-26
 
