@@ -685,10 +685,18 @@ un presupuesto de solicitudes y usa únicamente estímulos deterministas del
 laboratorio. SCN-005 y SCN-006 se originan en la aplicación; SCN-007 y SCN-008
 se originan en los endpoints Ubuntu y Windows.
 
+Las métricas entre máquinas requieren una fuente horaria común. Ubuntu sirve
+NTP mediante Chrony en `10.20.0.10`; Kali y Windows usan esa dirección como
+fuente. El preflight exige Chrony sincronizado, comprueba la fuente de Windows
+y rechaza diferencias superiores a un segundo. Los intervalos negativos se
+marcan como inválidos y no se agregan como ceros.
+
 ```bash
 make upgrade-0.8
 make eval-list
-make eval-preflight KALI_SSH=usuario@10.20.0.30
+make eval-preflight \
+  KALI_SSH=usuario@10.20.0.30 \
+  WINDOWS_SSH=usuario@10.20.0.20
 make eval-run SCENARIO=SCN-001 KALI_SSH=usuario@10.20.0.30
 ```
 

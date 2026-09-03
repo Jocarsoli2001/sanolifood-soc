@@ -261,7 +261,8 @@ eval-list:
 
 eval-preflight:
 	@python3 ./evaluation/tools/evalctl.py preflight \
-		$(if $(KALI_SSH),--kali-ssh "$(KALI_SSH)",)
+		$(if $(KALI_SSH),--kali-ssh "$(KALI_SSH)",) \
+		$(if $(WINDOWS_SSH),--windows-ssh "$(WINDOWS_SSH)",)
 
 eval-run:
 	@test -n "$(SCENARIO)" || \
