@@ -5,6 +5,10 @@ identificador `SF-EVAL-SCN-*` debe aparecer en el estímulo y en la alerta Wazuh
 el incidente se enlaza después mediante `source_alert_id`. Esto impide que una
 alerta histórica produzca un falso aprobado.
 
+El inicio de MTTD se toma del recibo emitido justo antes del estímulo. No incluye
+el tiempo utilizado para escribir una contraseña SSH, comprobar salud o iniciar
+sesión en la aplicación.
+
 ## Fuentes y escenarios
 
 | Escenario | Fuente | Regla | Resultado esperado |

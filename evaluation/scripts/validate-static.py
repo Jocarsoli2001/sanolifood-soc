@@ -88,6 +88,8 @@ def main() -> int:
     ).read_text(encoding="utf-8")
     if "--run-id" not in linux_probe or not re.search(r"\$RunId\b", windows_probe):
         fail("endpoint probes do not accept the evaluation run identifier")
+    if "STIMULUS_STARTED_AT=" not in linux_probe or "STIMULUS_STARTED_AT=" not in windows_probe:
+        fail("endpoint probes do not report the precise stimulus timestamp")
 
     print(
         "PASS evaluation static validation: "

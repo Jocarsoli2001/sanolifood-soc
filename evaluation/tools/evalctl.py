@@ -478,6 +478,44 @@ def save_incident(destination: Path, incident: dict[str, Any]) -> None:
     write_json(destination / "soar-incident.json", incident)
 
 
+def apply_precise_stimulus_time(
+    destination: Path,
+    result: dict[str, Any],
+    receipt: dict[str, Any] | None = None,
+) -> datetime:
+    timing_source = ""
+    raw_started = ""
+    if receipt is None and (destination / "stimulus-receipt.json").is_file():
+        receipt = read_json(destination / "stimulus-receipt.json")
+    if receipt is not None and isinstance(receipt.get("started_at"), str):
+        raw_started = receipt["started_at"]
+        timing_source = "stimulus_receipt"
+    if not raw_started and (destination / "stimulus.txt").is_file():
+        output = (destination / "stimulus.txt").read_text(
+            encoding="utf-8", errors="replace"
+        )
+        match = re.search(r"STIMULUS_STARTED_AT=([^\s<]+)", output)
+        if match:
+            raw_started = match.group(1)
+            timing_source = "endpoint_marker"
+    precise = parse_time(raw_started)
+    if precise is None:
+        raise EvaluationError("stimulus did not report a precise UTC start timestamp")
+
+    dispatch_time = parse_time(
+        result.get("dispatch_started_at") or result.get("stimulus_started_at")
+    )
+    completed_time = parse_time(result.get("stimulus_completed_at"))
+    if dispatch_time and precise < dispatch_time - timedelta(seconds=15):
+        raise EvaluationError("stimulus timestamp predates dispatch beyond allowed clock skew")
+    if completed_time and precise > completed_time + timedelta(seconds=15):
+        raise EvaluationError("stimulus timestamp is later than command completion")
+
+    result["stimulus_started_at"] = iso(precise)
+    result["stimulus_timing_source"] = timing_source
+    return precise
+
+
 def update_result(
     destination: Path,
     result: dict[str, Any],
@@ -526,7 +564,7 @@ def run_scenario(args: argparse.Namespace) -> int:
     marker = f"eval.{run_id[-8:]}" if scenario["id"] == "SCN-002" else run_id
     destination = run_dir(run_id)
     destination.mkdir(parents=True, exist_ok=False)
-    started = utc_now()
+    dispatch_started = utc_now()
     result: dict[str, Any] = {
         "schema_version": 1,
         "run_id": run_id,
@@ -537,7 +575,7 @@ def run_scenario(args: argparse.Namespace) -> int:
         "marker": marker,
         "response_mode": mode,
         "status": "RUNNING",
-        "stimulus_started_at": iso(started),
+        "dispatch_started_at": iso(dispatch_started),
     }
     write_json(destination / "scenario.json", scenario)
     write_json(destination / "result.json", result)
@@ -569,7 +607,8 @@ def run_scenario(args: argparse.Namespace) -> int:
             if receipt.get("request_count", 0) > scenario["request_budget"]:
                 raise EvaluationError("stimulus exceeded its catalog request budget")
 
-        alert = poll_alert(scenario, marker, started, timeout)
+        stimulus_started = apply_precise_stimulus_time(destination, result, receipt)
+        alert = poll_alert(scenario, marker, stimulus_started, timeout)
         write_json(destination / "wazuh-alert.json", alert)
         result["wazuh_alert_id"] = str(alert.get("id", ""))
         result["wazuh_detected_at"] = alert.get("timestamp")
@@ -679,6 +718,7 @@ def decide_run(args: argparse.Namespace) -> int:
 
 def refresh_run(args: argparse.Namespace) -> int:
     destination, result, scenario = locate_result(args.run_id)
+    apply_precise_stimulus_time(destination, result)
     client = SoarClient(load_env(SOAR_ENV))
     incident = client.incident(result["incident_id"])
     final = bool(incident.get("decision")) or not scenario.get("requires_decision")
@@ -848,7 +888,7 @@ PY
                 "sh",
                 "-s",
             ],
-            timeout=20,
+            timeout=60,
             input_text=probe,
         )
         if "10.20.0.30" not in remote.stdout:
@@ -856,9 +896,9 @@ PY
         if 'SF_HEALTH={"status":"ready"' not in remote.stdout:
             raise EvaluationError("Kali cannot reach the application health endpoint")
         epoch_match = re.search(r"SF_EPOCH=(\d+)", remote.stdout)
-        if not epoch_match or abs(int(time.time()) - int(epoch_match.group(1))) > 10:
-            raise EvaluationError("Kali UTC clock differs by more than 10 seconds")
-        checks.extend(("kali=10.20.0.30", "kali_to_app=ready", "clock_skew<=10s"))
+        if not epoch_match or abs(int(time.time()) - int(epoch_match.group(1))) > 3:
+            raise EvaluationError("Kali UTC clock differs by more than 3 seconds")
+        checks.extend(("kali=10.20.0.30", "kali_to_app=ready", "clock_skew<=3s"))
     print("PASS evaluation preflight: " + ", ".join(checks))
     return 0
 

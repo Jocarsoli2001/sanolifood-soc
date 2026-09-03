@@ -59,6 +59,21 @@ class EvaluationControlTests(unittest.TestCase):
         self.assertEqual(evalctl.percentile([1.0, 2.0, 3.0, 4.0], 0.95), 4.0)
         self.assertIsNone(evalctl.percentile([], 0.95))
 
+    def test_precise_receipt_excludes_ssh_authentication_time(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary)
+            result = {
+                "dispatch_started_at": "2026-09-01T01:38:57+00:00",
+                "stimulus_completed_at": "2026-09-01T01:39:06+00:00",
+            }
+            precise = evalctl.apply_precise_stimulus_time(
+                destination,
+                result,
+                {"started_at": "2026-09-01T01:39:05+00:00"},
+            )
+            self.assertEqual(precise.isoformat(), "2026-09-01T01:39:05+00:00")
+            self.assertEqual(result["stimulus_timing_source"], "stimulus_receipt")
+
     def test_summary_counts_only_final_pass_as_coverage(self) -> None:
         original_results = evalctl.RESULTS_DIR
         original_runs = evalctl.RUNS_DIR

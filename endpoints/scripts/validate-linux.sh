@@ -24,6 +24,7 @@ systemctl is-active --quiet wazuh-agent || {
 }
 
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+printf 'STIMULUS_STARTED_AT=%s\n' "$timestamp"
 printf 'validation_timestamp: %s\nrun_id: %s\n' "$timestamp" "$run_id" \
   > /etc/sanolifood/validation-probe.yml
 chmod 0640 /etc/sanolifood/validation-probe.yml
