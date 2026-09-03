@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, lazyload
 
 from sanolifood.models import Ingredient, InventoryMovement, ProductionLot, QualityCheck, User
 from sanolifood.services.soar_controls import active_control
@@ -17,6 +17,30 @@ LOT_TRANSITIONS = {
     "released": set(),
     "rejected": set(),
 }
+
+
+def _ingredient_for_update_query(ingredient_id: int):
+    """Lock only the ingredient row, not its eagerly joined supplier."""
+    return (
+        select(Ingredient)
+        .options(lazyload(Ingredient.supplier))
+        .where(Ingredient.id == ingredient_id)
+        .with_for_update(of=Ingredient)
+    )
+
+
+def _production_lot_for_update_query(lot_id: int):
+    """Lock only the lot row, not its eagerly joined nullable relations."""
+    return (
+        select(ProductionLot)
+        .options(
+            lazyload(ProductionLot.product),
+            lazyload(ProductionLot.recipe),
+            lazyload(ProductionLot.created_by),
+        )
+        .where(ProductionLot.id == lot_id)
+        .with_for_update(of=ProductionLot)
+    )
 
 
 def decimal_value(raw: str, *, positive: bool = False, nonzero: bool = False) -> Decimal:
@@ -46,9 +70,7 @@ def record_stock_movement(
 ) -> tuple[InventoryMovement, Decimal]:
     if movement_type not in MOVEMENT_TYPES:
         raise ValueError("El tipo de movimiento no es válido.")
-    ingredient = db.scalar(
-        select(Ingredient).where(Ingredient.id == ingredient_id).with_for_update()
-    )
+    ingredient = db.scalar(_ingredient_for_update_query(ingredient_id))
     if ingredient is None or not ingredient.is_active:
         raise ValueError("El ingrediente solicitado no existe o está inactivo.")
 
@@ -91,7 +113,7 @@ def transition_lot(
 ) -> tuple[ProductionLot, str, list[InventoryMovement]]:
     if target_status not in LOT_STATUSES:
         raise ValueError("El estado de destino no es válido.")
-    lot = db.scalar(select(ProductionLot).where(ProductionLot.id == lot_id).with_for_update())
+    lot = db.scalar(_production_lot_for_update_query(lot_id))
     if lot is None:
         raise ValueError("El lote solicitado no existe.")
     previous_status = lot.status
@@ -164,7 +186,7 @@ def register_quality_check(
 ) -> tuple[QualityCheck, str]:
     if min_value > max_value:
         raise ValueError("El límite mínimo no puede superar al máximo.")
-    lot = db.scalar(select(ProductionLot).where(ProductionLot.id == lot_id).with_for_update())
+    lot = db.scalar(_production_lot_for_update_query(lot_id))
     if lot is None:
         raise ValueError("El lote solicitado no existe.")
     if lot.status not in {"in_progress", "quality_hold"}:
