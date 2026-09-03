@@ -55,6 +55,26 @@ class EvaluationControlTests(unittest.TestCase):
         self.assertEqual(values["analyst_decision_seconds"], 6.0)
         self.assertEqual(values["containment_to_rollback_seconds"], 1.0)
 
+    def test_negative_metric_interval_is_invalid(self) -> None:
+        self.assertIsNone(
+            evalctl.seconds_between(
+                "2026-09-01T13:30:12.147+00:00",
+                "2026-09-01T13:30:12.738+00:00",
+            )
+        )
+        with self.assertRaises(evalctl.EvaluationError):
+            evalctl.validate_core_timing(
+                {
+                    "stimulus_to_wazuh_seconds": None,
+                    "wazuh_to_soar_seconds": 0.7,
+                    "soar_triage_seconds": 0.1,
+                    "end_to_end_triage_seconds": 0.8,
+                }
+            )
+
+    def test_clock_skew_uses_millisecond_precision(self) -> None:
+        self.assertEqual(evalctl.clock_skew_seconds(1_000_250, 1_000.0), 0.25)
+
     def test_percentile_uses_nearest_rank(self) -> None:
         self.assertEqual(evalctl.percentile([1.0, 2.0, 3.0, 4.0], 0.95), 4.0)
         self.assertIsNone(evalctl.percentile([], 0.95))
@@ -82,8 +102,10 @@ class EvaluationControlTests(unittest.TestCase):
             evalctl.RUNS_DIR = Path(temporary) / "runs"
             passed = evalctl.RUNS_DIR / "pass"
             pending = evalctl.RUNS_DIR / "pending"
+            invalid = evalctl.RUNS_DIR / "invalid"
             passed.mkdir(parents=True)
             pending.mkdir(parents=True)
+            invalid.mkdir(parents=True)
             evalctl.write_json(
                 passed / "result.json",
                 {
@@ -91,8 +113,9 @@ class EvaluationControlTests(unittest.TestCase):
                     "scenario_id": "SCN-001",
                     "status": "PASS",
                     "response_mode": "dry-run",
+                    "timing_integrity": "valid",
                     "actions": [],
-                    "metrics": {},
+                    "metrics": {"stimulus_to_wazuh_seconds": 2.0},
                 },
             )
             evalctl.write_json(
@@ -103,13 +126,27 @@ class EvaluationControlTests(unittest.TestCase):
                     "status": "PASS_PENDING_DECISION",
                     "response_mode": "dry-run",
                     "actions": [],
-                    "metrics": {},
+                    "metrics": {"stimulus_to_wazuh_seconds": 0.1},
+                },
+            )
+            evalctl.write_json(
+                invalid / "result.json",
+                {
+                    "run_id": "invalid",
+                    "scenario_id": "SCN-003",
+                    "status": "PASS",
+                    "response_mode": "dry-run",
+                    "actions": [],
+                    "metrics": {"stimulus_to_wazuh_seconds": 0.0},
                 },
             )
             summary = evalctl.build_summary()
             self.assertEqual(summary["complete_scenarios"], ["SCN-001"])
             self.assertEqual(summary["pending_decision_count"], 1)
             self.assertEqual(summary["scenario_coverage_percent"], 12.5)
+            self.assertEqual(summary["invalid_timing_count"], 1)
+            self.assertEqual(summary["metrics"]["stimulus_to_wazuh_seconds"]["samples"], 1)
+            self.assertEqual(summary["metrics"]["stimulus_to_wazuh_seconds"]["mean"], 2.0)
         evalctl.RESULTS_DIR = original_results
         evalctl.RUNS_DIR = original_runs
 

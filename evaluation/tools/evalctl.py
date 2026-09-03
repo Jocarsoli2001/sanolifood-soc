@@ -33,6 +33,12 @@ INTEGRATION_STATE = ROOT / "n8n" / "runtime" / "integration.state"
 RUN_ID_RE = re.compile(r"^SF-EVAL-SCN-\d{3}-\d{8}T\d{6}Z-[0-9a-f]{8}$")
 KALI_SSH_RE = re.compile(r"^[A-Za-z0-9._-]+@10\.20\.0\.30$")
 WINDOWS_SSH_RE = re.compile(r"^[A-Za-z0-9._-]+@10\.20\.0\.20$")
+CORE_TIMING_METRICS = (
+    "stimulus_to_wazuh_seconds",
+    "wazuh_to_soar_seconds",
+    "soar_triage_seconds",
+    "end_to_end_triage_seconds",
+)
 
 
 class EvaluationError(RuntimeError):
@@ -64,7 +70,25 @@ def seconds_between(later: str | None, earlier: str | None) -> float | None:
     earlier_dt = parse_time(earlier)
     if later_dt is None or earlier_dt is None:
         return None
-    return round(max(0.0, (later_dt - earlier_dt).total_seconds()), 3)
+    elapsed = (later_dt - earlier_dt).total_seconds()
+    if elapsed < 0:
+        return None
+    return round(elapsed, 3)
+
+
+def clock_skew_seconds(remote_epoch_ms: int, observed_at: float | None = None) -> float:
+    local_epoch_ms = round((time.time() if observed_at is None else observed_at) * 1000)
+    return abs(local_epoch_ms - remote_epoch_ms) / 1000
+
+
+def validate_core_timing(values: dict[str, float | None]) -> None:
+    invalid = [name for name in CORE_TIMING_METRICS if values.get(name) is None]
+    if invalid:
+        raise EvaluationError(
+            "invalid metric chronology for "
+            + ", ".join(invalid)
+            + "; synchronize the laboratory clocks and rerun the scenario"
+        )
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -537,7 +561,10 @@ def update_result(
         for item in incident.get("actions", [])
     ]
     result["validations"] = validate_incident(scenario, incident, final=final)
-    result["metrics"] = metrics(result, incident)
+    calculated_metrics = metrics(result, incident)
+    validate_core_timing(calculated_metrics)
+    result["metrics"] = calculated_metrics
+    result["timing_integrity"] = "valid"
     if final or not scenario.get("requires_decision"):
         result["status"] = "PASS"
     else:
@@ -759,6 +786,7 @@ def build_summary() -> dict[str, Any]:
             "incident_id": item.get("incident_id"),
             "incident_status": item.get("incident_status"),
             "decision": item.get("decision"),
+            "timing_integrity": item.get("timing_integrity"),
             "simulated_actions": sum(
                 1 for action in item.get("actions", []) if action.get("status") == "simulated"
             ),
@@ -779,6 +807,7 @@ def build_summary() -> dict[str, Any]:
         "incident_id",
         "incident_status",
         "decision",
+        "timing_integrity",
         "simulated_actions",
         "rolled_back_actions",
         *metric_names,
@@ -788,9 +817,18 @@ def build_summary() -> dict[str, Any]:
         writer.writeheader()
         writer.writerows(rows)
 
+    metric_eligible_rows = [
+        row
+        for row in rows
+        if row["status"] == "PASS" and row["timing_integrity"] == "valid"
+    ]
     metric_summary: dict[str, dict[str, float | int | None]] = {}
     for name in metric_names:
-        values = [float(row[name]) for row in rows if isinstance(row.get(name), (int, float))]
+        values = [
+            float(row[name])
+            for row in metric_eligible_rows
+            if isinstance(row.get(name), (int, float))
+        ]
         metric_summary[name] = {
             "samples": len(values),
             "mean": round(statistics.fmean(values), 3) if values else None,
@@ -798,7 +836,7 @@ def build_summary() -> dict[str, Any]:
             "p95": percentile(values, 0.95),
         }
     complete_scenarios = sorted(
-        {row["scenario_id"] for row in rows if row["status"] == "PASS"}
+        {row["scenario_id"] for row in metric_eligible_rows}
     )
     catalog_count = len(catalog()["scenarios"])
     completed_techniques = sorted(
@@ -818,6 +856,11 @@ def build_summary() -> dict[str, Any]:
             1 for row in rows if row["status"] == "PASS_PENDING_DECISION"
         ),
         "fail_count": sum(1 for row in rows if row["status"] == "FAIL"),
+        "invalid_timing_count": sum(
+            1
+            for row in rows
+            if row["status"] == "PASS" and row["timing_integrity"] != "valid"
+        ),
         "complete_scenarios": complete_scenarios,
         "complete_scenario_count": len(complete_scenarios),
         "scenario_coverage_percent": round(
@@ -838,6 +881,7 @@ def build_summary() -> dict[str, Any]:
         f"- Aprobadas: {summary['pass_count']}",
         f"- Pendientes de decisión: {summary['pending_decision_count']}",
         f"- Fallidas: {summary['fail_count']}",
+        f"- Aprobadas excluidas por cronología inválida: {summary['invalid_timing_count']}",
         f"- Escenarios completos: {', '.join(summary['complete_scenarios']) or 'ninguno'}",
         f"- Cobertura del catálogo: {summary['scenario_coverage_percent']}%",
         f"- Acciones reales revertidas: {summary['live_rollback_count']}",
@@ -865,19 +909,23 @@ def preflight(args: argparse.Namespace) -> int:
         f"response_mode={response_mode(env)}",
         "wazuh_forwarding=enabled",
     ]
+    tracking = command(["chronyc", "tracking"], timeout=15)
+    if not re.search(r"Leap status\s*:\s*Normal", tracking.stdout):
+        raise EvaluationError("Ubuntu Chrony is not synchronized (Leap status must be Normal)")
+    checks.append("ubuntu_clock=chrony-synchronized")
     if args.kali_ssh:
         if not KALI_SSH_RE.fullmatch(args.kali_ssh):
             raise EvaluationError("KALI_SSH must be usuario@10.20.0.30")
         probe = """set -eu
 ip -j -4 address
-printf '\nSF_EPOCH='
-date +%s
 python3 - <<'PY'
 import urllib.request
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 with opener.open('http://10.20.0.10:8080/health/ready', timeout=8) as response:
     print('SF_HEALTH=' + response.read(4096).decode('utf-8'))
 PY
+printf 'SF_EPOCH_MS='
+python3 -c 'import time; print(time.time_ns() // 1000000)'
 """
         remote = command(
             [
@@ -895,10 +943,48 @@ PY
             raise EvaluationError("Kali does not own 10.20.0.30")
         if 'SF_HEALTH={"status":"ready"' not in remote.stdout:
             raise EvaluationError("Kali cannot reach the application health endpoint")
-        epoch_match = re.search(r"SF_EPOCH=(\d+)", remote.stdout)
-        if not epoch_match or abs(int(time.time()) - int(epoch_match.group(1))) > 3:
-            raise EvaluationError("Kali UTC clock differs by more than 3 seconds")
-        checks.extend(("kali=10.20.0.30", "kali_to_app=ready", "clock_skew<=3s"))
+        epoch_match = re.search(r"SF_EPOCH_MS=(\d+)", remote.stdout)
+        if not epoch_match:
+            raise EvaluationError("Kali did not report a precise UTC timestamp")
+        if clock_skew_seconds(int(epoch_match.group(1))) > 1.0:
+            raise EvaluationError("Kali UTC clock differs by more than one second")
+        checks.extend(
+            ("kali=10.20.0.30", "kali_to_app=ready", "kali_clock_skew<=1s")
+        )
+    if args.windows_ssh:
+        if not WINDOWS_SSH_RE.fullmatch(args.windows_ssh):
+            raise EvaluationError("WINDOWS_SSH must be usuario@10.20.0.20")
+        powershell = (
+            "$source = (w32tm /query /source 2>&1 | Out-String).Trim(); "
+            "Write-Output ('SF_WINDOWS_SOURCE=' + $source); "
+            "Write-Output ('SF_WINDOWS_EPOCH_MS=' + "
+            "[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())"
+        )
+        encoded = base64.b64encode(powershell.encode("utf-16le")).decode("ascii")
+        remote = command(
+            [
+                "ssh",
+                "-o",
+                "ConnectTimeout=8",
+                args.windows_ssh,
+                "powershell.exe",
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-EncodedCommand",
+                encoded,
+            ],
+            timeout=60,
+        )
+        source_match = re.search(r"^SF_WINDOWS_SOURCE=(.+)$", remote.stdout, re.MULTILINE)
+        if not source_match or not source_match.group(1).strip().startswith("10.20.0.10"):
+            raise EvaluationError("Windows Time must use 10.20.0.10 as its NTP source")
+        epoch_match = re.search(r"SF_WINDOWS_EPOCH_MS=(\d+)", remote.stdout)
+        if not epoch_match:
+            raise EvaluationError("Windows did not report a precise UTC timestamp")
+        if clock_skew_seconds(int(epoch_match.group(1))) > 1.0:
+            raise EvaluationError("Windows UTC clock differs by more than one second")
+        checks.extend(("windows=10.20.0.20", "windows_clock_skew<=1s"))
     print("PASS evaluation preflight: " + ", ".join(checks))
     return 0
 
@@ -919,6 +1005,7 @@ def parser() -> argparse.ArgumentParser:
     sub.add_parser("list")
     preflight_parser = sub.add_parser("preflight")
     preflight_parser.add_argument("--kali-ssh", default="")
+    preflight_parser.add_argument("--windows-ssh", default="")
 
     run_parser = sub.add_parser("run")
     run_parser.add_argument("--scenario", required=True)

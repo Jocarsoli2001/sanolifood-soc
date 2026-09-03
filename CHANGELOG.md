@@ -34,6 +34,12 @@ instalación y validación vigentes se mantienen únicamente en el `README.md`.
 - Los bloqueos pesimistas de ingredientes y lotes apuntan únicamente a su tabla
   principal y omiten relaciones cargadas mediante `LEFT OUTER JOIN`, evitando
   el error de PostgreSQL durante movimientos y controles de calidad.
+- Los intervalos temporales negativos se invalidan en lugar de convertirse en
+  cero; únicamente ejecuciones finales con cronología válida alimentan la
+  cobertura y las métricas agregadas.
+- El preflight exige Chrony sincronizado en Ubuntu, compara con precisión de
+  milisegundos los relojes de Kali y Windows y verifica que Windows utilice
+  `10.20.0.10` como fuente NTP interna.
 
 ## 0.7.0 — 2026-08-26
 

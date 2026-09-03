@@ -9,6 +9,13 @@ El inicio de MTTD se toma del recibo emitido justo antes del estímulo. No inclu
 el tiempo utilizado para escribir una contraseña SSH, comprobar salud o iniciar
 sesión en la aplicación.
 
+La campaña final exige relojes sincronizados. Ubuntu sirve NTP mediante Chrony
+a `10.20.0.0/24`; Kali y Windows deben usar `10.20.0.10` como fuente. El
+preflight comprueba `Leap status: Normal`, la fuente horaria de Windows y un
+desfase máximo de un segundo para ambos equipos remotos. Un intervalo negativo
+se considera cronología inválida: nunca se convierte artificialmente en cero ni
+se incorpora a la cobertura o a las métricas agregadas.
+
 ## Fuentes y escenarios
 
 | Escenario | Fuente | Regla | Resultado esperado |
@@ -31,7 +38,9 @@ solicitudes. Las pruebas se ejecutan primero con SOAR en `dry-run`.
 ```bash
 make upgrade-0.8
 make eval-list
-make eval-preflight KALI_SSH=usuario@10.20.0.30
+make eval-preflight \
+  KALI_SSH=usuario@10.20.0.30 \
+  WINDOWS_SSH=usuario@10.20.0.20
 make eval-run SCENARIO=SCN-001 KALI_SSH=usuario@10.20.0.30
 ```
 
@@ -56,6 +65,11 @@ Finalmente:
 make eval-summary
 make evidence-evaluation
 ```
+
+Las ejecuciones usadas para depurar instalación, reglas o sincronización son
+pilotos. Deben conservarse fuera de `evaluation/results/runs/` antes de iniciar
+una campaña final limpia; solo resultados `PASS` con `timing_integrity=valid`
+aportan cobertura y muestras estadísticas.
 
 `EVAL-001` exige al menos una ejecución supervisada en modo real cuyo control
 reversible haya quedado en `rolled_back`. Para esa única repetición se usan
