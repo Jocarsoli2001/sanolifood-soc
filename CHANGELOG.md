@@ -31,6 +31,9 @@ instalación y validación vigentes se mantienen únicamente en el `README.md`.
   autenticación SSH, preflight y login empresarial.
 - El preflight concede 60 segundos para introducir una contraseña SSH y exige
   una diferencia de reloj máxima de tres segundos.
+- Los bloqueos pesimistas de ingredientes y lotes apuntan únicamente a su tabla
+  principal y omiten relaciones cargadas mediante `LEFT OUTER JOIN`, evitando
+  el error de PostgreSQL durante movimientos y controles de calidad.
 
 ## 0.7.0 — 2026-08-26
 
