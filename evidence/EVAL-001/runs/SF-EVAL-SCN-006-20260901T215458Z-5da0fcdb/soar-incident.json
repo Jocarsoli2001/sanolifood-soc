@@ -1,0 +1,70 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T21:55:02.567442+00:00",
+      "expires_at": null,
+      "id": "373e4448-9799-4adc-805b-325332cd6dcd",
+      "incident_id": "60e47fda-1be1-4e0f-b5da-886d493ce436",
+      "optional": false,
+      "result": {
+        "bytes": 2821,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/60e47fda-1be1-4e0f-b5da-886d493ce436/373e4448-9799-4adc-805b-325332cd6dcd.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "quality_guard",
+      "approved_at": "2026-09-01T21:55:23.620953+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-01T21:55:23.660173+00:00",
+      "expires_at": null,
+      "id": "14a2b2c0-3759-4170-8df5-afa110ddcf04",
+      "incident_id": "60e47fda-1be1-4e0f-b5da-886d493ce436",
+      "optional": false,
+      "result": {
+        "mode": "dry-run",
+        "target": "quality-release",
+        "ttl_seconds": 900,
+        "would_apply": "quality_guard"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "simulated",
+      "target": "quality-release",
+      "ttl_seconds": 900
+    }
+  ],
+  "actor_username": "admin.sanolifood",
+  "agent_id": "000",
+  "agent_name": "46cfdde86674",
+  "analyst": "jose.santizo",
+  "contained_at": null,
+  "decided_at": "2026-09-01T21:55:23.620953+00:00",
+  "decision": "approve",
+  "decision_reason": "Control fuera de especificación confirmado; se autoriza validar en dry-run la suspensión temporal de liberaciones",
+  "dedup_key": "cc8679f8b3b6466564c0803c8438cbf056532a7153813710d0c7704c90c1c24e",
+  "detected_at": "2026-09-01T21:55:01.364000+00:00",
+  "id": "60e47fda-1be1-4e0f-b5da-886d493ce436",
+  "playbook_id": "PB-QUALITY-001",
+  "priority": "high",
+  "received_at": "2026-09-01T21:55:02.459000+00:00",
+  "resource_path": null,
+  "response_started_at": "2026-09-01T21:55:23.660173+00:00",
+  "rolled_back_at": null,
+  "rule_description": "SanoliFood quality check outside specification for resource 4",
+  "rule_id": 110030,
+  "rule_level": 8,
+  "source_alert_id": "1788299701.35993971",
+  "source_ip": "172.19.0.1",
+  "status": "simulated",
+  "triaged_at": "2026-09-01T21:55:02.516065+00:00"
+}

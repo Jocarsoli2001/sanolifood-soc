@@ -1,0 +1,67 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T21:47:38.755475+00:00",
+      "expires_at": null,
+      "id": "f6424f1e-c6cd-4254-9798-981eafcb468d",
+      "incident_id": "ed3fc5b8-1f51-4d55-af38-de3eaa5d46d0",
+      "optional": false,
+      "result": {
+        "bytes": 2915,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/ed3fc5b8-1f51-4d55-af38-de3eaa5d46d0/f6424f1e-c6cd-4254-9798-981eafcb468d.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "app_account_lock",
+      "approved_at": null,
+      "attempt_count": 0,
+      "automatic": false,
+      "executed_at": null,
+      "expires_at": null,
+      "id": "5d304780-cda7-4cad-9cff-1cbc2c7291a9",
+      "incident_id": "ed3fc5b8-1f51-4d55-af38-de3eaa5d46d0",
+      "optional": true,
+      "result": {
+        "reason": "protected_account"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "blocked_by_policy",
+      "target": "admin.sanolifood",
+      "ttl_seconds": 900
+    }
+  ],
+  "actor_username": "admin.sanolifood",
+  "agent_id": "000",
+  "agent_name": "46cfdde86674",
+  "analyst": null,
+  "contained_at": null,
+  "decided_at": null,
+  "decision": null,
+  "decision_reason": null,
+  "dedup_key": "9bc7f79be079e44f4685fe62449f78ec2c79a15722b567210c29f22e29c3cef7",
+  "detected_at": "2026-09-01T21:47:37.590000+00:00",
+  "id": "ed3fc5b8-1f51-4d55-af38-de3eaa5d46d0",
+  "playbook_id": "PB-BUS-001",
+  "priority": "high",
+  "received_at": "2026-09-01T21:47:38.686000+00:00",
+  "resource_path": null,
+  "response_started_at": null,
+  "rolled_back_at": null,
+  "rule_description": "High-value SanoliFood inventory adjustment by admin.sanolifood",
+  "rule_id": 110020,
+  "rule_level": 8,
+  "source_alert_id": "1788299257.35815303",
+  "source_ip": "172.19.0.1",
+  "status": "closed",
+  "triaged_at": "2026-09-01T21:47:38.706593+00:00"
+}

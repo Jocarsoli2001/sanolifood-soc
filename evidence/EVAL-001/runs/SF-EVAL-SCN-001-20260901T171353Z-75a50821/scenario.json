@@ -1,0 +1,14 @@
+{
+  "expected_actions": [
+    "collect_evidence"
+  ],
+  "expected_playbook_id": "PB-NDR-VALIDATION-001",
+  "expected_rule_id": 110100,
+  "id": "SCN-001",
+  "mitre": [],
+  "name": "Validación determinista de la ruta NDR",
+  "request_budget": 1,
+  "requires_decision": false,
+  "source": "kali",
+  "stimulus": "ndr_validation"
+}

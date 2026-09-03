@@ -1,0 +1,92 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T17:35:27.178602+00:00",
+      "expires_at": null,
+      "id": "67edb804-4166-403d-b952-6890603ea2de",
+      "incident_id": "f1a3a041-9d2a-4eb0-bc2b-a95a18bf762f",
+      "optional": false,
+      "result": {
+        "bytes": 4737,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/f1a3a041-9d2a-4eb0-bc2b-a95a18bf762f/67edb804-4166-403d-b952-6890603ea2de.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    },
+    {
+      "action_type": "app_ip_block",
+      "approved_at": "2026-09-01T17:36:26.128564+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-01T17:36:26.193554+00:00",
+      "expires_at": null,
+      "id": "dfeb2300-2f26-46ba-8105-16280c8a017a",
+      "incident_id": "f1a3a041-9d2a-4eb0-bc2b-a95a18bf762f",
+      "optional": false,
+      "result": {
+        "mode": "dry-run",
+        "target": "10.20.0.30",
+        "ttl_seconds": 600,
+        "would_apply": "app_ip_block"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "simulated",
+      "target": "10.20.0.30",
+      "ttl_seconds": 600
+    },
+    {
+      "action_type": "app_account_lock",
+      "approved_at": "2026-09-01T17:36:26.128564+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-01T17:36:26.193661+00:00",
+      "expires_at": null,
+      "id": "686649b9-2f39-4e22-9941-6831550805a4",
+      "incident_id": "f1a3a041-9d2a-4eb0-bc2b-a95a18bf762f",
+      "optional": true,
+      "result": {
+        "mode": "dry-run",
+        "target": "eval.9d94c8fd",
+        "ttl_seconds": 900,
+        "would_apply": "app_account_lock"
+      },
+      "reversible": true,
+      "rolled_back_at": null,
+      "status": "simulated",
+      "target": "eval.9d94c8fd",
+      "ttl_seconds": 900
+    }
+  ],
+  "actor_username": "eval.9d94c8fd",
+  "agent_id": "000",
+  "agent_name": "46cfdde86674",
+  "analyst": "jose.santizo",
+  "contained_at": null,
+  "decided_at": "2026-09-01T17:36:26.128564+00:00",
+  "decision": "approve",
+  "decision_reason": "Cinco accesos fallidos correlacionados desde Kali; se autoriza validar las respuestas propuestas en dry-run",
+  "dedup_key": "6d7bd4854409c7c98d355a9b5a0e7767e8745ca562c0d712f93ce4f8fea217d3",
+  "detected_at": "2026-09-01T17:35:26.217000+00:00",
+  "id": "f1a3a041-9d2a-4eb0-bc2b-a95a18bf762f",
+  "playbook_id": "PB-AUTH-001",
+  "priority": "critical",
+  "received_at": "2026-09-01T17:35:26.962000+00:00",
+  "resource_path": null,
+  "response_started_at": "2026-09-01T17:36:26.193554+00:00",
+  "rolled_back_at": null,
+  "rule_description": "Repeated SanoliFood authentication failures from 10.20.0.30",
+  "rule_id": 110011,
+  "rule_level": 10,
+  "source_alert_id": "1788284126.28960374",
+  "source_ip": "10.20.0.30",
+  "status": "simulated",
+  "triaged_at": "2026-09-01T17:35:27.094248+00:00"
+}

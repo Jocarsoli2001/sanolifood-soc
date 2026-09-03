@@ -1,0 +1,62 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "e4827c51b90c"
+  },
+  "data": {
+    "actor_username": "eval.47cfe8e6",
+    "correlation_id": "d70f6b7bae29e149845061518dafc44f",
+    "details": {
+      "reason": "invalid_credentials"
+    },
+    "environment": "corporate-lab",
+    "level": "INFO",
+    "logger": "sanolifood.security",
+    "message": "auth.login.failed",
+    "outcome": "failure",
+    "resource_id": "null",
+    "resource_type": "null",
+    "sf_event_type": "auth.login.failed",
+    "source_ip": "10.20.0.30",
+    "source_product": "sanolifood-operations",
+    "timestamp": "2026-09-03T16:56:31.543322+00:00"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-03T16:56:31.543322+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"auth.login.failed\",\"sf_event_type\":\"auth.login.failed\",\"outcome\":\"failure\",\"actor_username\":\"eval.47cfe8e6\",\"source_ip\":\"10.20.0.30\",\"correlation_id\":\"d70f6b7bae29e149845061518dafc44f\",\"resource_type\":null,\"resource_id\":null,\"details\":{\"reason\":\"invalid_credentials\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}",
+  "id": "1788454592.25127379",
+  "location": "/var/log/sanolifood/sanolifood.jsonl",
+  "manager": {
+    "name": "e4827c51b90c"
+  },
+  "previous_output": "{\"timestamp\":\"2026-09-03T16:56:31.795423+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"auth.login.failed\",\"sf_event_type\":\"auth.login.failed\",\"outcome\":\"failure\",\"actor_username\":\"eval.47cfe8e6\",\"source_ip\":\"10.20.0.30\",\"correlation_id\":\"b929b425f304aabafa407543545c9857\",\"resource_type\":null,\"resource_id\":null,\"details\":{\"reason\":\"invalid_credentials\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}\n{\"timestamp\":\"2026-09-03T16:56:32.143973+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"auth.login.failed\",\"sf_event_type\":\"auth.login.failed\",\"outcome\":\"failure\",\"actor_username\":\"eval.47cfe8e6\",\"source_ip\":\"10.20.0.30\",\"correlation_id\":\"fcf7abe25115a6735bc4b3a9d36a3b5e\",\"resource_type\":null,\"resource_id\":null,\"details\":{\"reason\":\"invalid_credentials\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}\n{\"timestamp\":\"2026-09-03T16:56:31.335857+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"auth.login.failed\",\"sf_event_type\":\"auth.login.failed\",\"outcome\":\"failure\",\"actor_username\":\"eval.47cfe8e6\",\"source_ip\":\"10.20.0.30\",\"correlation_id\":\"ab3b240e4529c0b31432106c36f3b47b\",\"resource_type\":null,\"resource_id\":null,\"details\":{\"reason\":\"invalid_credentials\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}\n{\"timestamp\":\"2026-09-03T16:56:31.045837+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"auth.login.failed\",\"sf_event_type\":\"auth.login.failed\",\"outcome\":\"failure\",\"actor_username\":\"eval.47cfe8e6\",\"source_ip\":\"10.20.0.30\",\"correlation_id\":\"2da72c424ae2aeb7ea9509d6298c5d6e\",\"resource_type\":null,\"resource_id\":null,\"details\":{\"reason\":\"invalid_credentials\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}",
+  "rule": {
+    "description": "Repeated SanoliFood authentication failures from 10.20.0.30",
+    "firedtimes": 1,
+    "frequency": 5,
+    "groups": [
+      "sanolifood",
+      "application",
+      "authentication_failures",
+      "attack"
+    ],
+    "id": "110011",
+    "level": 10,
+    "mail": false,
+    "mitre": {
+      "id": [
+        "T1110",
+        "T1110.001"
+      ],
+      "tactic": [
+        "Credential Access"
+      ],
+      "technique": [
+        "Brute Force",
+        "Password Guessing"
+      ]
+    }
+  },
+  "timestamp": "2026-09-03T16:56:32.168+0000"
+}

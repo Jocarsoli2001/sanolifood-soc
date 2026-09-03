@@ -1,0 +1,52 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "e4827c51b90c"
+  },
+  "data": {
+    "actor_username": "admin.sanolifood",
+    "correlation_id": "463713f1d7bae71ea4c6e63a5faf0ba1",
+    "details": {
+      "check_type": "SF-EVAL-SCN-006-20260903T183934Z-008a11ff",
+      "lot_code": "SF26-SAL-0017",
+      "max_value": "5.000",
+      "measured_value": "9.000",
+      "min_value": "4.000",
+      "result": "fail"
+    },
+    "environment": "corporate-lab",
+    "level": "INFO",
+    "logger": "sanolifood.security",
+    "message": "quality.check.failed",
+    "outcome": "failure",
+    "resource_id": "5",
+    "resource_type": "quality_check",
+    "sf_event_type": "quality.check.failed",
+    "source_ip": "172.19.0.1",
+    "source_product": "sanolifood-operations",
+    "timestamp": "2026-09-03T18:39:37.983209+00:00"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-03T18:39:37.983209+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"quality.check.failed\",\"sf_event_type\":\"quality.check.failed\",\"outcome\":\"failure\",\"actor_username\":\"admin.sanolifood\",\"source_ip\":\"172.19.0.1\",\"correlation_id\":\"463713f1d7bae71ea4c6e63a5faf0ba1\",\"resource_type\":\"quality_check\",\"resource_id\":\"5\",\"details\":{\"lot_code\":\"SF26-SAL-0017\",\"check_type\":\"SF-EVAL-SCN-006-20260903T183934Z-008a11ff\",\"measured_value\":\"9.000\",\"min_value\":\"4.000\",\"max_value\":\"5.000\",\"result\":\"fail\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}",
+  "id": "1788460779.27762452",
+  "location": "/var/log/sanolifood/sanolifood.jsonl",
+  "manager": {
+    "name": "e4827c51b90c"
+  },
+  "rule": {
+    "description": "SanoliFood quality check outside specification for resource 5",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "application",
+      "business_anomaly",
+      "quality"
+    ],
+    "id": "110030",
+    "level": 8,
+    "mail": false
+  },
+  "timestamp": "2026-09-03T18:39:39.791+0000"
+}

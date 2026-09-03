@@ -1,0 +1,16 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "app_account_lock"
+  ],
+  "expected_playbook_id": "PB-BUS-001",
+  "expected_policy_status": "blocked_by_policy",
+  "expected_rule_id": 110020,
+  "id": "SCN-005",
+  "mitre": [],
+  "name": "Ajuste empresarial alto con compensación exacta",
+  "request_budget": 4,
+  "requires_decision": false,
+  "source": "business",
+  "stimulus": "inventory_adjustment"
+}

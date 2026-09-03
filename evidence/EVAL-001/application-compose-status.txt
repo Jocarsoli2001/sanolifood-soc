@@ -1,0 +1,4 @@
+NAME                    IMAGE                      COMMAND                  SERVICE    CREATED       STATUS                  PORTS
+sanolifood-app-1        sanolifood/app:0.7.0       "/app/entrypoint.sh …"   app        3 hours ago   Up 3 hours (healthy)    5680/tcp, 8000/tcp
+sanolifood-nginx-1      nginx:1.28.0-alpine3.21    "/docker-entrypoint.…"   nginx      2 days ago    Up 45 hours (healthy)   80/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+sanolifood-postgres-1   postgres:17.6-alpine3.22   "docker-entrypoint.s…"   postgres   2 days ago    Up 45 hours (healthy)   5432/tcp

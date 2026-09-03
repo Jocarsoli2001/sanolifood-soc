@@ -1,0 +1,96 @@
+[
+  {
+    "action": {
+      "action_type": "app_ip_block",
+      "approved_at": "2026-09-03T16:58:53.620040+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-03T16:58:53.677306+00:00",
+      "expires_at": "2026-09-03T17:08:53.755188+00:00",
+      "id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+      "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+      "optional": false,
+      "result": {
+        "business_control": {
+          "control": {
+            "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+            "active": true,
+            "applied_at": "2026-09-03T16:58:53.755188+00:00",
+            "control_type": "app_ip_block",
+            "expires_at": "2026-09-03T17:08:53.755188+00:00",
+            "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+            "revoked_at": null,
+            "target": "10.20.0.30"
+          },
+          "created": true
+        },
+        "mode": "live",
+        "rollback": {
+          "changed": true,
+          "control": {
+            "action_id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+            "active": false,
+            "applied_at": "2026-09-03T16:58:53.755188+00:00",
+            "control_type": "app_ip_block",
+            "expires_at": "2026-09-03T17:08:53.755188+00:00",
+            "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+            "revoked_at": "2026-09-03T16:59:50.100171+00:00",
+            "target": "10.20.0.30"
+          }
+        }
+      },
+      "reversible": true,
+      "rolled_back_at": "2026-09-03T16:59:50.126320+00:00",
+      "status": "rolled_back",
+      "target": "10.20.0.30",
+      "ttl_seconds": 600
+    }
+  },
+  {
+    "action": {
+      "action_type": "app_account_lock",
+      "approved_at": "2026-09-03T16:58:53.620040+00:00",
+      "attempt_count": 1,
+      "automatic": false,
+      "executed_at": "2026-09-03T16:58:53.786608+00:00",
+      "expires_at": "2026-09-03T17:13:53.795607+00:00",
+      "id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+      "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+      "optional": true,
+      "result": {
+        "business_control": {
+          "control": {
+            "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+            "active": true,
+            "applied_at": "2026-09-03T16:58:53.795607+00:00",
+            "control_type": "app_account_lock",
+            "expires_at": "2026-09-03T17:13:53.795607+00:00",
+            "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+            "revoked_at": null,
+            "target": "eval.47cfe8e6"
+          },
+          "created": true
+        },
+        "mode": "live",
+        "rollback": {
+          "changed": true,
+          "control": {
+            "action_id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+            "active": false,
+            "applied_at": "2026-09-03T16:58:53.795607+00:00",
+            "control_type": "app_account_lock",
+            "expires_at": "2026-09-03T17:13:53.795607+00:00",
+            "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+            "revoked_at": "2026-09-03T16:59:50.173704+00:00",
+            "target": "eval.47cfe8e6"
+          }
+        }
+      },
+      "reversible": true,
+      "rolled_back_at": "2026-09-03T16:59:50.190688+00:00",
+      "status": "rolled_back",
+      "target": "eval.47cfe8e6",
+      "ttl_seconds": 900
+    }
+  }
+]

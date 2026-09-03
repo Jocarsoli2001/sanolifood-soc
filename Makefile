@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 .PHONY: bootstrap config build up down logs ps health test migrate validate rebuild \
-	upgrade-0.3 upgrade-0.4 upgrade-0.5 upgrade-0.6 upgrade-0.7 evidence-business reset-lab clean \
+	upgrade-0.3 upgrade-0.4 upgrade-0.5 upgrade-0.6 upgrade-0.7 upgrade-0.8 evidence-business reset-lab clean \
 	wazuh-preflight wazuh-bootstrap wazuh-up wazuh-down wazuh-ps wazuh-logs \
 	wazuh-health wazuh-reload-rules wazuh-test-rules wazuh-credentials evidence-wazuh \
 	suricata-preflight suricata-discover suricata-bootstrap suricata-up suricata-down \
@@ -14,6 +14,7 @@ SHELL := /bin/bash
 	soar-health soar-install-workflows soar-disable-integration soar-incidents \
 	soar-show soar-approve soar-reject soar-rollback soar-retry soar-metrics \
 	soar-validate-live soar-enable-live soar-disable-live soar-backup evidence-soar \
+	eval-static-check eval-test eval-list eval-preflight eval-run eval-decide eval-refresh eval-summary eval-deploy-live-verification evidence-evaluation \
 	soc-up soc-health
 
 bootstrap:
@@ -49,7 +50,7 @@ test:
 migrate:
 	docker compose run --rm app alembic upgrade head
 
-validate: config test soar-static-check
+validate: config test soar-static-check eval-static-check eval-test
 
 rebuild: config
 	docker compose down --remove-orphans
@@ -72,6 +73,9 @@ upgrade-0.6:
 
 upgrade-0.7:
 	@./infrastructure/scripts/upgrade-v0.7.0.sh
+
+upgrade-0.8:
+	@./infrastructure/scripts/upgrade-v0.8.0.sh
 
 evidence-business:
 	@./infrastructure/scripts/collect-business-evidence.sh
@@ -245,6 +249,51 @@ soar-backup:
 
 evidence-soar:
 	@./n8n/scripts/collect-evidence.sh
+
+eval-static-check:
+	@python3 ./evaluation/scripts/validate-static.py
+
+eval-test:
+	@python3 -m unittest discover -s evaluation/tests -p 'test_*.py' -v
+
+eval-list:
+	@python3 ./evaluation/tools/evalctl.py list
+
+eval-preflight:
+	@python3 ./evaluation/tools/evalctl.py preflight \
+		$(if $(KALI_SSH),--kali-ssh "$(KALI_SSH)",) \
+		$(if $(WINDOWS_SSH),--windows-ssh "$(WINDOWS_SSH)",)
+
+eval-run:
+	@test -n "$(SCENARIO)" || \
+		(echo "Use: make eval-run SCENARIO=SCN-001 KALI_SSH=usuario@10.20.0.30"; exit 2)
+	@python3 ./evaluation/tools/evalctl.py run --scenario "$(SCENARIO)" \
+		$(if $(KALI_SSH),--kali-ssh "$(KALI_SSH)",) \
+		$(if $(WINDOWS_SSH),--windows-ssh "$(WINDOWS_SSH)",) \
+		$(if $(TIMEOUT),--timeout "$(TIMEOUT)",) \
+		$(if $(filter live,$(CONFIRM)),--allow-live,)
+
+eval-decide:
+	@test -n "$(RUN_ID)" -a -n "$(DECISION)" -a -n "$(ANALYST)" -a -n "$(REASON)" || \
+		(echo "Use: make eval-decide RUN_ID=... DECISION=approve ANALYST=nombre REASON='justificación'"; exit 2)
+	@python3 ./evaluation/tools/evalctl.py decide \
+		--run-id "$(RUN_ID)" --decision "$(DECISION)" \
+		--analyst "$(ANALYST)" --reason "$(REASON)" \
+		$(if $(KALI_SSH),--kali-ssh "$(KALI_SSH)",) \
+		$(if $(filter live,$(CONFIRM)),--allow-live,)
+
+eval-deploy-live-verification:
+	@./evaluation/scripts/deploy-live-verification.sh
+
+eval-refresh:
+	@test -n "$(RUN_ID)" || (echo "Use: make eval-refresh RUN_ID=..."; exit 2)
+	@python3 ./evaluation/tools/evalctl.py refresh --run-id "$(RUN_ID)"
+
+eval-summary:
+	@python3 ./evaluation/tools/evalctl.py summary
+
+evidence-evaluation:
+	@./evaluation/scripts/collect-evidence.sh
 
 soc-up:
 	@$(MAKE) soar-prepare

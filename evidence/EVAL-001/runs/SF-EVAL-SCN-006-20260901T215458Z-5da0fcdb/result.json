@@ -1,0 +1,52 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "373e4448-9799-4adc-805b-325332cd6dcd",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "quality_guard",
+      "id": "14a2b2c0-3759-4170-8df5-afa110ddcf04",
+      "reversible": true,
+      "status": "simulated"
+    }
+  ],
+  "decision": "approve",
+  "dispatch_started_at": "2026-09-01T21:54:58.111709+00:00",
+  "incident_id": "60e47fda-1be1-4e0f-b5da-886d493ce436",
+  "incident_status": "simulated",
+  "marker": "SF-EVAL-SCN-006-20260901T215458Z-5da0fcdb",
+  "metrics": {
+    "analyst_decision_seconds": 21.105,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": 0.039,
+    "end_to_end_triage_seconds": 1.309,
+    "soar_triage_seconds": 0.057,
+    "stimulus_to_wazuh_seconds": 0.157,
+    "wazuh_to_soar_seconds": 1.095
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-006-20260901T215458Z-5da0fcdb",
+  "scenario_id": "SCN-006",
+  "scenario_name": "Control de calidad fuera de especificación",
+  "schema_version": 1,
+  "source": "business",
+  "status": "PASS",
+  "stimulus": "quality_failure",
+  "stimulus_completed_at": "2026-09-01T21:55:01.381281+00:00",
+  "stimulus_started_at": "2026-09-01T21:55:01.207143+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T21:55:23.760047+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence"
+  ],
+  "wazuh_alert_id": "1788299701.35993971",
+  "wazuh_detected_at": "2026-09-01T21:55:01.364+0000"
+}

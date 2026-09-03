@@ -1,0 +1,18 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "quality_guard"
+  ],
+  "expected_agent_name": "sanolifood-win-01",
+  "expected_playbook_id": "PB-ENDPOINT-FIM-001",
+  "expected_rule_id": 110211,
+  "id": "SCN-008",
+  "mitre": [
+    "T1565.001"
+  ],
+  "name": "FIM WhoData de configuración de calidad en Windows",
+  "request_budget": 0,
+  "requires_decision": true,
+  "source": "windows_endpoint",
+  "stimulus": "windows_fim"
+}

@@ -1,0 +1,15 @@
+{
+  "expected_actions": [
+    "collect_evidence",
+    "quality_guard"
+  ],
+  "expected_playbook_id": "PB-QUALITY-001",
+  "expected_rule_id": 110030,
+  "id": "SCN-006",
+  "mitre": [],
+  "name": "Control de calidad fuera de especificación",
+  "request_budget": 2,
+  "requires_decision": true,
+  "source": "business",
+  "stimulus": "quality_failure"
+}

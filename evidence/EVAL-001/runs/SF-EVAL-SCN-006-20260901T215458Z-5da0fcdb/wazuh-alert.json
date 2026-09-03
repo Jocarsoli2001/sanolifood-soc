@@ -1,0 +1,52 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "46cfdde86674"
+  },
+  "data": {
+    "actor_username": "admin.sanolifood",
+    "correlation_id": "f99b3e52dfb18f6a0b583ab6b2ec2317",
+    "details": {
+      "check_type": "SF-EVAL-SCN-006-20260901T215458Z-5da0fcdb",
+      "lot_code": "SF26-SAL-0017",
+      "max_value": "5.000",
+      "measured_value": "9.000",
+      "min_value": "4.000",
+      "result": "fail"
+    },
+    "environment": "corporate-lab",
+    "level": "INFO",
+    "logger": "sanolifood.security",
+    "message": "quality.check.failed",
+    "outcome": "failure",
+    "resource_id": "4",
+    "resource_type": "quality_check",
+    "sf_event_type": "quality.check.failed",
+    "source_ip": "172.19.0.1",
+    "source_product": "sanolifood-operations",
+    "timestamp": "2026-09-01T21:55:01.300944+00:00"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-01T21:55:01.300944+00:00\",\"level\":\"INFO\",\"logger\":\"sanolifood.security\",\"message\":\"quality.check.failed\",\"sf_event_type\":\"quality.check.failed\",\"outcome\":\"failure\",\"actor_username\":\"admin.sanolifood\",\"source_ip\":\"172.19.0.1\",\"correlation_id\":\"f99b3e52dfb18f6a0b583ab6b2ec2317\",\"resource_type\":\"quality_check\",\"resource_id\":\"4\",\"details\":{\"lot_code\":\"SF26-SAL-0017\",\"check_type\":\"SF-EVAL-SCN-006-20260901T215458Z-5da0fcdb\",\"measured_value\":\"9.000\",\"min_value\":\"4.000\",\"max_value\":\"5.000\",\"result\":\"fail\"},\"source_product\":\"sanolifood-operations\",\"environment\":\"corporate-lab\"}",
+  "id": "1788299701.35993971",
+  "location": "/var/log/sanolifood/sanolifood.jsonl",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "SanoliFood quality check outside specification for resource 4",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "application",
+      "business_anomaly",
+      "quality"
+    ],
+    "id": "110030",
+    "level": 8,
+    "mail": false
+  },
+  "timestamp": "2026-09-01T21:55:01.364+0000"
+}

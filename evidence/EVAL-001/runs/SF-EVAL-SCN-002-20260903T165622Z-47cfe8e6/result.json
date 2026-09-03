@@ -1,0 +1,71 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "22c5fd6c-63d9-457f-b27b-b5e84011c316",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "app_ip_block",
+      "id": "6310f61f-c144-41d2-a4ff-94ee0aa225ba",
+      "reversible": true,
+      "status": "rolled_back"
+    },
+    {
+      "action_type": "app_account_lock",
+      "id": "bf69fde3-a0c6-4cdc-98b4-174c630087a0",
+      "reversible": true,
+      "status": "rolled_back"
+    }
+  ],
+  "decision": "approve",
+  "dispatch_started_at": "2026-09-03T16:56:22.080592+00:00",
+  "incident_id": "50a00c74-e815-4b55-b20e-87d87a687ee9",
+  "incident_status": "closed",
+  "live_control_verification": {
+    "active": "PASS",
+    "after_rollback": "PASS",
+    "before": "PASS",
+    "evidence_file": "live-control-verification.json",
+    "status": "PASS",
+    "verified_actions": [
+      "app_ip_block",
+      "app_account_lock"
+    ]
+  },
+  "marker": "eval.47cfe8e6",
+  "metrics": {
+    "analyst_decision_seconds": 140.756,
+    "containment_to_rollback_seconds": 56.513,
+    "decision_to_containment_seconds": 0.057,
+    "decision_to_response_seconds": 0.057,
+    "end_to_end_triage_seconds": 2.05,
+    "soar_triage_seconds": 0.056,
+    "stimulus_to_wazuh_seconds": 1.354,
+    "wazuh_to_soar_seconds": 0.64
+  },
+  "response_mode": "live",
+  "run_id": "SF-EVAL-SCN-002-20260903T165622Z-47cfe8e6",
+  "scenario_id": "SCN-002",
+  "scenario_name": "Fallos de autenticación correlacionados",
+  "schema_version": 1,
+  "source": "kali",
+  "status": "PASS",
+  "stimulus": "auth_failures",
+  "stimulus_completed_at": "2026-09-03T16:56:32.198589+00:00",
+  "stimulus_started_at": "2026-09-03T16:56:30.814136+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-03T17:00:03.606122+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence",
+    "live_control_effect",
+    "rollback_restoration"
+  ],
+  "wazuh_alert_id": "1788454592.25127379",
+  "wazuh_detected_at": "2026-09-03T16:56:32.168+0000"
+}

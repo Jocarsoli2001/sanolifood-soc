@@ -1,0 +1,4 @@
+## feature/final-evaluation-v0.8.0...origin/feature/final-evaluation-v0.8.0 [ahead 1]
+?? evidence/EVAL-001/
+d5b1105 (HEAD -> feature/final-evaluation-v0.8.0) Fix: recopilar artefactos opcionales de evaluación
+2026-09-03T19:14:24Z

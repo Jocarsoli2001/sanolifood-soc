@@ -72,7 +72,26 @@ def login(
         db.commit()
         raise PermissionDenied("La solicitud de acceso no superó la validación de seguridad.")
 
+    now = utcnow()
     user = db.scalar(select(User).where(func.lower(User.username) == normalized_username))
+    soar_lock = active_control(db, "app_account_lock", normalized_username, at=now)
+    if soar_lock is not None:
+        record_event(
+            db,
+            request=request,
+            event_type="auth.login.blocked",
+            outcome="blocked",
+            actor=user,
+            actor_username=normalized_username,
+            details={"reason": "soar_temporary_control", "incident_id": soar_lock.incident_id},
+        )
+        db.commit()
+        return login_response(
+            request,
+            error="La cuenta está temporalmente bloqueada. Intenta nuevamente más tarde.",
+            username=normalized_username,
+            status_code=423,
+        )
     if user is None:
         verify_password(password, DUMMY_PASSWORD_HASH)
         record_event(
@@ -89,25 +108,6 @@ def login(
             error="No fue posible iniciar sesión con las credenciales proporcionadas.",
             username=normalized_username,
             status_code=401,
-        )
-
-    now = utcnow()
-    soar_lock = active_control(db, "app_account_lock", normalized_username, at=now)
-    if soar_lock is not None:
-        record_event(
-            db,
-            request=request,
-            event_type="auth.login.blocked",
-            outcome="blocked",
-            actor=user,
-            details={"reason": "soar_temporary_control", "incident_id": soar_lock.incident_id},
-        )
-        db.commit()
-        return login_response(
-            request,
-            error="La cuenta está temporalmente bloqueada. Intenta nuevamente más tarde.",
-            username=normalized_username,
-            status_code=423,
         )
     locked_until = normalized_datetime(user.locked_until)
     if locked_until and locked_until > now:

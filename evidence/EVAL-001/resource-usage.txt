@@ -1,0 +1,11 @@
+CONTAINER ID   NAME                                 CPU %     MEM USAGE / LIMIT    MEM %     NET I/O           BLOCK I/O         PIDS
+c76e1de12a1f   sanolifood-soar-soar-controller-1    0.31%     63.57MiB / 384MiB    16.55%    1.47MB / 270kB    0B / 0B           6
+aaf0cc1ab412   sanolifood-app-1                     0.30%     68.25MiB / 9.48GiB   0.70%     5.35MB / 6.39MB   2.08MB / 15.7MB   6
+27f9d96c9e39   sanolifood-wazuh-wazuh.dashboard-1   15.44%    190.3MiB / 9.48GiB   1.96%     65.4MB / 80.6MB   124MB / 32.8kB    14
+e4827c51b90c   sanolifood-wazuh-wazuh.manager-1     37.60%    1.03GiB / 9.48GiB    10.86%    623MB / 383MB     23.7GB / 23.3GB   254
+6bf6db5752a2   sanolifood-wazuh-wazuh.indexer-1     36.36%    1.761GiB / 9.48GiB   18.58%    446MB / 251MB     367MB / 10.1GB    128
+42a4f430670a   sanolifood-suricata-suricata-1       1.57%     49.39MiB / 1GiB      4.82%     0B / 0B           7.01MB / 838MB    10
+660c0673d08d   sanolifood-nginx-1                   0.00%     3.578MiB / 9.48GiB   0.04%     23.4MB / 22.5MB   14.6MB / 4.19MB   5
+d69272489412   sanolifood-postgres-1                0.00%     22.98MiB / 9.48GiB   0.24%     80.9MB / 66.9MB   19.6MB / 17.9MB   8
+e0686744b348   sanolifood-soar-n8n-1                1.76%     414.9MiB / 1GiB      40.52%    76.9MB / 155MB    603MB / 189MB     26
+06581db625f8   sanolifood-soar-soar-db-1            2.81%     73.38MiB / 512MiB    14.33%    172MB / 186MB     110MB / 1.43GB    9

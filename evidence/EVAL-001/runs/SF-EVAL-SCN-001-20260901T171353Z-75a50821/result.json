@@ -1,0 +1,46 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "2b5ea739-38e5-45e8-996a-44caf3cea1c2",
+      "reversible": false,
+      "status": "completed"
+    }
+  ],
+  "decision": null,
+  "dispatch_started_at": "2026-09-01T17:13:53.092550+00:00",
+  "incident_id": "cb8dc9d9-67b9-4dc0-a711-632c448850c3",
+  "incident_status": "closed",
+  "marker": "SF-EVAL-SCN-001-20260901T171353Z-75a50821",
+  "metrics": {
+    "analyst_decision_seconds": null,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": null,
+    "end_to_end_triage_seconds": 2.034,
+    "soar_triage_seconds": 0.057,
+    "stimulus_to_wazuh_seconds": 0.875,
+    "wazuh_to_soar_seconds": 1.102
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-001-20260901T171353Z-75a50821",
+  "scenario_id": "SCN-001",
+  "scenario_name": "Validación determinista de la ruta NDR",
+  "schema_version": 1,
+  "source": "kali",
+  "status": "PASS",
+  "stimulus": "ndr_validation",
+  "stimulus_completed_at": "2026-09-01T17:14:00.722443+00:00",
+  "stimulus_started_at": "2026-09-01T17:14:00.657571+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T17:14:04.997330+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence"
+  ],
+  "wazuh_alert_id": "1788282841.28406013",
+  "wazuh_detected_at": "2026-09-01T17:14:01.533+0000"
+}

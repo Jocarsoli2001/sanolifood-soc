@@ -1,0 +1,48 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "approved_at": null,
+      "attempt_count": 1,
+      "automatic": true,
+      "executed_at": "2026-09-01T17:14:02.799703+00:00",
+      "expires_at": null,
+      "id": "2b5ea739-38e5-45e8-996a-44caf3cea1c2",
+      "incident_id": "cb8dc9d9-67b9-4dc0-a711-632c448850c3",
+      "optional": false,
+      "result": {
+        "bytes": 4082,
+        "evidence_path": "/var/lib/sanolifood-soar/evidence/incidents/cb8dc9d9-67b9-4dc0-a711-632c448850c3/2b5ea739-38e5-45e8-996a-44caf3cea1c2.json"
+      },
+      "reversible": false,
+      "rolled_back_at": null,
+      "status": "completed",
+      "target": null,
+      "ttl_seconds": null
+    }
+  ],
+  "actor_username": null,
+  "agent_id": "000",
+  "agent_name": "46cfdde86674",
+  "analyst": null,
+  "contained_at": null,
+  "decided_at": null,
+  "decision": null,
+  "decision_reason": null,
+  "dedup_key": "4250d2ad9e07e8697ebd52e9187f3d793cde6558a69aa4d698acfd842db2d5f3",
+  "detected_at": "2026-09-01T17:14:01.533000+00:00",
+  "id": "cb8dc9d9-67b9-4dc0-a711-632c448850c3",
+  "playbook_id": "PB-NDR-VALIDATION-001",
+  "priority": "low",
+  "received_at": "2026-09-01T17:14:02.635000+00:00",
+  "resource_path": null,
+  "response_started_at": null,
+  "rolled_back_at": null,
+  "rule_description": "SanoliFood NDR end-to-end validation request from 10.20.0.30",
+  "rule_id": 110100,
+  "rule_level": 5,
+  "source_alert_id": "1788282841.28406013",
+  "source_ip": "10.20.0.30",
+  "status": "closed",
+  "triaged_at": "2026-09-01T17:14:02.691506+00:00"
+}

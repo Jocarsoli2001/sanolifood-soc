@@ -1,0 +1,86 @@
+{
+  "active": {
+    "controls": [
+      {
+        "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+        "action_type": "quality_guard",
+        "application_guard": {
+          "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+          "control_type": "quality_guard",
+          "decision": "deny",
+          "enforced": true,
+          "guard": "quality_release",
+          "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+          "schema_version": 1,
+          "target": "quality-release"
+        },
+        "target": "quality-release"
+      }
+    ],
+    "expected_decision": "deny",
+    "observed_at": "2026-09-03T18:40:30.767655+00:00",
+    "phase": "active",
+    "status": "PASS"
+  },
+  "after_rollback": {
+    "controls": [
+      {
+        "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+        "action_type": "quality_guard",
+        "application_guard": {
+          "action_id": null,
+          "control_type": "quality_guard",
+          "decision": "allow",
+          "enforced": false,
+          "guard": "quality_release",
+          "incident_id": null,
+          "schema_version": 1,
+          "target": "quality-release"
+        },
+        "target": "quality-release"
+      }
+    ],
+    "expected_decision": "allow",
+    "observed_at": "2026-09-03T18:40:30.867294+00:00",
+    "phase": "after_rollback",
+    "status": "PASS"
+  },
+  "before": {
+    "controls": [
+      {
+        "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+        "action_type": "quality_guard",
+        "application_guard": {
+          "action_id": null,
+          "control_type": "quality_guard",
+          "decision": "allow",
+          "enforced": false,
+          "guard": "quality_release",
+          "incident_id": null,
+          "schema_version": 1,
+          "target": "quality-release"
+        },
+        "target": "quality-release"
+      }
+    ],
+    "expected_decision": "allow",
+    "observed_at": "2026-09-03T18:40:30.401059+00:00",
+    "phase": "before",
+    "status": "PASS"
+  },
+  "completed_at": "2026-09-03T18:40:30.867313+00:00",
+  "controls": [
+    {
+      "action_id": "697c4ce8-5f86-4d1e-a8e3-e946e9efd466",
+      "action_type": "quality_guard",
+      "target": "quality-release"
+    }
+  ],
+  "incident_id": "674b4061-640b-4ee0-ae43-25208f85d277",
+  "rollback_errors": [],
+  "rollback_receipt_count": 1,
+  "run_id": "SF-EVAL-SCN-006-20260903T183934Z-008a11ff",
+  "schema_version": 1,
+  "started_at": "2026-09-03T18:40:30.371137+00:00",
+  "status": "PASS"
+}

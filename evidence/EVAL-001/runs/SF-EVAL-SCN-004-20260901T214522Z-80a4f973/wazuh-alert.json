@@ -1,0 +1,102 @@
+{
+  "agent": {
+    "id": "000",
+    "name": "46cfdde86674"
+  },
+  "data": {
+    "@source": "suricata-ndr",
+    "alert": {
+      "action": "allowed",
+      "category": "Web Application Attack",
+      "gid": "1",
+      "metadata": {
+        "mitre_tactic_id": [
+          "TA0001"
+        ],
+        "mitre_technique_id": [
+          "T1190"
+        ]
+      },
+      "rev": "1",
+      "severity": "1",
+      "signature": "SANOLIFOOD NDR SQL injection indicator in URI",
+      "signature_id": "9900004"
+    },
+    "app_proto": "http",
+    "dest_ip": "10.20.0.10",
+    "dest_port": "8080",
+    "direction": "to_server",
+    "event_type": "alert",
+    "flow": {
+      "bytes_toclient": "933",
+      "bytes_toserver": "570",
+      "dest_ip": "10.20.0.10",
+      "dest_port": "8080",
+      "pkts_toclient": "4",
+      "pkts_toserver": "4",
+      "src_ip": "10.20.0.30",
+      "src_port": "60742",
+      "start": "2026-09-01T21:45:30.145907+0000"
+    },
+    "flow_id": "626669645307599.000000",
+    "http": {
+      "hostname": "10.20.0.10",
+      "http_content_type": "application/json",
+      "http_method": "GET",
+      "http_port": "8080",
+      "http_user_agent": "SanoliFood-Evaluation/0.8",
+      "length": "22",
+      "protocol": "HTTP/1.1",
+      "status": "404",
+      "url": "/__sf_evaluation_only__?sf_run_id=SF-EVAL-SCN-004-20260901T214522Z-80a4f973&q=UNION%20SELECT%20VALIDATION"
+    },
+    "in_iface": "enp0s8",
+    "ip_v": "4",
+    "pkt_src": "wire/pcap",
+    "proto": "TCP",
+    "sensor": {
+      "zone": "edge"
+    },
+    "src_ip": "10.20.0.30",
+    "src_port": "60742",
+    "tc_progress": "response_complete",
+    "timestamp": "2026-09-01T21:45:30.162835+0000",
+    "ts_progress": "request_complete",
+    "tx_id": "0"
+  },
+  "decoder": {
+    "name": "json"
+  },
+  "full_log": "{\"timestamp\":\"2026-09-01T21:45:30.162835+0000\",\"flow_id\":626669645307599,\"in_iface\":\"enp0s8\",\"event_type\":\"alert\",\"src_ip\":\"10.20.0.30\",\"src_port\":60742,\"dest_ip\":\"10.20.0.10\",\"dest_port\":8080,\"proto\":\"TCP\",\"ip_v\":4,\"pkt_src\":\"wire/pcap\",\"tx_id\":0,\"alert\":{\"action\":\"allowed\",\"gid\":1,\"signature_id\":9900004,\"rev\":1,\"signature\":\"SANOLIFOOD NDR SQL injection indicator in URI\",\"category\":\"Web Application Attack\",\"severity\":1,\"metadata\":{\"mitre_tactic_id\":[\"TA0001\"],\"mitre_technique_id\":[\"T1190\"]}},\"ts_progress\":\"request_complete\",\"tc_progress\":\"response_complete\",\"http\":{\"hostname\":\"10.20.0.10\",\"http_port\":8080,\"url\":\"/__sf_evaluation_only__?sf_run_id=SF-EVAL-SCN-004-20260901T214522Z-80a4f973&q=UNION%20SELECT%20VALIDATION\",\"http_user_agent\":\"SanoliFood-Evaluation/0.8\",\"http_content_type\":\"application/json\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"status\":404,\"length\":22},\"app_proto\":\"http\",\"direction\":\"to_server\",\"flow\":{\"pkts_toserver\":4,\"pkts_toclient\":4,\"bytes_toserver\":570,\"bytes_toclient\":933,\"start\":\"2026-09-01T21:45:30.145907+0000\",\"src_ip\":\"10.20.0.30\",\"dest_ip\":\"10.20.0.10\",\"src_port\":60742,\"dest_port\":8080},\"@source\":\"suricata-ndr\",\"sensor\":{\"zone\":\"edge\"}}",
+  "id": "1788299131.35734489",
+  "location": "/var/log/suricata/eve.json",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "SanoliFood NDR SQL injection indicator from 10.20.0.30 to 10.20.0.10",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "suricata",
+      "network",
+      "web_attack",
+      "initial_access"
+    ],
+    "id": "110130",
+    "level": 12,
+    "mail": true,
+    "mitre": {
+      "id": [
+        "T1190"
+      ],
+      "tactic": [
+        "Initial Access"
+      ],
+      "technique": [
+        "Exploit Public-Facing Application"
+      ]
+    }
+  },
+  "timestamp": "2026-09-01T21:45:31.334+0000"
+}

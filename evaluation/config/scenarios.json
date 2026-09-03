@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "catalog_version": "0.8.0",
+  "lab_policy": {
+    "allowed_cidr": "10.20.0.0/24",
+    "soc_ipv4": "10.20.0.10",
+    "windows_ipv4": "10.20.0.20",
+    "kali_ipv4": "10.20.0.30",
+    "application_port": 8080,
+    "max_requests_per_run": 30,
+    "default_timeout_seconds": 150
+  },
+  "scenarios": [
+    {
+      "id": "SCN-001",
+      "name": "Validación determinista de la ruta NDR",
+      "source": "kali",
+      "stimulus": "ndr_validation",
+      "expected_rule_id": 110100,
+      "expected_playbook_id": "PB-NDR-VALIDATION-001",
+      "expected_actions": ["collect_evidence"],
+      "requires_decision": false,
+      "request_budget": 1,
+      "mitre": []
+    },
+    {
+      "id": "SCN-002",
+      "name": "Fallos de autenticación correlacionados",
+      "source": "kali",
+      "stimulus": "auth_failures",
+      "expected_rule_id": 110011,
+      "expected_playbook_id": "PB-AUTH-001",
+      "expected_actions": ["collect_evidence", "app_ip_block", "app_account_lock"],
+      "requires_decision": true,
+      "request_budget": 6,
+      "mitre": ["T1110", "T1110.001"]
+    },
+    {
+      "id": "SCN-003",
+      "name": "Solicitud controlada de ruta sensible inexistente",
+      "source": "kali",
+      "stimulus": "web_path_validation",
+      "expected_rule_id": 110120,
+      "expected_playbook_id": "PB-NDR-RECON-001",
+      "expected_actions": ["collect_evidence", "app_ip_block"],
+      "requires_decision": true,
+      "request_budget": 1,
+      "mitre": ["T1595.002"]
+    },
+    {
+      "id": "SCN-004",
+      "name": "Cadena inerte de validación SQLi en ruta inexistente",
+      "source": "kali",
+      "stimulus": "sqli_signature_validation",
+      "expected_rule_id": 110130,
+      "expected_playbook_id": "PB-NDR-SQLI-001",
+      "expected_actions": ["collect_evidence", "app_ip_block"],
+      "requires_decision": true,
+      "request_budget": 1,
+      "mitre": ["T1190"]
+    },
+    {
+      "id": "SCN-005",
+      "name": "Ajuste empresarial alto con compensación exacta",
+      "source": "business",
+      "stimulus": "inventory_adjustment",
+      "expected_rule_id": 110020,
+      "expected_playbook_id": "PB-BUS-001",
+      "expected_actions": ["collect_evidence", "app_account_lock"],
+      "requires_decision": false,
+      "expected_policy_status": "blocked_by_policy",
+      "request_budget": 4,
+      "mitre": []
+    },
+    {
+      "id": "SCN-006",
+      "name": "Control de calidad fuera de especificación",
+      "source": "business",
+      "stimulus": "quality_failure",
+      "expected_rule_id": 110030,
+      "expected_playbook_id": "PB-QUALITY-001",
+      "expected_actions": ["collect_evidence", "quality_guard"],
+      "requires_decision": true,
+      "request_budget": 2,
+      "mitre": []
+    },
+    {
+      "id": "SCN-007",
+      "name": "FIM de configuración de calidad en Ubuntu",
+      "source": "linux_endpoint",
+      "stimulus": "linux_fim",
+      "expected_rule_id": 110210,
+      "expected_playbook_id": "PB-ENDPOINT-FIM-001",
+      "expected_actions": ["collect_evidence", "quality_guard"],
+      "requires_decision": true,
+      "request_budget": 0,
+      "expected_agent_name": "sanolifood-ubuntu-01",
+      "mitre": ["T1565.001"]
+    },
+    {
+      "id": "SCN-008",
+      "name": "FIM WhoData de configuración de calidad en Windows",
+      "source": "windows_endpoint",
+      "stimulus": "windows_fim",
+      "expected_rule_id": 110211,
+      "expected_playbook_id": "PB-ENDPOINT-FIM-001",
+      "expected_actions": ["collect_evidence", "quality_guard"],
+      "requires_decision": true,
+      "request_budget": 0,
+      "expected_agent_name": "sanolifood-win-01",
+      "mitre": ["T1565.001"]
+    }
+  ]
+}

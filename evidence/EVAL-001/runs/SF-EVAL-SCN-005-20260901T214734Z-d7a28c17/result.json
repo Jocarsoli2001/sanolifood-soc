@@ -1,0 +1,53 @@
+{
+  "actions": [
+    {
+      "action_type": "collect_evidence",
+      "id": "f6424f1e-c6cd-4254-9798-981eafcb468d",
+      "reversible": false,
+      "status": "completed"
+    },
+    {
+      "action_type": "app_account_lock",
+      "id": "5d304780-cda7-4cad-9cff-1cbc2c7291a9",
+      "reversible": true,
+      "status": "blocked_by_policy"
+    }
+  ],
+  "decision": null,
+  "dispatch_started_at": "2026-09-01T21:47:34.018398+00:00",
+  "incident_id": "ed3fc5b8-1f51-4d55-af38-de3eaa5d46d0",
+  "incident_status": "closed",
+  "marker": "SF-EVAL-SCN-005-20260901T214734Z-d7a28c17",
+  "metrics": {
+    "analyst_decision_seconds": null,
+    "containment_to_rollback_seconds": null,
+    "decision_to_containment_seconds": null,
+    "decision_to_response_seconds": null,
+    "end_to_end_triage_seconds": 1.517,
+    "soar_triage_seconds": 0.021,
+    "stimulus_to_wazuh_seconds": 0.401,
+    "wazuh_to_soar_seconds": 1.096
+  },
+  "response_mode": "dry-run",
+  "run_id": "SF-EVAL-SCN-005-20260901T214734Z-d7a28c17",
+  "scenario_id": "SCN-005",
+  "scenario_name": "Ajuste empresarial alto con compensación exacta",
+  "schema_version": 1,
+  "source": "business",
+  "status": "PASS",
+  "stimulus": "inventory_adjustment",
+  "stimulus_completed_at": "2026-09-01T21:47:37.532577+00:00",
+  "stimulus_started_at": "2026-09-01T21:47:37.189174+00:00",
+  "stimulus_timing_source": "stimulus_receipt",
+  "timing_integrity": "valid",
+  "updated_at": "2026-09-01T21:47:40.441604+00:00",
+  "validations": [
+    "rule_id",
+    "playbook_id",
+    "action_catalog",
+    "automatic_evidence",
+    "protected_target_policy"
+  ],
+  "wazuh_alert_id": "1788299257.35815303",
+  "wazuh_detected_at": "2026-09-01T21:47:37.590+0000"
+}

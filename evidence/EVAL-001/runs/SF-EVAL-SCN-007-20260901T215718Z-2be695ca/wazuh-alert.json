@@ -1,0 +1,82 @@
+{
+  "agent": {
+    "id": "001",
+    "ip": "10.20.0.10",
+    "labels": {
+      "sf": {
+        "asset": {
+          "organization": "SanoliFood-SA",
+          "platform": "linux",
+          "zone": "corporate"
+        },
+        "telemetry": {
+          "profile": "endpoint-v1"
+        }
+      }
+    },
+    "name": "sanolifood-ubuntu-01"
+  },
+  "decoder": {
+    "name": "syscheck_integrity_changed"
+  },
+  "full_log": "File '/etc/sanolifood/validation-probe.yml' modified\nMode: realtime\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1788269103', now it is '1788299847'\nOld md5sum was: '56b15e4e4a02184c4c0e23b272c20303'\nNew md5sum is : '6b7618be1a54869320dc1e6d39c30261'\nOld sha1sum was: '4342202de6e455388ff4c90add63910f1b478602'\nNew sha1sum is : 'c64a2b5678a550d2b809f8bd18bd7b960b3b6abf'\nOld sha256sum was: 'a59e6f3e49ef64a974f41a489b44cf20cc1282720efeec7b7594baca52c6722d'\nNew sha256sum is : '4a8eee028a0bcfbab7206405303283ff8e8cfac7a9ad5a36e23db04eec650220'\n",
+  "id": "1788299848.36052740",
+  "location": "syscheck",
+  "manager": {
+    "name": "46cfdde86674"
+  },
+  "rule": {
+    "description": "SanoliFood Ubuntu quality configuration changed: /etc/sanolifood/validation-probe.yml",
+    "firedtimes": 1,
+    "groups": [
+      "sanolifood",
+      "endpoint",
+      "linux",
+      "fim",
+      "configuration_change",
+      "quality"
+    ],
+    "id": "110210",
+    "level": 8,
+    "mail": false,
+    "mitre": {
+      "id": [
+        "T1565.001"
+      ],
+      "tactic": [
+        "Impact"
+      ],
+      "technique": [
+        "Stored Data Manipulation"
+      ]
+    }
+  },
+  "syscheck": {
+    "changed_attributes": [
+      "mtime",
+      "md5",
+      "sha1",
+      "sha256"
+    ],
+    "diff": "1,2c1,2\n< validation_timestamp: 2026-09-01T13:25:03Z\n< run_id: SF-EVAL-SCN-007-20260901T132459Z-eca035d0\n---\n> validation_timestamp: 2026-09-01T21:57:28Z\n> run_id: SF-EVAL-SCN-007-20260901T215718Z-2be695ca\n",
+    "event": "modified",
+    "gid_after": "0",
+    "gname_after": "root",
+    "inode_after": 6424113,
+    "md5_after": "6b7618be1a54869320dc1e6d39c30261",
+    "md5_before": "56b15e4e4a02184c4c0e23b272c20303",
+    "mode": "realtime",
+    "mtime_after": "2026-09-01T21:57:27",
+    "mtime_before": "2026-09-01T13:25:03",
+    "path": "/etc/sanolifood/validation-probe.yml",
+    "perm_after": "rw-r-----",
+    "sha1_after": "c64a2b5678a550d2b809f8bd18bd7b960b3b6abf",
+    "sha1_before": "4342202de6e455388ff4c90add63910f1b478602",
+    "sha256_after": "4a8eee028a0bcfbab7206405303283ff8e8cfac7a9ad5a36e23db04eec650220",
+    "sha256_before": "a59e6f3e49ef64a974f41a489b44cf20cc1282720efeec7b7594baca52c6722d",
+    "size_after": "93",
+    "uid_after": "0",
+    "uname_after": "root"
+  },
+  "timestamp": "2026-09-01T21:57:28.055+0000"
+}
