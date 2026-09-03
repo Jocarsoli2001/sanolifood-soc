@@ -38,6 +38,7 @@ foreach ($port in 1514, 1515) {
 $probeDirectory = 'C:\SanoliFood\Quality\Config'
 New-Item -ItemType Directory -Force -Path $probeDirectory | Out-Null
 $timestamp = (Get-Date).ToUniversalTime().ToString('o')
+Write-Host "STIMULUS_STARTED_AT=$timestamp"
 $probePath = Join-Path $probeDirectory 'validation-probe.txt'
 Set-Content -LiteralPath $probePath -Value @(
     "SanoliFood endpoint validation $timestamp"

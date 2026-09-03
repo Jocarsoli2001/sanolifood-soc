@@ -111,10 +111,10 @@ def csrf_token(html: str) -> str:
 def execute(stimulus: str, run_id: str, marker: str) -> dict[str, object]:
     validate_host()
     client = LabClient(run_id)
-    started_at = utc_now()
     client.request("/health/ready")
     client.requests = 0
     client.statuses.clear()
+    started_at = utc_now()
 
     if stimulus == "ndr_validation":
         client.request(

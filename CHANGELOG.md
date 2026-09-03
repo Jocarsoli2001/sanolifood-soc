@@ -25,6 +25,13 @@ instalación y validación vigentes se mantienen únicamente en el `README.md`.
 - Ajuste de inventario compensado exactamente y rollback inmediato para toda
   acción real reversible ejecutada por la campaña.
 
+### Corregido
+
+- El inicio de MTTD procede ahora del recibo del estímulo y excluye el tiempo de
+  autenticación SSH, preflight y login empresarial.
+- El preflight concede 60 segundos para introducir una contraseña SSH y exige
+  una diferencia de reloj máxima de tres segundos.
+
 ## 0.7.0 — 2026-08-26
 
 ### Añadido

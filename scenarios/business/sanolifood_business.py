@@ -170,10 +170,10 @@ def quality_failure(client: AppClient, run_id: str) -> dict[str, object]:
 def execute(stimulus: str, run_id: str) -> dict[str, object]:
     env = load_env(ROOT / ".env")
     client = AppClient(run_id)
-    started_at = utc_now()
     actor = login(client, env)
     client.requests = 0
     client.statuses.clear()
+    started_at = utc_now()
     if stimulus == "inventory_adjustment":
         effect = inventory_adjustment(client, run_id)
     elif stimulus == "quality_failure":
