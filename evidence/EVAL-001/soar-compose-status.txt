@@ -1,4 +1,4 @@
-NAME                                IMAGE                            COMMAND                  SERVICE           CREATED          STATUS                    PORTS
-sanolifood-soar-n8n-1               docker.n8n.io/n8nio/n8n:2.36.7   "tini -- /docker-ent…"   n8n               6 days ago       Up 45 hours (healthy)     127.0.0.1:5678->5678/tcp
-sanolifood-soar-soar-controller-1   sanolifood/app:0.7.0             "/app/entrypoint.sh …"   soar-controller   32 minutes ago   Up 32 minutes (healthy)   127.0.0.1:5680->5680/tcp, 8000/tcp
-sanolifood-soar-soar-db-1           postgres:17.6-alpine3.22         "docker-entrypoint.s…"   soar-db           6 days ago       Up 45 hours (healthy)     5432/tcp
+NAME                                IMAGE                                                                     COMMAND                  SERVICE           CREATED       STATUS                    PORTS
+sanolifood-soar-n8n-1               docker.n8n.io/n8nio/n8n:2.36.7                                            "tini -- /docker-ent…"   n8n               7 days ago    Up 25 minutes (healthy)   127.0.0.1:5678->5678/tcp
+sanolifood-soar-soar-controller-1   sha256:59e070e1dfe234917af9ebe71a0d12810d53ce89f3dc0c8468e281b6385abfa1   "/app/entrypoint.sh …"   soar-controller   7 hours ago   Up 24 minutes (healthy)   127.0.0.1:5680->5680/tcp, 8000/tcp
+sanolifood-soar-soar-db-1           postgres:17.6-alpine3.22                                                  "docker-entrypoint.s…"   soar-db           7 days ago    Up 25 minutes (healthy)   5432/tcp

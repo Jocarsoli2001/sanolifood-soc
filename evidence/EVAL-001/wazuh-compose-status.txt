@@ -1,4 +1,4 @@
-NAME                                 IMAGE                          COMMAND                  SERVICE           CREATED        STATUS                  PORTS
-sanolifood-wazuh-wazuh.dashboard-1   wazuh/wazuh-dashboard:4.14.7   "/entrypoint.sh"         wazuh.dashboard   45 hours ago   Up 44 hours (healthy)   443/tcp, 0.0.0.0:8443->5601/tcp, [::]:8443->5601/tcp
-sanolifood-wazuh-wazuh.indexer-1     wazuh/wazuh-indexer:4.14.7     "/entrypoint.sh open…"   wazuh.indexer     45 hours ago   Up 45 hours (healthy)   9200/tcp
-sanolifood-wazuh-wazuh.manager-1     wazuh/wazuh-manager:4.14.7     "/init"                  wazuh.manager     45 hours ago   Up 44 hours (healthy)   1516/tcp, 10.20.0.10:514->514/udp, 10.20.0.10:1514-1515->1514-1515/tcp, 55000/tcp
+NAME                                 IMAGE                          COMMAND                  SERVICE           CREATED      STATUS                    PORTS
+sanolifood-wazuh-wazuh.dashboard-1   wazuh/wazuh-dashboard:4.14.7   "/entrypoint.sh"         wazuh.dashboard   2 days ago   Up 25 minutes (healthy)   443/tcp, 0.0.0.0:8443->5601/tcp, [::]:8443->5601/tcp
+sanolifood-wazuh-wazuh.indexer-1     wazuh/wazuh-indexer:4.14.7     "/entrypoint.sh open…"   wazuh.indexer     2 days ago   Up 25 minutes (healthy)   9200/tcp
+sanolifood-wazuh-wazuh.manager-1     wazuh/wazuh-manager:4.14.7     "/init"                  wazuh.manager     2 days ago   Up 25 minutes (healthy)   1516/tcp, 10.20.0.10:514->514/udp, 10.20.0.10:1514-1515->1514-1515/tcp, 55000/tcp
