@@ -1,4 +1,10 @@
-## feature/final-evaluation-v0.8.0...origin/feature/final-evaluation-v0.8.0 [ahead 1]
-?? evidence/EVAL-001/
-d5b1105 (HEAD -> feature/final-evaluation-v0.8.0) Fix: recopilar artefactos opcionales de evaluación
-2026-09-03T19:14:24Z
+## main...origin/main
+ M evidence/EVAL-001/application-compose-status.txt
+ M evidence/EVAL-001/repository-state.txt
+ M evidence/EVAL-001/resource-usage.txt
+ M evidence/EVAL-001/soar-compose-status.txt
+ M evidence/EVAL-001/summary.json
+ M evidence/EVAL-001/summary.md
+ M evidence/EVAL-001/wazuh-compose-status.txt
+61ff6e1 (HEAD -> main, origin/main) Merge pull request #5 from Jocarsoli2001/feature/final-evaluation-v0.8.0
+2026-09-04T02:05:50Z
