@@ -2,32 +2,29 @@
 
 Laboratorio SOC reproducible para una empresa ficticia de procesamiento de
 alimentos. El proyecto integra una aplicación empresarial trazable,
-monitorización SIEM, telemetría de red IDS/NDR y reglas de detección
-versionadas en un entorno desplegable con Docker Compose.
+monitorización a través de un SIEM, telemetría de red IDS/NDR y reglas de detección
+versionadas en un entorno desplegable mediante Docker Compose.
 
-> Uso autorizado: este repositorio está diseñado exclusivamente para un
-> laboratorio propio, aislado y controlado. No ejecute las validaciones de
+> ATENCIÓN: este repositorio está diseñado exclusivamente para un
+> laboratorio propio, aislado y controlado. No se deben ejecutar las validaciones de
 > seguridad contra sistemas o redes de terceros.
 
 ## Estado del proyecto
 
-El incremento técnico en curso es **SanoliFood SOC v0.8.0**. La aplicación y el
-plano SOAR conservan la versión **0.7.0**; el nuevo hito añade una capa de
-evaluación atribuible sin modificar sus datos ni controles operativos.
+La versión estable actual es **SanoliFood SOC v0.8.0**. La aplicación empresarial y el plano SOAR mantienen la versión interna 0.7.0; la versión v0.8.0 integró una campaña final de evaluación, la validación de integridad temporal y la comprobación automática del efecto real del sistema y la restauración de controles SOAR.
 
 | Capacidad | Estado | Validación reproducible |
 |---|---|---|
-| Aplicación SanoliFood Operations | Operativa | Healthchecks, migraciones y 39 pruebas |
+| Aplicación SanoliFood Operations | Operativa | Healthchecks, migraciones y 43 pruebas |
 | Identidad, sesiones, RBAC y auditoría | Operativa | Cinco roles y eventos correlacionados |
 | Inventario, producción y calidad | Operativa | Recorrido empresarial de extremo a extremo |
 | Wazuh manager, indexer y dashboard | Operativo | Healthchecks y reglas probadas con `wazuh-logtest` |
 | Suricata IDS/NDR | Operativo | EVE JSON, reglas locales y alerta real en Wazuh |
 | Agentes Wazuh en endpoints | Implementado | Ubuntu, Windows, Sysmon, FIM y pruebas en vivo |
-| Automatización semiautomatizada con n8n | Implementada | Cinco workflows, nueve playbooks y validación E2E |
-| Campaña completa de escenarios y métricas | Framework implementado | Ocho recorridos con marcador único y resultados aislados |
+| Automatización semiautomatizada con n8n | Implementada | Cinco workflows, nueve playbooks y 14 reglas enrutadas |
+| Campaña completa de escenarios y métricas | Framework implementado | Ocho escenarios completos, diez ejecuciones con resultado `PASS` y una cobertura del 100% |
 
-Los elementos pendientes se mantienen visibles deliberadamente: el repositorio
-no presenta como implementada una capacidad que todavía no ha sido validada.
+La implementación práctica se encuentra cerrada y validada. Las múltiples pruebas terminaron sin ejecuciones fallidas, decisiones pendientes ni intervalos temporales inválidos. También se verificaron dos recorridos en modo real, con tres controles aplicados y restaurados correctamente mediante rollback.
 
 ## Índice
 
@@ -88,8 +85,8 @@ flowchart TD
 
 La aplicación y el SOC conservan ciclos de vida separados. Los volúmenes
 `sanolifood_app_logs` y `sanolifood_suricata_logs` conectan las fuentes de
-telemetría con Wazuh en modo de solo lectura. PostgreSQL, FastAPI y Nginx se
-segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
+telemetría con Wazuh en modo lectura. PostgreSQL, FastAPI y Nginx se
+segmentan mediante 3 redes llamadas: `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 
 ### Componentes versionados
 
@@ -113,8 +110,8 @@ segmentan mediante las redes `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
 |---:|---|---|---|
 | 8080 | TCP/HTTP | SanoliFood Operations mediante Nginx | Red del laboratorio |
 | 8443 | TCP/HTTPS | Wazuh Dashboard | Red del laboratorio |
-| 1514 | TCP | Eventos de agentes Wazuh | Segmento interno `10.20.0.0/24` |
-| 1515 | TCP | Enrolamiento de agentes Wazuh | Segmento interno `10.20.0.0/24` |
+| 1514 | TCP | Eventos de agentes Wazuh | Segmento de red interno y privado `10.20.0.0/24` |
+| 1515 | TCP | Enrolamiento de agentes Wazuh | Segmento de red interno y privado `10.20.0.0/24` |
 | 514 | UDP | Entrada syslog reservada | Fuentes futuras |
 | 5678 | TCP/HTTP | Editor y webhooks de n8n | Solo `127.0.0.1`; acceso administrativo por túnel SSH |
 | 5680 | TCP/HTTP | API del controlador SOAR | Solo `127.0.0.1` |
@@ -126,13 +123,13 @@ El indexer y la API interna de Wazuh no se publican en el host.
 ### Módulos empresariales
 
 - **Inventario:** ingredientes, proveedores, recepciones, ajustes y libro de
-  movimientos; impide saldos negativos.
+  movimientos. El sistema no permite saldos negativos.
 - **Producción:** recetas versionadas, planificación de lotes, consumo atómico de
   materiales y transiciones de estado.
 - **Calidad:** controles con límites, resultados conforme/no conforme, retención
   y liberación de lotes.
 - **Gobierno:** usuarios, roles, sesiones firmadas, bloqueo por intentos fallidos
-  y auditoría de acciones.
+  y auditoría de acciones en la app.
 - **Observabilidad:** eventos JSON estructurados con actor, IP de origen,
   resultado e identificador de correlación.
 
@@ -167,7 +164,7 @@ El indexer y la API interna de Wazuh no se publican en el host.
 ```
 
 Los archivos de `wazuh/runtime/` y `suricata/runtime/` son generados localmente,
-contienen secretos o datos específicos del host y están excluidos de Git.
+contienen secretos o datos específicos del host. Estos se excluyen de Git.
 
 ## Requisitos
 
@@ -178,9 +175,10 @@ contienen secretos o datos específicos del host y están excluidos de Git.
 - 8 GiB de RAM como mínimo; 10–12 GiB recomendados para mayor fluidez.
 - 50 GiB libres como mínimo; 80 GiB recomendados para conservar evidencias.
 - Una VM Windows 10/11 con 2 vCPU y 4 GiB de RAM recomendados.
+- Una VM Kali Linux con 2 vCPU y 4 GiB de RAM.
 - Una red interna aislada entre Ubuntu, Windows y la VM Kali.
 
-Los preflight checks de Wazuh exigen 4 CPU, 8 GiB de RAM, 50 GiB libres y
+Al realizar los preflight checks de Wazuh, se obtiene una exigencia de 4 CPU, 8 GiB de RAM, 50 GiB libres y
 `vm.max_map_count >= 262144`. Suricata requiere un host Linux porque utiliza el
 namespace de red del host y capacidades de captura de paquetes.
 
@@ -200,7 +198,7 @@ documentación oficial de Docker para Ubuntu si aún no están disponibles.
 
 ### Topología de red del laboratorio
 
-En VirtualBox, los adaptadores internos deben compartir el nombre
+En VirtualBox, se deben de configurar los adaptadores internos, los cuales deben compartir el nombre
 `sanolifood-lab`. No configure puerta de enlace ni DNS en la red interna; cada
 VM conserva un primer adaptador NAT o puente únicamente para administración y
 descarga de paquetes.
@@ -211,7 +209,7 @@ descarga de paquetes.
 | Windows endpoint | NAT, DHCP | `sanolifood-lab` | `10.20.0.20/24` |
 | Kali de validación | NAT temporal | `sanolifood-lab` | `10.20.0.30/24` |
 
-Para que Suricata pueda observar también tráfico lateral, configure el modo
+Para que Suricata pueda observar también tráfico lateral, se debe configurar el modo
 promiscuo del segundo adaptador de Ubuntu como **Permitir todo**. Las pruebas
 de esta fase solo se ejecutan contra activos propios del segmento
 `10.20.0.0/24`.
@@ -235,10 +233,10 @@ git status -sb
 ```
 
 Para una evaluación formal debe utilizarse un tag publicado, no una rama de
-desarrollo. La base SOAR validada es:
+desarrollo. La versión final validada para la evaluación es:
 
 ```bash
-git checkout v0.7.0
+git checkout v0.8.0
 ```
 
 ### 2. Crear la configuración local de la aplicación
@@ -266,7 +264,7 @@ unset SESSION_SECRET_VALUE POSTGRES_PASSWORD_VALUE ADMIN_PASSWORD_VALUE
 git check-ignore .env
 ```
 
-El último comando debe devolver `.env`. No continúe si el archivo no está
+El último comando debe devolver `.env`. No se debe continuar de ninguna forma si el archivo no está
 ignorado. No reutilice estas credenciales en ningún otro sistema.
 
 ### 3. Validar los recursos y la configuración
@@ -278,7 +276,7 @@ make suricata-preflight
 make soar-static-check
 ```
 
-Corrija cualquier resultado `FAIL` antes de iniciar los servicios.
+Corrija cualquier resultado `FAIL` antes de iniciar los servicios. Para ello, revisar la sección [Resolución de problemas](#resolución-de-problemas).
 
 ### 4. Levantar el laboratorio completo
 
@@ -286,20 +284,20 @@ Corrija cualquier resultado `FAIL` antes de iniciar los servicios.
 make soc-up
 ```
 
-En el primer arranque se descargan y construyen varias imágenes; la duración
+En el primer arranque de todo el sistema se descargan y construyen múltiples imágenes. La duración
 depende del equipo y de la conexión. El proceso realiza healthchecks y genera
 automáticamente las credenciales y certificados locales de Wazuh y del plano
 SOAR. n8n comienza en `dry-run` y Wazuh todavía no reenvía alertas.
 
-En el primer despliegue, el editor n8n solo escucha en loopback. Desde el equipo
+En el primer despliegue, el editor n8n solo escucha en la dirección loopback. Desde el equipo
 de administración abra un túnel SSH y mantenga esa consola abierta:
 
 ```bash
 ssh -L 5678:127.0.0.1:5678 socadmin@IP_DE_UBUNTU
 ```
 
-Visite `http://127.0.0.1:5678`, cree la cuenta propietaria local de n8n y
-después publique los workflows desde Ubuntu:
+Desde la URL `http://127.0.0.1:5678`, se debe crear una cuenta propietaria local de n8n y
+después publicar los workflows desde Ubuntu:
 
 ```bash
 make soar-install-workflows
@@ -323,7 +321,7 @@ El resultado esperado antes de enrolar los endpoints es:
 - PostgreSQL, aplicación, Nginx, Wazuh indexer, manager, dashboard y Suricata en
   estado `healthy`;
 - endpoint HTTP `/health/ready` disponible;
-- 39 pruebas de aplicación y del plano SOAR superadas;
+- 43 pruebas automatizadas de la aplicación y 13 pruebas del framework de evaluación superadas;
 - reglas de aplicación 110010, 110020 y 110030 aprobadas;
 - reglas NDR 110100, 110110, 110120, 110130 y 110140 aprobadas;
 - fixtures EDR 110200, 110210, 110211 y 110220 aprobados.
@@ -351,18 +349,18 @@ credenciales localmente y no copie su salida a evidencias:
 make wazuh-credentials
 ```
 
-El usuario inicial de Wazuh Dashboard es `admin`.
+El usuario inicial de Wazuh Dashboard es `admin`. La contraseña es indicada al usuario luego de ejecutar el comando anterior.
 
 ## Despliegue de endpoints
 
-Esta fase registra dos activos reales en el manager y distribuye políticas por
+Esta fase registra dos activos (equipos) reales en el manager y distribuye políticas por
 grupos. El agente Ubuntu observa autenticación y cambios en
 `/etc/sanolifood`; el agente Windows incorpora FIM, eventos de PowerShell,
 OpenSSH y Sysmon. Las contraseñas de enrolamiento permanecen fuera de Git.
 
 ### 1. Preparar el manager y el sensor interno
 
-Con Ubuntu y Windows encendidos, ejecute en el repositorio de Ubuntu:
+Con Ubuntu y Windows encendidos, ejecute en la VM de Ubuntu:
 
 ```bash
 make endpoint-preflight
@@ -385,7 +383,7 @@ sudo systemctl status wazuh-agent --no-pager
 
 El instalador usa el repositorio oficial, exige exactamente Wazuh Agent
 `4.14.7-1`, conserva la contraseña solo en memoria, activa `rsyslog` y deja el
-paquete retenido para evitar una actualización accidental durante la
+paquete detenido para evitar una actualización accidental durante la
 evaluación.
 
 ### 3. Transferir el instalador a Windows
@@ -397,7 +395,9 @@ make endpoint-stage-windows \
   WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
 ```
 
-Consulte la contraseña de enrolamiento únicamente en la consola de Ubuntu. No
+Desde la VM Ubuntu, se deberá de ingresar la contraseña de la VM Windows para hacer la transferencia del instalador de manera exitosa.
+
+Consultar la contraseña de enrolamiento únicamente en la consola de Ubuntu. No
 la guarde en scripts, capturas ni historial:
 
 ```bash
@@ -416,11 +416,11 @@ Set-ExecutionPolicy -Scope Process Bypass
 Introduzca la contraseña cuando aparezca el prompt seguro. El script descarga
 el MSI Wazuh `4.14.7-1` y Sysmon `15.21` desde sus repositorios oficiales,
 valida sus firmas Authenticode, registra hashes SHA-256, aplica la configuración
-versionada y no escribe la contraseña en el manifiesto.
+versionada y no escribe ni muestra la contraseña en el manifiesto.
 
 ### 5. Confirmar los dos agentes
 
-Espere hasta 60 segundos y vuelva a Ubuntu:
+Esperar hasta 60 segundos, volver a Ubuntu y comprobar:
 
 ```bash
 make endpoint-health
@@ -428,7 +428,7 @@ make endpoint-health
 
 El resultado correcto muestra `sanolifood-ubuntu-01` y
 `sanolifood-win-01` en estado `active`, además de ambas políticas centrales.
-En el dashboard también deben aparecer los dos activos en **Agents summary**.
+En el dashboard también deben aparecer los dos activos en la sección de **Agents summary**.
 
 ## Recorrido funcional de verificación
 
@@ -439,7 +439,7 @@ modificar directamente la base de datos.
 
 Acceda con `admin.sanolifood` y cree usuarios distintos para los roles
 `warehouse`, `production`, `quality` y `auditor`. Use contraseñas únicas y no las
-incluya en capturas.
+incluya en ningún lugar.
 
 ### 2. Registrar inventario
 
@@ -466,7 +466,7 @@ incluya en capturas.
 
 ### 5. Revisar la trazabilidad
 
-Acceda como auditor y confirme que los eventos contienen actor, resultado,
+Para cumplir con este paso, acceda como auditor y confirme que los eventos contienen actor, resultado,
 recurso e identificador de correlación. También pueden consultarse los últimos
 eventos desde Ubuntu:
 
@@ -718,6 +718,29 @@ rollback como evidencia funcional. En bloqueos de IP, Kali confirma además el
 cambio HTTP `200 -> 403 -> 200`. La limpieza intenta el rollback incluso si una
 comprobación intermedia falla. La guía y la matriz completa están en
 [`evaluation/README.md`](evaluation/README.md).
+
+### Resultados consolidados de v0.8.0
+
+Las validaciones finales produjeron los siguientes resultados:
+
+| Indicador                            | Resultado |
+| ------------------------------------ | --------: |
+| Escenarios cubiertos                 |    8 de 8 |
+| Cobertura de escenarios              |     100 % |
+| Ejecuciones aprobadas                |        10 |
+| Ejecuciones fallidas                 |         0 |
+| Decisiones pendientes                |         0 |
+| Cronologías inválidas                |         0 |
+| Ejecuciones verificadas en modo real |         2 |
+| Controles reales restaurados         |         3 |
+| Triage completo, p95                 |   3.512 s |
+| Detección Wazuh, p95                 |   2.008 s |
+| Transferencia Wazuh–SOAR, p95        |   1.992 s |
+| Decisión–respuesta, p95              |   0.065 s |
+
+Las pruebas en modo real comprobaron el bloqueo de IP, el bloqueo de cuenta y la suspensión temporal de liberaciones de calidad. Para cada control se registró el estado anterior, el efecto activo y la restauración posterior. En el bloqueo de red se verificó directamente desde Kali la transición HTTP `200 → 403 → 200`.
+
+Las técnicas MITRE ATT&CK observadas fueron `T1110`, `T1110.001`, `T1190`, `T1565.001` y `T1595.002`. Los resultados completos se encuentran en [`evidence/EVAL-001/summary.md`](evidence/EVAL-001/summary.md).
 
 ## Evidencias y validación
 
@@ -1132,10 +1155,13 @@ Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
 
 ## Hoja de ruta
 
-1. ejecutar y repetir los ocho escenarios desde el entorno limpio;
-2. analizar MTTD, tiempos de triage, decisión, respuesta y rollback;
-3. documentar los controles negativos y la cobertura MITRE ATT&CK;
-4. cerrar la memoria, anexos técnicos y demostración de cinco minutos.
+Con la implementación práctica y la campaña de evaluación finalizadas, las actividades restantes se concentran en la entrega académica:
+
+1. cerrar la memoria y los anexos técnicos;
+2. seleccionar las capturas más representativas de Wazuh, Suricata, n8n, endpoints y controles SOAR;
+3. preparar y ensayar la demostración de cinco minutos;
+4. conservar los artefactos, hashes y versiones publicadas para garantizar la reproducibilidad;
+5. documentar como trabajo futuro el tuning de reglas, la reducción de falsos positivos y la integración con controles externos de infraestructura.
 
 ## Referencias técnicas
 
