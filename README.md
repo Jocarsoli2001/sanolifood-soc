@@ -1,220 +1,380 @@
 # SanoliFood SOC
 
-Laboratorio SOC reproducible para una empresa ficticia de procesamiento de
-alimentos. El proyecto integra una aplicación empresarial trazable,
-monitorización a través de un SIEM, telemetría de red IDS/NDR y reglas de detección
-versionadas en un entorno desplegable mediante Docker Compose.
+Laboratorio reproducible de monitorización y gestión de incidentes para una
+empresa de procesamiento de alimentos. Integra una aplicación empresarial,
+Wazuh, Suricata y n8n para cubrir todo el proceso: generación de un evento,
+detección, revisión y respuesta.
 
-> ATENCIÓN: este repositorio está diseñado exclusivamente para un
-> laboratorio propio, aislado y controlado. No se deben ejecutar las validaciones de
-> seguridad contra sistemas o redes de terceros.
+La infraestructura central se despliega con Docker Compose. El laboratorio utiliza tres máquinas virtuales: Ubuntu, Windows y Kali Linux. Ubuntu y Windows ejecutan agentes Wazuh directamente en el sistema operativo para observar eventos reales. Kali funciona como origen externo de las pruebas controladas.
 
-## Estado del proyecto
+> ATENCIÓN: Este proyecto debe utilizarse únicamente en un laboratorio aislado como el descrito
+> en esta guía. Los escenarios incluidos solo aceptan las direcciones privadas
+> `10.20.0.10`, `10.20.0.20` y `10.20.0.30`.
 
-La versión estable actual es **SanoliFood SOC v0.8.0**. La aplicación empresarial y el plano SOAR mantienen la versión interna 0.7.0; la versión v0.8.0 integró una campaña final de evaluación, la validación de integridad temporal y la comprobación automática del efecto real del sistema y la restauración de controles SOAR.
+## Ruta recomendada
 
-| Capacidad | Estado | Validación reproducible |
-|---|---|---|
-| Aplicación SanoliFood Operations | Operativa | Healthchecks, migraciones y 43 pruebas |
-| Identidad, sesiones, RBAC y auditoría | Operativa | Cinco roles y eventos correlacionados |
-| Inventario, producción y calidad | Operativa | Recorrido empresarial de extremo a extremo |
-| Wazuh manager, indexer y dashboard | Operativo | Healthchecks y reglas probadas con `wazuh-logtest` |
-| Suricata IDS/NDR | Operativo | EVE JSON, reglas locales y alerta real en Wazuh |
-| Agentes Wazuh en endpoints | Implementado | Ubuntu, Windows, Sysmon, FIM y pruebas en vivo |
-| Automatización semiautomatizada con n8n | Implementada | Cinco workflows, nueve playbooks y 14 reglas enrutadas |
-| Campaña completa de escenarios y métricas | Framework implementado | Ocho escenarios completos, diez ejecuciones con resultado `PASS` y una cobertura del 100% |
+Para una instalación nueva, siga estas secciones en orden:
 
-La implementación práctica se encuentra cerrada y validada. Las múltiples pruebas terminaron sin ejecuciones fallidas, decisiones pendientes ni intervalos temporales inválidos. También se verificaron dos recorridos en modo real, con tres controles aplicados y restaurados correctamente mediante rollback.
+1. [Preparar las máquinas virtuales](#preparar-las-máquinas-virtuales).
+2. [Instalar Docker Engine y Docker Compose](#instalar-docker-engine-y-docker-compose).
+3. [Instalar SanoliFood SOC](#instalar-sanolifood-soc).
+4. [Instalar los endpoints Wazuh](#instalar-los-endpoints-wazuh).
+5. [Realizar la prueba rápida](#prueba-rápida-de-verificación).
 
-## Índice
+Para revisar una instalación funcional, vaya directamente a
+[Wazuh Dashboard](#cómo-usar-wazuh-dashboard), [n8n y SOAR](#cómo-usar-n8n-y-soar)
+o, en caso de encontrar errores durante la instalación del laboratorio, dirigirse a [Resolución de problemas](#resolución-de-problemas).
 
-- [Objetivo](#objetivo)
-- [Arquitectura](#arquitectura)
-- [Capacidades de la aplicación](#capacidades-de-la-aplicación)
-- [Requisitos](#requisitos)
-- [Instalación desde cero](#instalación-desde-cero)
-- [Recorrido funcional](#recorrido-funcional-de-verificación)
-- [Ingeniería de detección](#ingeniería-de-detección)
-- [Validación NDR en vivo](#validación-ndr-en-vivo)
-- [Despliegue de endpoints](#despliegue-de-endpoints)
-- [Validación EDR en vivo](#validación-edr-en-vivo)
-- [Respuesta SOAR con n8n](#respuesta-soar-con-n8n)
-- [Campaña final de evaluación](#campaña-final-de-evaluación)
-- [Evidencias y validación](#evidencias-y-validación)
-- [Operación diaria](#operación-diaria)
-- [Resolución de problemas](#resolución-de-problemas)
-- [Reproducibilidad](#reproducibilidad)
-- [Hoja de ruta](#hoja-de-ruta)
+## Qué incluye
 
-## Objetivo
+| Componente | Función |
+|---|---|
+| SanoliFood Operations | Aplicación web con identidades, inventario, producción, calidad y auditoría |
+| Wazuh | Recepción, análisis, correlación e interfaz de alertas |
+| Suricata | Inspección de tráfico y telemetría IDS/NDR en formato EVE JSON |
+| Wazuh Agent para Ubuntu | Eventos del host y control de integridad de archivos |
+| Wazuh Agent + Sysmon para Windows | Telemetría de endpoint y FIM con WhoData |
+| n8n | Coordinación de los flujos de respuesta |
+| Controlador SOAR | Incidentes, acciones, aprobaciones, métricas y rollback |
+| PostgreSQL | Datos de la aplicación y del sistema SOAR |
+| Kali Linux | Generación de eventos de prueba limitados al laboratorio |
 
-El laboratorio demuestra un flujo defensivo completo y medible:
+El repositorio contiene cinco workflows de n8n, nueve playbooks SOAR y catorce
+reglas conectadas con SOAR. La campaña final contiene ocho escenarios diferentes y
+permite medir los tiempos entre el inicio de la prueba, Wazuh y SOAR.
 
-1. actividad empresarial o simulación controlada;
-2. generación de telemetría de aplicación o red;
-3. ingestión y normalización de eventos;
-4. detección mediante reglas deterministas;
-5. investigación en Wazuh;
-6. conservación de evidencia reproducible;
-7. respuesta semiautomatizada, reversible y medible con aprobación humana.
-
-El caso de estudio representa a **SanoliFood SA**, una organización ficticia
-que administra ingredientes, recetas, lotes de producción, controles de calidad
-y decisiones de liberación. Todos los datos incluidos son sintéticos; el
-proyecto no depende de datos personales ni de información empresarial real.
-
-## Arquitectura
+## Arquitectura del laboratorio
 
 ```mermaid
 flowchart TD
-    C["Kali / cliente de prueba<br/>10.20.0.30"] -->|HTTP 8080| N["Nginx<br/>10.20.0.10"]
-    C -->|Tráfico observado| S["Suricata IDS/NDR<br/>enp0s8"]
-    N --> A["FastAPI<br/>SanoliFood Operations"]
-    A --> P["PostgreSQL<br/>datos transaccionales"]
-    A -->|JSONL| W["Wazuh manager"]
-    S -->|EVE JSON| W
-    U["Ubuntu endpoint<br/>10.20.0.10"] -->|Agente 1514/TCP| W
-    X["Windows + Sysmon<br/>10.20.0.20"] -->|Agente 1514/TCP| W
-    W --> I["Wazuh indexer"]
-    I --> D["Wazuh dashboard<br/>HTTPS 8443"]
-    W -->|"JSON firmado"| O["n8n<br/>orquestación SOAR"]
-    O --> R["Controlador<br/>casos y métricas"]
-    R -->|"control aprobado"| A
-    R --> Q[("PostgreSQL SOAR")]
+    K["Kali 10.20.0.30"] -->|"Pruebas HTTP"| A["Aplicación 10.20.0.10:8080"]
+    K -->|"Tráfico observado"| S["Suricata IDS/NDR"]
+    E["Ubuntu y Windows"] -->|"Eventos de endpoint"| W["Wazuh"]
+    A -->|"Eventos de negocio"| W
+    S -->|"EVE JSON"| W
+    W -->|"Alerta seleccionada"| N["n8n y controlador SOAR"]
+    N -->|"Acción aprobada"| A
 ```
 
-La aplicación y el SOC conservan ciclos de vida separados. Los volúmenes
-`sanolifood_app_logs` y `sanolifood_suricata_logs` conectan las fuentes de
-telemetría con Wazuh en modo lectura. PostgreSQL, FastAPI y Nginx se
-segmentan mediante 3 redes llamadas: `sanoli_data`, `sanoli_app` y `sanoli_dmz`.
+Servicios centrales administrados por Compose:
 
-### Componentes versionados
+- aplicación, Nginx y PostgreSQL;
+- Wazuh manager, indexer y dashboard;
+- sensor Suricata;
+- n8n, controlador SOAR y PostgreSQL SOAR.
 
-| Componente | Versión fijada | Función |
-|---|---:|---|
-| Ubuntu Server | 24.04 LTS | Host Linux del laboratorio |
-| Docker Engine / Compose | Compose v2 | Despliegue reproducible |
-| Python | 3.12.11 | Runtime de la aplicación |
-| FastAPI | 0.116.1 | Aplicación web y API |
-| PostgreSQL | 17.6 | Persistencia transaccional |
-| Nginx | 1.28.0 | Punto de entrada y proxy inverso |
-| Wazuh | 4.14.7 | SIEM, análisis, indexación y dashboard |
-| Wazuh Agent | 4.14.7 | Telemetría EDR de Ubuntu y Windows |
-| Suricata | 8.0.6 | IDS/NDR y generación de EVE JSON |
-| Sysmon | 15.21 | Telemetría avanzada de Windows con configuración versionada |
-| n8n | 2.36.7 | Orquestación, aprobación, caducidad y recuperación de errores |
+Componentes externos necesarios para validar telemetría real:
 
-### Puertos publicados
+- agente Wazuh nativo en Ubuntu;
+- agente Wazuh y Sysmon nativos en Windows;
+- Kali como cliente de prueba.
 
-| Puerto | Protocolo | Servicio | Exposición prevista |
-|---:|---|---|---|
-| 8080 | TCP/HTTP | SanoliFood Operations mediante Nginx | Red del laboratorio |
-| 8443 | TCP/HTTPS | Wazuh Dashboard | Red del laboratorio |
-| 1514 | TCP | Eventos de agentes Wazuh | Segmento de red interno y privado `10.20.0.0/24` |
-| 1515 | TCP | Enrolamiento de agentes Wazuh | Segmento de red interno y privado `10.20.0.0/24` |
-| 514 | UDP | Entrada syslog reservada | Fuentes futuras |
-| 5678 | TCP/HTTP | Editor y webhooks de n8n | Solo `127.0.0.1`; acceso administrativo por túnel SSH |
-| 5680 | TCP/HTTP | API del controlador SOAR | Solo `127.0.0.1` |
+## Versiones principales
 
-El indexer y la API interna de Wazuh no se publican en el host.
+| Componente | Versión utilizada |
+|---|---:|
+| Ubuntu Server | 24.04 LTS |
+| Windows para endpoint | 10 u 11 |
+| Python | 3.12.11 |
+| FastAPI | 0.116.1 |
+| PostgreSQL | 17.6 |
+| Nginx | 1.28.0 |
+| Wazuh | 4.14.7 |
+| Wazuh Agent | 4.14.7 |
+| Suricata | 8.0.6 |
+| Sysmon | 15.21 |
+| n8n | 2.36.7 |
 
-## Capacidades de la aplicación
+## Recursos recomendados
 
-### Módulos empresariales
+| Máquina | CPU | Memoria | Disco | Uso |
+|---|---:|---:|---:|---|
+| Ubuntu SOC | 4 vCPU | 10–12 GiB | 80 GiB | Contenedores y agente Linux |
+| Windows | 2 vCPU | 4 GiB | 40 GiB | Endpoint Windows |
+| Kali | 2 vCPU | 4 GiB | 30 GiB | Pruebas controladas |
 
-- **Inventario:** ingredientes, proveedores, recepciones, ajustes y libro de
-  movimientos. El sistema no permite saldos negativos.
-- **Producción:** recetas versionadas, planificación de lotes, consumo atómico de
-  materiales y transiciones de estado.
-- **Calidad:** controles con límites, resultados conforme/no conforme, retención
-  y liberación de lotes.
-- **Gobierno:** usuarios, roles, sesiones firmadas, bloqueo por intentos fallidos
-  y auditoría de acciones en la app.
-- **Observabilidad:** eventos JSON estructurados con actor, IP de origen,
-  resultado e identificador de correlación.
+Para mantener las tres VMs encendidas al mismo tiempo se recomienda un equipo
+con al menos 24 GiB de RAM. Con menos memoria, Windows y Kali pueden encenderse
+solo cuando su prueba lo requiera.
 
-### Separación de funciones
+## Preparar las máquinas virtuales
 
-| Rol | Capacidades principales |
-|---|---|
-| `admin` | Administración de usuarios y acceso completo |
-| `warehouse` | Recepciones y movimientos de inventario |
-| `production` | Planificación y ejecución de lotes |
-| `quality` | Controles, retenciones y liberaciones |
-| `auditor` | Consulta de evidencia y eventos |
+Para preparar las VMs a utilizar dentro del laboratorio, se deben seguir los pasos indicados en esta sección.
 
-## Estructura del repositorio
+1. descargar cada sistema desde su sitio oficial, utilizando las versiones indicadas en la sección [Versiones principales](#versiones-principales);
+2. Configurar las VMs siguiendo esta sección;
+3. Usar este repositorio como referencia principal;
 
-```text
-.
-├── app/                 Aplicación, migraciones, plantillas y pruebas
-├── infrastructure/      Nginx y scripts operativos
-├── wazuh/               Compose, configuración, reglas y pruebas SIEM
-├── suricata/            Sensor, firmas y scripts IDS/NDR
-├── endpoints/           Agentes, políticas centralizadas, Sysmon y validaciones
-├── evidence/            Evidencia textual revisada y no secreta
-├── docs/adr/             Decisiones de arquitectura
-├── detections/          Espacio para casos de detección adicionales
-├── evaluation/          Catálogo, orquestador, métricas y evidencia final
-├── n8n/                 Compose, workflows, playbooks y operación SOAR
-├── scenarios/           Estímulos acotados para Kali y negocio
-├── compose.yaml         Plataforma empresarial
-├── Makefile             Interfaz operativa común
-└── CHANGELOG.md         Evolución pública del proyecto
+Fuentes de descarga:
+
+- [Ubuntu Server](https://ubuntu.com/download/server)
+- [Kali Linux para máquinas virtuales](https://www.kali.org/get-kali/#kali-virtual-machines)
+- [Windows 11 Enterprise Evaluation](https://www.microsoft.com/en-us/evalcenter/download-windows-11-enterprise)
+- [Oracle VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+
+Una vez descargado VirtualBox, cree las tres máquinas virtuales con los recursos indicados anteriormente. Ubuntu y Windows pueden instalarse desde sus imágenes ISO. Para Kali puede utilizarse la imagen oficial preparada para VirtualBox o la ISO de instalación.
+
+### Red de VirtualBox
+
+Cree una red interna con el nombre exacto `sanolifood-lab`.
+
+| VM | Adaptador 1 | Adaptador 2 | Dirección del adaptador 2 |
+|---|---|---|---|
+| Ubuntu SOC | Puente para administración | Red interna `sanolifood-lab` | `10.20.0.10/24` |
+| Windows | NAT para instalación | Red interna `sanolifood-lab` | `10.20.0.20/24` |
+| Kali | NAT para instalación | Red interna `sanolifood-lab` | `10.20.0.30/24` |
+
+En el adaptador 2 de Ubuntu seleccione **Modo promiscuo: Permitir todo**. Esto
+permite que Suricata vea el tráfico del segmento interno. No configure puerta
+de enlace ni DNS en los adaptadores internos.
+
+La guía utiliza estos nombres de interfaz:
+
+- Ubuntu: `enp0s3` para administración y `enp0s8` para el laboratorio;
+- Kali: `eth0` para administración y `eth1` para el laboratorio.
+
+Compruebe los nombres reales con `ip -br address` antes de continuar.
+
+### Configurar Ubuntu SOC
+
+En Ubuntu, cree un archivo Netplan para la interfaz interna:
+
+```bash
+sudo nano /etc/netplan/99-sanolifood-lab.yaml
 ```
 
-Los archivos de `wazuh/runtime/` y `suricata/runtime/` son generados localmente,
-contienen secretos o datos específicos del host. Estos se excluyen de Git.
+Contenido:
 
-## Requisitos
+```yaml
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: false
+      addresses:
+        - 10.20.0.10/24
+```
 
-### Host recomendado
+Aplique la configuración:
 
-- Ubuntu Server 24.04 LTS ejecutado en hardware físico o en una VM.
-- 4 vCPU como mínimo.
-- 8 GiB de RAM como mínimo; 10–12 GiB recomendados para mayor fluidez.
-- 50 GiB libres como mínimo; 80 GiB recomendados para conservar evidencias.
-- Una VM Windows 10/11 con 2 vCPU y 4 GiB de RAM recomendados.
-- Una VM Kali Linux con 2 vCPU y 4 GiB de RAM.
-- Una red interna aislada entre Ubuntu, Windows y la VM Kali.
+```bash
+sudo netplan try
+sudo netplan apply
+ip -br address
+```
 
-Al realizar los preflight checks de Wazuh, se obtiene una exigencia de 4 CPU, 8 GiB de RAM, 50 GiB libres y
-`vm.max_map_count >= 262144`. Suricata requiere un host Linux porque utiliza el
-namespace de red del host y capacidades de captura de paquetes.
+El resultado debe mostrar `10.20.0.10/24` en `enp0s8`.
 
-### Software del host
+Instale SSH y las utilidades necesarias:
 
 ```bash
 sudo apt update
-sudo apt install -y git make curl openssl iproute2 ca-certificates openssh-client
-docker --version
-docker compose version
-git --version
+sudo apt install -y openssh-server git make curl openssl iproute2 ca-certificates chrony
+sudo systemctl enable --now ssh chrony
 ```
 
-Docker Engine y el complemento Docker Compose deben estar instalados y el
-usuario del laboratorio debe poder ejecutar `docker` sin `sudo`. Siga la
-documentación oficial de Docker para Ubuntu si aún no están disponibles.
+La campaña compara marcas de tiempo de tres equipos. Ubuntu será la fuente de
+hora del laboratorio. Cree esta configuración:
 
-### Topología de red del laboratorio
+```bash
+sudo install -d -o root -g root -m 0755 /etc/chrony/conf.d
+sudo nano /etc/chrony/conf.d/sanolifood-lab.conf
+```
 
-En VirtualBox, se deben de configurar los adaptadores internos, los cuales deben compartir el nombre
-`sanolifood-lab`. No configure puerta de enlace ni DNS en la red interna; cada
-VM conserva un primer adaptador NAT o puente únicamente para administración y
-descarga de paquetes.
+Contenido:
 
-| Sistema | Adaptador de gestión | Adaptador interno | Dirección interna |
-|---|---|---|---|
-| Ubuntu SOC | `enp0s3`, DHCP | `enp0s8` | `10.20.0.10/24` |
-| Windows endpoint | NAT, DHCP | `sanolifood-lab` | `10.20.0.20/24` |
-| Kali de validación | NAT temporal | `sanolifood-lab` | `10.20.0.30/24` |
+```text
+allow 10.20.0.0/24
+local stratum 10
+```
 
-Para que Suricata pueda observar también tráfico lateral, se debe configurar el modo
-promiscuo del segundo adaptador de Ubuntu como **Permitir todo**. Las pruebas
-de esta fase solo se ejecutan contra activos propios del segmento
-`10.20.0.0/24`.
+Reinicie Chrony y compruebe su estado:
 
-Prepare el requisito del indexer y hágalo persistente:
+```bash
+sudo systemctl restart chrony
+chronyc tracking
+sudo ss -lunp | grep -E ':123\b'
+```
+
+`chronyc tracking` debe mostrar `Leap status : Normal`.
+
+Si UFW está instalado y activo, permita NTP únicamente desde la red interna:
+
+```bash
+if command -v ufw >/dev/null && sudo ufw status | grep -q '^Status: active'; then
+  sudo ufw allow in on enp0s8 from 10.20.0.0/24 to any port 123 proto udp
+fi
+```
+
+### Configurar Windows
+
+En las propiedades IPv4 del segundo adaptador configure:
+
+- dirección IP: `10.20.0.20`;
+- máscara: `255.255.255.0`;
+- puerta de enlace: vacía;
+- DNS: vacío.
+
+Abra PowerShell como administrador e instale el servidor OpenSSH:
+
+```powershell
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Start-Service sshd
+Set-Service -Name sshd -StartupType Automatic
+Get-Service sshd
+```
+
+Configure Windows para tomar la hora desde Ubuntu:
+
+```powershell
+w32tm /config /manualpeerlist:"10.20.0.10,0x8" /syncfromflags:manual /update
+Restart-Service W32Time -Force
+w32tm /resync /rediscover
+Start-Sleep -Seconds 5
+w32tm /query /source
+w32tm /query /status
+```
+
+La fuente mostrada debe comenzar con `10.20.0.10`.
+
+Desde Ubuntu compruebe la conexión:
+
+```bash
+ping -c 3 10.20.0.20
+ssh USUARIO_WINDOWS@10.20.0.20
+```
+
+### Configurar Kali Linux
+
+En Kali identifique el nombre de la conexión asociada a `eth1`:
+
+```bash
+ip -br address
+nmcli -f NAME,DEVICE,TYPE connection show --active
+```
+
+En los siguientes comandos sustituya `Wired connection 1` si su conexión tiene
+otro nombre:
+
+```bash
+sudo nmcli connection modify "Wired connection 1" \
+  connection.interface-name eth1 \
+  ipv4.method manual \
+  ipv4.addresses 10.20.0.30/24 \
+  ipv4.gateway "" \
+  ipv4.dns "" \
+  ipv4.never-default yes \
+  ipv6.method disabled
+
+sudo nmcli connection down "Wired connection 1"
+sudo nmcli connection up "Wired connection 1"
+ip -br address
+ip route
+```
+
+Instale y active SSH:
+
+```bash
+sudo apt update
+sudo apt install -y openssh-server python3 curl
+sudo systemctl enable --now ssh
+sudo systemctl is-active ssh
+```
+
+Configure la sincronización horaria con Ubuntu:
+
+```bash
+sudo install -d -o root -g root -m 0755 /etc/systemd/timesyncd.conf.d
+sudo nano /etc/systemd/timesyncd.conf.d/sanolifood-lab.conf
+```
+
+Contenido:
+
+```ini
+[Time]
+NTP=10.20.0.10
+FallbackNTP=
+PollIntervalMinSec=16
+PollIntervalMaxSec=64
+```
+
+Aplique y compruebe:
+
+```bash
+sudo systemctl enable --now systemd-timesyncd
+sudo systemctl restart systemd-timesyncd
+sudo timedatectl set-ntp true
+timedatectl status
+timedatectl timesync-status
+```
+
+El estado debe indicar `System clock synchronized: yes` y el servidor debe ser
+`10.20.0.10`.
+
+Cuando Ubuntu ya tenga la aplicación levantada, Kali debe poder consultarla:
+
+```bash
+ping -c 3 10.20.0.10
+curl --noproxy '*' -fsS http://10.20.0.10:8080/health/ready
+```
+
+## Instalar Docker Engine y Docker Compose
+
+Ejecute esta sección en Ubuntu SOC. Los comandos usan el repositorio oficial de
+Docker para Ubuntu 24.04.
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+sudo apt install -y \
+  docker-ce \
+  docker-ce-cli \
+  containerd.io \
+  docker-buildx-plugin \
+  docker-compose-plugin
+```
+
+Active Docker y pruebe la instalación:
+
+```bash
+sudo systemctl enable --now docker
+sudo docker run --rm hello-world
+docker compose version
+```
+
+Para usar Docker sin escribir `sudo` en cada comando:
+
+```bash
+sudo usermod -aG docker "$USER"
+```
+
+Cierre la sesión de Ubuntu y vuelva a entrar. Después confirme:
+
+```bash
+docker info
+docker compose version
+```
+
+El grupo `docker` permite administrar el sistema con privilegios equivalentes
+a root. Solo deben pertenecer a él las cuentas autorizadas para operar el
+laboratorio.
+
+Prepare el requisito del indexer Wazuh:
 
 ```bash
 echo 'vm.max_map_count=262144' | sudo tee /etc/sysctl.d/99-sanolifood.conf
@@ -222,34 +382,29 @@ sudo sysctl --system
 sysctl vm.max_map_count
 ```
 
-## Instalación desde cero
+El último comando debe devolver al menos `262144`.
 
-### 1. Clonar y revisar la versión
+## Instalar SanoliFood SOC
+
+### 1. Descargar el repositorio
 
 ```bash
-git clone https://github.com/Jocarsoli2001/sanolifood-soc.git
+git clone --branch main --single-branch \
+  https://github.com/Jocarsoli2001/sanolifood-soc.git
 cd sanolifood-soc
 git status -sb
 ```
 
-Para una evaluación formal debe utilizarse un tag publicado, no una rama de
-desarrollo. La versión final validada para la evaluación es:
+El estado debe mostrar la rama `main` sin cambios locales.
 
-```bash
-git checkout v0.8.0
-```
-
-### 2. Crear la configuración local de la aplicación
-
-El siguiente bloque genera tres secretos diferentes y conserva únicamente el
-archivo local `.env`, que está ignorado por Git:
+### 2. Crear la configuración local
 
 ```bash
 make bootstrap
 
 SESSION_SECRET_VALUE="$(openssl rand -hex 32)"
 POSTGRES_PASSWORD_VALUE="$(openssl rand -hex 24)"
-ADMIN_PASSWORD_VALUE="Sf!$(openssl rand -hex 12)Aa1"
+ADMIN_PASSWORD_VALUE="Sf-$(openssl rand -hex 12)-Aa1"
 
 sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=${SESSION_SECRET_VALUE}|" .env
 sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${POSTGRES_PASSWORD_VALUE}|" .env
@@ -258,16 +413,15 @@ sed -i "s|^BOOTSTRAP_ADMIN_PASSWORD=.*|BOOTSTRAP_ADMIN_PASSWORD=${ADMIN_PASSWORD
 
 printf 'Usuario inicial: admin.sanolifood\n'
 printf 'Contraseña inicial: %s\n' "$ADMIN_PASSWORD_VALUE"
-printf 'Guarde la contraseña fuera del repositorio.\n'
+printf 'Guarde esta contraseña en un lugar privado.\n'
 
 unset SESSION_SECRET_VALUE POSTGRES_PASSWORD_VALUE ADMIN_PASSWORD_VALUE
 git check-ignore .env
 ```
 
-El último comando debe devolver `.env`. No se debe continuar de ninguna forma si el archivo no está
-ignorado. No reutilice estas credenciales en ningún otro sistema.
+`git check-ignore .env` debe devolver `.env`. No publique este archivo.
 
-### 3. Validar los recursos y la configuración
+### 3. Comprobar requisitos
 
 ```bash
 make config
@@ -276,908 +430,742 @@ make suricata-preflight
 make soar-static-check
 ```
 
-Corrija cualquier resultado `FAIL` antes de iniciar los servicios. Para ello, revisar la sección [Resolución de problemas](#resolución-de-problemas).
+Corrija cualquier `FAIL` antes de continuar.
 
-### 4. Levantar el laboratorio completo
+### 4. Levantar la infraestructura central
 
 ```bash
+SURICATA_INTERFACE_OVERRIDE=enp0s8 \
+SURICATA_HOME_NET_OVERRIDE=10.20.0.0/24 \
 make soc-up
 ```
 
-En el primer arranque de todo el sistema se descargan y construyen múltiples imágenes. La duración
-depende del equipo y de la conexión. El proceso realiza healthchecks y genera
-automáticamente las credenciales y certificados locales de Wazuh y del plano
-SOAR. n8n comienza en `dry-run` y Wazuh todavía no reenvía alertas.
+El primer arranque descarga varias imágenes y puede tardar algunos minutos.
+Los siguientes arranques reutilizan las imágenes y volúmenes existentes.
 
-En el primer despliegue, el editor n8n solo escucha en la dirección loopback. Desde el equipo
-de administración abra un túnel SSH y mantenga esa consola abierta:
+`make soc-up` inicia los servicios centrales. Todavía falta crear la cuenta
+propietaria de n8n y registrar los endpoints.
+
+### 5. Preparar n8n
+
+n8n solo escucha en `127.0.0.1` dentro de Ubuntu. Desde el equipo desde el que
+administra las VMs, abra un túnel SSH y deje esa consola abierta:
 
 ```bash
-ssh -L 5678:127.0.0.1:5678 socadmin@IP_DE_UBUNTU
+ssh -L 5678:127.0.0.1:5678 socadmin@IP_DE_GESTION_DE_UBUNTU
 ```
 
-Desde la URL `http://127.0.0.1:5678`, se debe crear una cuenta propietaria local de n8n y
-después publicar los workflows desde Ubuntu:
+Abra `http://127.0.0.1:5678`, cree la primera cuenta propietaria de n8n y
+complete el asistente inicial. Después, en Ubuntu, publique los cinco
+workflows:
 
 ```bash
 make soar-install-workflows
-```
-
-El último comando solo habilita el reenvío autenticado de Wazuh si los cinco
-workflows se importan, publican y quedan saludables.
-
-### 5. Verificar la instalación
-
-```bash
-make soc-health
-make test
-make wazuh-test-rules
-make suricata-test-rules
+make soar-health
 make soar-validate-live
 ```
 
-El resultado esperado antes de enrolar los endpoints es:
+El resultado correcto indica:
 
-- PostgreSQL, aplicación, Nginx, Wazuh indexer, manager, dashboard y Suricata en
-  estado `healthy`;
-- endpoint HTTP `/health/ready` disponible;
-- 43 pruebas automatizadas de la aplicación y 13 pruebas del framework de evaluación superadas;
-- reglas de aplicación 110010, 110020 y 110030 aprobadas;
-- reglas NDR 110100, 110110, 110120, 110130 y 110140 aprobadas;
-- fixtures EDR 110200, 110210, 110211 y 110220 aprobados.
-- validación SOAR con evidencia `completed` y contención `simulated`.
+- `n8n` y `soar-controller` en estado `healthy`;
+- cinco workflows presentes y publicados;
+- `response_mode=dry-run`;
+- evidencia automática completada;
+- respuesta simulada, sin bloquear nada todavía.
 
-### 6. Abrir las interfaces
+### 6. Comprobar los servicios antes de instalar endpoints
 
-Obtenga la dirección IPv4 de Ubuntu:
+No use aún `make soc-health`, porque ese comando también exige los agentes
+Ubuntu y Windows. En esta fase use:
 
 ```bash
-ip -br -4 addr
+make health
+make wazuh-health
+make suricata-health
+make soar-health
+make validate
+make wazuh-test-rules
+make suricata-test-rules
 ```
 
-Desde otro equipo de la red del laboratorio abra:
+Todos los servicios deben aparecer como `running` y `healthy`. Las pruebas
+automatizadas deben terminar sin fallos.
 
-- SanoliFood Operations: `http://IP_DE_UBUNTU:8080`
-- Wazuh Dashboard: `https://IP_DE_UBUNTU:8443`
-- n8n SOAR: `http://127.0.0.1:5678` mediante túnel SSH
+## Instalar los endpoints Wazuh
 
-El dashboard utiliza una CA propia del laboratorio. Compruebe que la dirección
-pertenece a su VM antes de aceptar la advertencia del navegador. Consulte las
-credenciales localmente y no copie su salida a evidencias:
+### 1. Preparar Wazuh para la red interna
 
-```bash
-make wazuh-credentials
-```
-
-El usuario inicial de Wazuh Dashboard es `admin`. La contraseña es indicada al usuario luego de ejecutar el comando anterior.
-
-## Despliegue de endpoints
-
-Esta fase registra dos activos (equipos) reales en el manager y distribuye políticas por
-grupos. El agente Ubuntu observa autenticación y cambios en
-`/etc/sanolifood`; el agente Windows incorpora FIM, eventos de PowerShell,
-OpenSSH y Sysmon. Las contraseñas de enrolamiento permanecen fuera de Git.
-
-### 1. Preparar el manager y el sensor interno
-
-Con Ubuntu y Windows encendidos, ejecute en la VM de Ubuntu:
+Con Windows encendido y accesible por SSH, ejecute en Ubuntu:
 
 ```bash
 make endpoint-preflight
 make upgrade-0.6
 ```
 
-El segundo comando fija Suricata en `enp0s8` con `HOME_NET=10.20.0.0/24`,
-recrea el manager con las políticas versionadas y crea los grupos
-`sanolifood-linux` y `sanolifood-windows`. Los valores quedan persistidos en
-`suricata/runtime/.env`, por lo que `make soc-up` no vuelve a seleccionar
-silenciosamente `enp0s3`. Los puertos 1514, 1515 y 514 quedan enlazados a
-`10.20.0.10`, no a la interfaz de gestión.
+Este paso fija Suricata en `enp0s8`, limita los puertos de agentes a
+`10.20.0.10`, crea los grupos `sanolifood-linux` y `sanolifood-windows` y
+publica sus políticas centrales.
 
-### 2. Instalar el agente Ubuntu
+### 2. Instalar el agente en Ubuntu
 
 ```bash
 make endpoint-install-ubuntu
 sudo systemctl status wazuh-agent --no-pager
 ```
 
-El instalador usa el repositorio oficial, exige exactamente Wazuh Agent
-`4.14.7-1`, conserva la contraseña solo en memoria, activa `rsyslog` y deja el
-paquete detenido para evitar una actualización accidental durante la
-evaluación.
+### 3. Copiar el instalador a Windows
 
-### 3. Transferir el instalador a Windows
-
-Sustituya `USUARIO_WINDOWS` por la cuenta habilitada en OpenSSH:
+Desde Ubuntu, ejecutar:
 
 ```bash
 make endpoint-stage-windows \
   WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
 ```
 
-Desde la VM Ubuntu, se deberá de ingresar la contraseña de la VM Windows para hacer la transferencia del instalador de manera exitosa.
-
-Consultar la contraseña de enrolamiento únicamente en la consola de Ubuntu. No
-la guarde en scripts, capturas ni historial:
+Cuando se solicite, escriba la contraseña de la cuenta Windows. Consulte la
+contraseña de registro Wazuh en la consola de Ubuntu:
 
 ```bash
 make endpoint-registration-password
 ```
 
-### 4. Instalar el agente Windows y Sysmon
+### 4. Ejecutar el instalador en Windows
 
-Abra **PowerShell como administrador** dentro de la VM Windows:
+Abra PowerShell como administrador dentro de Windows:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 & "$env:USERPROFILE\SanoliFood-Endpoint\Install-SanoliFoodEndpoint.ps1"
 ```
 
-Introduzca la contraseña cuando aparezca el prompt seguro. El script descarga
-el MSI Wazuh `4.14.7-1` y Sysmon `15.21` desde sus repositorios oficiales,
-valida sus firmas Authenticode, registra hashes SHA-256, aplica la configuración
-versionada y no escribe ni muestra la contraseña en el manifiesto.
+Introduzca la contraseña de registro cuando aparezca la solicitud segura. El
+script instala el agente Wazuh, Sysmon y las políticas incluidas en el
+repositorio.
 
-### 5. Confirmar los dos agentes
+### 5. Confirmar los endpoints
 
-Esperar hasta 60 segundos, volver a Ubuntu y comprobar:
+Espere hasta un minuto y ejecute en Ubuntu:
 
 ```bash
 make endpoint-health
+make soc-health
 ```
 
-El resultado correcto muestra `sanolifood-ubuntu-01` y
-`sanolifood-win-01` en estado `active`, además de ambas políticas centrales.
-En el dashboard también deben aparecer los dos activos en la sección de **Agents summary**.
+El resultado esperado incluye:
 
-## Recorrido funcional de verificación
+- `sanolifood-ubuntu-01` en estado `active` y grupo `sanolifood-linux`;
+- `sanolifood-win-01` en estado `active` y grupo `sanolifood-windows`;
+- aplicación, Wazuh, Suricata, n8n y las dos bases de datos saludables.
 
-Los datos de demostración permiten validar la separación de funciones sin
-modificar directamente la base de datos.
+## Abrir las interfaces
 
-### 1. Crear identidades operativas
-
-Acceda con `admin.sanolifood` y cree usuarios distintos para los roles
-`warehouse`, `production`, `quality` y `auditor`. Use contraseñas únicas y no las
-incluya en ningún lugar.
-
-### 2. Registrar inventario
-
-1. Inicie sesión con el usuario de almacén.
-2. Abra **Inventario** y revise los ingredientes de demostración.
-3. Registre una recepción de 100 kg de concentrado de tomate con referencia
-   `PO-DEMO-001`.
-4. Confirme el saldo y el movimiento en el libro.
-
-### 3. Ejecutar un lote
-
-1. Inicie sesión con el usuario de producción.
-2. Planifique el lote `SF26-SAL-0018`, producto Salsa de tomate, cantidad 1000.
-3. Inicie el lote; la receta v1 consume los materiales de forma transaccional.
-4. Envíe el lote a Calidad.
-
-### 4. Tomar una decisión de calidad
-
-1. Inicie sesión con el usuario de calidad.
-2. Registre pH 4.3 con límites 4.0–4.6.
-3. Compruebe el resultado **Conforme** y libere el lote.
-4. En otro lote en proceso, registre pH 5.2 para comprobar la retención
-   automática por desviación.
-
-### 5. Revisar la trazabilidad
-
-Para cumplir con este paso, acceda como auditor y confirme que los eventos contienen actor, resultado,
-recurso e identificador de correlación. También pueden consultarse los últimos
-eventos desde Ubuntu:
+Obtenga la dirección de administración de Ubuntu:
 
 ```bash
-docker compose exec -T postgres sh -c \
-  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
-  "select occurred_at,event_type,outcome,actor_username,correlation_id from audit_events order by id desc limit 25;"'
+ip -br -4 address
 ```
 
-## Ingeniería de detección
+| Interfaz | Dirección |
+|---|---|
+| SanoliFood Operations | `http://IP_DE_GESTION_DE_UBUNTU:8080` |
+| Wazuh Dashboard | `https://IP_DE_GESTION_DE_UBUNTU:8443` |
+| n8n | `http://127.0.0.1:5678` mediante el túnel SSH |
 
-### Telemetría de aplicación
-
-La aplicación escribe JSON Lines en
-`/var/log/sanolifood/sanolifood.jsonl`. El campo `sf_event_type` delimita el
-namespace de SanoliFood y evita colisiones con decoders de otros productos.
-
-| Regla Wazuh | Nivel | Caso de uso | MITRE ATT&CK |
-|---:|---:|---|---|
-| 110010 | 5 | Fallo individual de autenticación | No aplica |
-| 110011 | 10 | Cinco fallos desde la misma IP en 120 s | T1110, T1110.001 |
-| 110012 | 9 | Cuenta bloqueada | T1110 |
-| 110020 | 8 | Ajuste de inventario de alto valor | No aplica |
-| 110030 | 8 | Control de calidad fuera de especificación | No aplica |
-| 110040 | 12 | Error no controlado de aplicación | No aplica |
-
-Los eventos empresariales no reciben un mapeo MITRE artificial. Solo se asigna
-una técnica cuando el comportamiento observado corresponde a una actividad
-adversaria.
-
-### Telemetría de red
-
-Suricata captura la interfaz interna versionada para el laboratorio, escribe
-`eve.json` y Wazuh enriquece las firmas seleccionadas.
-
-| SID Suricata | Regla Wazuh | Caso de uso | MITRE ATT&CK |
-|---:|---:|---|---|
-| 9900001 | 110100 | Marcador inocuo de validación extremo a extremo | No aplica |
-| 9900002 | 110110 | Posible escaneo TCP de servicios | T1046 |
-| 9900003 | 110120 | Enumeración de rutas web sensibles | T1595.002 |
-| 9900004 | 110130 | Indicador de inyección SQL en URI | T1190 |
-| 9900005 | 110140 | Enumeración HTTP de alta frecuencia | T1595.002 |
-
-### Telemetría de endpoint
-
-Las políticas de los agentes se administran de forma centralizada desde
-`wazuh/config/manager/shared`. Ubuntu aporta autenticación, inventario del host
-y FIM; Windows complementa FIM con Sysmon, PowerShell y OpenSSH.
-
-| Regla Wazuh | Nivel | Caso de uso | MITRE ATT&CK |
-|---:|---:|---|---|
-| 110200 | 5 | Marcador inocuo de creación de proceso observado por Sysmon | No aplica |
-| 110210 | 8 | Cambio en configuración de calidad del endpoint Ubuntu | T1565.001 |
-| 110211 | 8 | Cambio en configuración de calidad del endpoint Windows | T1565.001 |
-| 110220 | 5 | Marcador inocuo de recolección de logs Ubuntu | No aplica |
-
-Las reglas 110200 y 110220 validan la ruta de telemetría y no representan un
-ataque. Las reglas FIM indican una modificación que debe investigarse; el
-contexto del escenario determina si es autorizada o adversaria.
-
-## Validación NDR en vivo
-
-La prueba siguiente usa una cabecera de laboratorio inofensiva; no explota la
-aplicación. Debe enviarse desde un equipo distinto de la VM Ubuntu para que el
-tráfico atraviese la interfaz observada.
-
-Desde PowerShell, sustituya la IP:
-
-```powershell
-Invoke-WebRequest -UseBasicParsing `
-  -Uri "http://IP_DE_UBUNTU:8080/health/ready" `
-  -Headers @{"X-SanoliFood-Lab"="ndr-validation"}
-```
-
-Espere aproximadamente 20 segundos y ejecute en Ubuntu:
+Para consultar la contraseña local del dashboard Wazuh:
 
 ```bash
-make suricata-check-live
+make wazuh-credentials
 ```
 
-Resultado esperado:
+El usuario del dashboard es `admin`. El certificado es local y autofirmado;
+compruebe la IP antes de aceptar la advertencia del navegador.
 
-```text
-OK   Suricata EVE     signature_id=9900001
-OK   Wazuh alert      rule=110100
-PASS live NDR telemetry path: network -> Suricata -> EVE -> Wazuh.
-```
+## Qué comprobar en SanoliFood Operations
 
-La regla 110100 confirma la ruta de datos. No debe contabilizarse como ataque en
-las métricas del TFM.
+Inicie sesión con `admin.sanolifood` y la contraseña creada durante la
+instalación. Revise:
 
-## Validación EDR en vivo
+- el dashboard principal;
+- inventario y movimientos;
+- lotes de producción;
+- controles y liberaciones de calidad;
+- usuarios y roles;
+- auditoría.
 
-Estas pruebas son benignas y solo crean archivos de validación en las rutas
-sintéticas del laboratorio. No modifican archivos del sistema ni desactivan
-controles de seguridad.
+La aplicación genera eventos JSON de negocio que Wazuh recibe desde el volumen
+de logs compartido.
 
-En Ubuntu:
+## Cómo usar Wazuh Dashboard
+
+### Comprobar los agentes
+
+Abra **Agents management > Summary**. Deben aparecer:
+
+- `sanolifood-ubuntu-01`: active;
+- `sanolifood-win-01`: active.
+
+Si uno aparece desconectado, no continúe con los escenarios de endpoint.
+
+### Buscar las alertas del proyecto
+
+Abra **Threat intelligence > Threat Hunting** y seleccione un intervalo que
+incluya la prueba, por ejemplo **Last 24 hours**. Añada un filtro por el campo
+`rule.id` y use alguno de estos valores:
+
+| Regla | Qué representa |
+|---:|---|
+| 110010–110012 | Acceso fallido y correlación de autenticación |
+| 110020 | Ajuste alto de inventario |
+| 110030 | Control de calidad fuera de especificación |
+| 110100 | Validación de la ruta Suricata–Wazuh |
+| 110110 | Posible exploración de servicios |
+| 110120 | Enumeración de rutas web |
+| 110130 | Indicador SQLi de laboratorio |
+| 110140 | Tasa HTTP anómala |
+| 110200 | Validación de telemetría Sysmon |
+| 110210 | FIM de Ubuntu |
+| 110211 | FIM WhoData de Windows |
+| 110220 | Validación del endpoint Linux |
+
+Abra una alerta y compruebe al menos:
+
+- fecha y hora;
+- `rule.id`, descripción y nivel;
+- nombre del agente o fuente;
+- IP de origen en alertas de red;
+- ruta o archivo en alertas FIM;
+- identificador `SF-EVAL-SCN-*` cuando la alerta provenga de la campaña.
+
+### Revisar FIM
+
+Abra **Endpoint security > File Integrity Monitoring > Events**. Filtre por el
+agente Ubuntu o Windows. Los escenarios SCN-007 y SCN-008 deben mostrar el
+archivo vigilado y la acción detectada. En Windows, WhoData permite ver además
+información sobre el usuario o proceso relacionado con el cambio.
+
+### Revisar MITRE ATT&CK
+
+Abra **Threat intelligence > MITRE ATT&CK** y seleccione el mismo intervalo de
+tiempo. Después de la campaña deben aparecer técnicas asociadas a los eventos
+observados, entre ellas `T1110`, `T1110.001`, `T1190`, `T1565.001` y
+`T1595.002`.
+
+### Comprobar las reglas instaladas
+
+Abra **Server management > Rules** y busque `110100`, `110130` o cualquier
+otra regla de la tabla anterior. También puede probar eventos de ejemplo desde
+**Server management > Ruleset Test**.
+
+Si no aparece una alerta reciente:
+
+1. amplíe el intervalo de tiempo;
+2. pulse actualizar;
+3. confirme que el agente esté activo;
+4. ejecute `make wazuh-health` y `make suricata-health` en Ubuntu;
+5. consulte `make wazuh-logs` si el problema continúa.
+
+## Cómo usar n8n y SOAR
+
+En n8n abra **Workflows**. Deben existir cinco flujos publicados:
+
+| Workflow visible en n8n | Función |
+|---|---|
+| `SF-SOAR-00 \| Orchestration Error Handler` | Registra errores de los flujos |
+| `SF-SOAR-01 \| Wazuh Alert Intake and Triage` | Recibe, verifica y normaliza alertas Wazuh |
+| `SF-SOAR-02 \| Analyst Decision and Response Dispatch` | Procesa aprobaciones y rechazos |
+| `SF-SOAR-03 \| Expiration and Automatic Rollback` | Revierte controles al vencer su TTL |
+| `SF-SOAR-04 \| Platform Health and Metrics` | Comprueba salud y actualiza métricas |
+
+Después de generar una alerta, abra **Executions**. Una ejecución correcta debe
+mostrar los nodos completados sin errores. n8n coordina el proceso; el
+controlador conserva el incidente y sus acciones para que el caso no dependa
+de una sola ejecución visual.
+
+Desde Ubuntu puede ver la misma información de forma directa:
 
 ```bash
-sudo ./endpoints/scripts/validate-linux.sh
-```
-
-En una PowerShell elevada de Windows:
-
-```powershell
-& "$env:USERPROFILE\SanoliFood-Endpoint\Test-SanoliFoodEndpoint.ps1"
-```
-
-Espere aproximadamente 30 segundos y ejecute en Ubuntu:
-
-```bash
-make endpoint-check-live
-```
-
-Resultado esperado:
-
-```text
-OK   Windows Sysmon probe   rule=110200
-OK   Ubuntu quality FIM     rule=110210
-OK   Windows quality FIM    rule=110211
-OK   Ubuntu log probe       rule=110220
-PASS endpoint telemetry path: host -> Wazuh agent -> manager -> alert.
-```
-
-En Wazuh Threat Hunting filtre por los identificadores 110200, 110210, 110211
-y 110220. Conserve una captura donde se vean regla, agente, marca temporal y
-ruta o proceso, sin mostrar credenciales.
-
-## Respuesta SOAR con n8n
-
-Wazuh entrega únicamente las reglas seleccionadas a n8n mediante un integrador
-`custom-*`. Cada mensaje se firma con HMAC-SHA256, se acepta durante cinco
-minutos y se deduplica usando los campos estables de la alerta. n8n coordina el
-recorrido; el estado durable permanece en el controlador y PostgreSQL.
-
-```mermaid
-flowchart TD
-    A["Alerta Wazuh"] --> B["Firma y triage n8n"]
-    B --> C["Incidente durable"]
-    C --> D["Evidencia automática"]
-    C --> E{"Decisión humana"}
-    E -->|Aprobar| F["Control temporal"]
-    E -->|Rechazar| G["Cierre documentado"]
-    F --> H["TTL o rollback manual"]
-```
-
-El catálogo incluye nueve playbooks y puede combinar varias respuestas en el
-mismo incidente:
-
-| Respuesta | Ejecución | Salvaguardas |
-|---|---|---|
-| Conservar evidencia | Automática | Archivo por incidente, hash de configuración |
-| Bloquear IP en la aplicación | Tras aprobación | CIDR autorizado, IP protegida, TTL y rollback |
-| Bloquear cuenta | Tras aprobación | Usuario validado, identidades protegidas, TTL y rollback |
-| Suspender liberación de lotes | Tras aprobación | Objetivo fijo, TTL y rollback |
-
-Las reglas de validación 110100, 110200 y 110220 solo crean evidencia. Nunca
-proponen una contención. Las acciones con impacto comienzan en
-`pending_approval`; en el modo inicial `dry-run` terminan como `simulated`.
-
-Operación básica:
-
-```bash
-make soar-health
 make soar-incidents
 make soar-show INCIDENT_ID=UUID
 make soar-metrics
 ```
 
-Para aprobar o rechazar un caso, identifique al analista y documente el motivo:
+Las respuestas posibles son:
+
+| Acción | Resultado |
+|---|---|
+| `collect_evidence` | Guarda automáticamente el contexto del incidente |
+| `app_ip_block` | Bloquea temporalmente una IP en la aplicación |
+| `app_account_lock` | Bloquea temporalmente una cuenta |
+| `quality_guard` | Suspende temporalmente las liberaciones de calidad |
+
+Las acciones que cambian el funcionamiento de la aplicación requieren una
+decisión humana. Esto permite revisar si la alerta corresponde a una amenaza o
+a una actividad autorizada antes de aplicar el control.
+
+## Prueba rápida de verificación
+
+Esta prueba confirma la ruta completa sin cambiar el estado de la aplicación.
+
+### 1. Preflight
 
 ```bash
-make soar-approve \
-  INCIDENT_ID=UUID \
-  ANALYST=soc.analyst \
-  REASON='Origen verificado y contención temporal autorizada'
-
-make soar-reject \
-  INCIDENT_ID=UUID \
-  ANALYST=soc.analyst \
-  REASON='Actividad legítima confirmada durante la investigación'
-```
-
-Un fallo transitorio conserva el caso y el número de intentos. Puede reintentarse
-de forma explícita; una contención aplicada también puede revertirse antes del
-TTL:
-
-```bash
-make soar-retry ACTION_ID=UUID ANALYST=soc.analyst
-make soar-rollback ACTION_ID=UUID ANALYST=soc.analyst
-```
-
-Solo después de superar la validación en seco puede habilitarse el modo real:
-
-```bash
-make soar-validate-live
-make soar-enable-live CONFIRM=live
-make soar-validate-live
-```
-
-La segunda prueba aplica y revierte su propio control. `make soar-disable-live`
-devuelve la plataforma a simulación. La guía completa se encuentra en
-[`n8n/README.md`](n8n/README.md).
-
-## Campaña final de evaluación
-
-El catálogo `evaluation/config/scenarios.json` define ocho recorridos. Cada
-ejecución crea un identificador `SF-EVAL-SCN-*` y exige encontrarlo en una
-alerta nueva; después relaciona el incidente n8n por `source_alert_id`. Por
-ello, una alerta histórica con la misma regla no puede aprobar una prueba.
-
-Kali participa solo en SCN-001 a SCN-004 como cliente HTTP fijo
-`10.20.0.30 -> 10.20.0.10:8080`. El ejecutor no acepta otros destinos, aplica
-un presupuesto de solicitudes y usa únicamente estímulos deterministas del
-laboratorio. SCN-005 y SCN-006 se originan en la aplicación; SCN-007 y SCN-008
-se originan en los endpoints Ubuntu y Windows.
-
-Las métricas entre máquinas requieren una fuente horaria común. Ubuntu sirve
-NTP mediante Chrony en `10.20.0.10`; Kali y Windows usan esa dirección como
-fuente. El preflight exige Chrony sincronizado, comprueba la fuente de Windows
-y rechaza diferencias superiores a un segundo. Los intervalos negativos se
-marcan como inválidos y no se agregan como ceros.
-
-```bash
-make upgrade-0.8
-make eval-list
 make eval-preflight \
-  KALI_SSH=usuario@10.20.0.30 \
-  WINDOWS_SSH=usuario@10.20.0.20
-make eval-run SCENARIO=SCN-001 KALI_SSH=usuario@10.20.0.30
+  KALI_SSH=USUARIO_KALI@10.20.0.30 \
+  WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
 ```
 
-Las ejecuciones que requieren juicio terminan primero en
-`PASS_PENDING_DECISION`. La decisión se registra con el `RUN_ID` exacto:
+El resultado debe terminar en `PASS evaluation preflight` e indicar:
+
+- SOC saludable;
+- respuestas en `dry-run`;
+- reenvío Wazuh habilitado;
+- relojes con menos de un segundo de diferencia;
+- Kali capaz de consultar la aplicación;
+- Windows disponible y sincronizado.
+
+### 2. Ruta Suricata, Wazuh y SOAR
+
+```bash
+make eval-run \
+  SCENARIO=SCN-001 \
+  KALI_SSH=USUARIO_KALI@10.20.0.30
+```
+
+El resultado correcto es `status: PASS`, regla `110100`, evidencia automática
+`completed` y `timing_integrity: valid`.
+
+Ahora puede comprobar el mismo evento en:
+
+- Wazuh: **Threat Hunting**, filtro `rule.id = 110100`;
+- n8n: **Executions**, ejecución de entrada de alerta;
+- Ubuntu: `make soar-incidents` y luego `make soar-show`.
+
+### 3. Escenario con decisión humana
+
+```bash
+make eval-run \
+  SCENARIO=SCN-002 \
+  KALI_SSH=USUARIO_KALI@10.20.0.30
+```
+
+La primera salida debe indicar `PASS_PENDING_DECISION`. Copie el `run_id`
+exacto que aparece en pantalla y úselo en el parámetro `RUN_ID` del siguiente comando. No escriba el
+texto `RUN_ID_MOSTRADO` literalmente.
 
 ```bash
 make eval-decide \
-  RUN_ID=SF-EVAL-SCN-... \
+  RUN_ID=SF-EVAL-SCN-002-FECHA-Y-CODIGO-MOSTRADOS \
   DECISION=approve \
   ANALYST=nombre.apellido \
-  REASON='Decisión documentada para la ejecución controlada'
+  REASON='Prueba autorizada del laboratorio; se aprueban las respuestas propuestas'
 ```
 
-La campaña comienza en `dry-run`. Para una ejecución supervisada en modo real,
-`CONFIRM=live` es obligatorio. El evaluador verifica automáticamente la
-secuencia `permitido -> denegado -> restaurado` y solo entonces acepta el
-rollback como evidencia funcional. En bloqueos de IP, Kali confirma además el
-cambio HTTP `200 -> 403 -> 200`. La limpieza intenta el rollback incluso si una
-comprobación intermedia falla. La guía y la matriz completa están en
-[`evaluation/README.md`](evaluation/README.md).
+Como la plataforma comienza en `dry-run`, las acciones deben quedar como
+`simulated`. Esto prueba la detección, el incidente, la aprobación y el envío
+de acciones sin bloquear al evaluador.
 
-### Resultados consolidados de v0.8.0
+## Prueba supervisada con controles reales
 
-Las validaciones finales produjeron los siguientes resultados:
+Esta sección es opcional para una comprobación rápida, pero permite demostrar
+que los controles no solo se simulan. Debe ejecutarse únicamente dentro de la
+red `10.20.0.0/24` y con acceso a las consolas de Ubuntu y Kali.
 
-| Indicador                            | Resultado |
-| ------------------------------------ | --------: |
-| Escenarios cubiertos                 |    8 de 8 |
-| Cobertura de escenarios              |     100 % |
-| Ejecuciones aprobadas                |        10 |
-| Ejecuciones fallidas                 |         0 |
-| Decisiones pendientes                |         0 |
-| Cronologías inválidas                |         0 |
-| Ejecuciones verificadas en modo real |         2 |
-| Controles reales restaurados         |         3 |
-| Triage completo, p95                 |   3.512 s |
-| Detección Wazuh, p95                 |   2.008 s |
-| Transferencia Wazuh–SOAR, p95        |   1.992 s |
-| Decisión–respuesta, p95              |   0.065 s |
-
-Las pruebas en modo real comprobaron el bloqueo de IP, el bloqueo de cuenta y la suspensión temporal de liberaciones de calidad. Para cada control se registró el estado anterior, el efecto activo y la restauración posterior. En el bloqueo de red se verificó directamente desde Kali la transición HTTP `200 → 403 → 200`.
-
-Las técnicas MITRE ATT&CK observadas fueron `T1110`, `T1110.001`, `T1190`, `T1565.001` y `T1595.002`. Los resultados completos se encuentran en [`evidence/EVAL-001/summary.md`](evidence/EVAL-001/summary.md).
-
-## Evidencias y validación
-
-Las evidencias textuales reproducibles pueden mantenerse en Git después de una
-revisión manual. Las capturas, grabaciones y archivos voluminosos deben
-conservarse en el archivo externo de anexos.
-
-### Evidencia de negocio: BUS-001
+Primero prepare la verificación y confirme la salud:
 
 ```bash
-make evidence-business
-```
-
-Capturas recomendadas:
-
-1. dashboard con indicadores empresariales;
-2. libro de movimientos de inventario;
-3. recetas y lotes de producción;
-4. desviación y retención de calidad;
-5. auditoría con eventos de negocio.
-
-### Evidencia Wazuh: WAZ-001
-
-Genere primero al menos un evento empresarial y un fallo de acceso, luego:
-
-```bash
-make evidence-wazuh
-```
-
-Capturas recomendadas:
-
-1. salida completa de `make soc-health`;
-2. vista general del dashboard sin credenciales visibles;
-3. estado de los procesos del manager;
-4. salida de `make wazuh-test-rules`;
-5. alerta real con regla, actor, IP e identificador de correlación.
-
-### Evidencia de red: NDR-001
-
-Después de la validación en vivo:
-
-```bash
-make evidence-ndr
-```
-
-Capturas recomendadas:
-
-1. salida de `make suricata-health`;
-2. salida de `make suricata-test-rules`;
-3. alerta EVE con SID 9900001;
-4. regla Wazuh 110100 en Threat Hunting;
-5. salida completa de `make soc-health`;
-6. salida de `docker stats --no-stream`.
-
-### Evidencia de endpoints: END-001
-
-Después de completar las dos validaciones EDR:
-
-```bash
-make endpoint-health
-make endpoint-check-live
-make evidence-endpoint WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
-```
-
-Capturas recomendadas:
-
-1. `make endpoint-health` con ambos agentes activos;
-2. resumen de agentes en Wazuh;
-3. servicio Wazuh Agent y Sysmon en Windows;
-4. evento de creación de proceso en Sysmon Event Viewer;
-5. alerta 110200 en Wazuh;
-6. alertas FIM 110210 y 110211, una por sistema operativo;
-7. inventario del endpoint Windows o Ubuntu en Wazuh;
-8. salida completa de `make endpoint-check-live`.
-
-`WINDOWS_SSH` permite incorporar el manifiesto, los servicios y el resultado de
-validación de Windows sin copiar credenciales. Si se omite, la evidencia del
-manager se genera igualmente. `evidence/END-001` contiene únicamente estado,
-versiones, hashes y alertas revisables. Las capturas se conservan en el archivo
-externo de anexos.
-
-### Evidencia SOAR: SOAR-001
-
-Después de publicar los workflows y completar la validación:
-
-```bash
+make eval-deploy-live-verification
+make eval-preflight \
+  KALI_SSH=USUARIO_KALI@10.20.0.30 \
+  WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
+make soar-enable-live CONFIRM=live
 make soar-health
-make soar-validate-live
-make evidence-soar
 ```
 
-Capturas recomendadas:
+Desde Kali, compruebe primero que la aplicación está disponible:
 
-1. los cinco workflows publicados en n8n;
-2. un incidente con regla, prioridad, playbook y acciones;
-3. decisión aprobada con identidad y justificación del analista;
-4. contención `simulated` en modo seco;
-5. contención `applied` y `rolled_back` en la validación real;
-6. salida completa de `make soar-health`;
-7. métricas de MTTD, MTTA y comienzo de respuesta;
-8. error workflow y auditoría sin credenciales visibles.
+```bash
+curl --noproxy '*' -o /dev/null -s \
+  -w '%{http_code}\n' \
+  http://10.20.0.10:8080/auth/login
+```
+El resultado esperado antes de aprobar la respuesta es `200`.
 
-`evidence/SOAR-001` conserva estado, versión, casos normalizados, auditoría,
-errores, métricas y hashes. No exporta secretos, cookies ni el contenido de las
-bases de datos.
+Luego, ejecute SCN-002:
 
-### Evidencia de evaluación: EVAL-001
+```bash
+make eval-run \
+  SCENARIO=SCN-002 \
+  KALI_SSH=USUARIO_KALI@10.20.0.30 \
+  CONFIRM=live
+```
 
-Después de completar los ocho escenarios y sus decisiones:
+La ejecución debe terminar en `PASS_PENDING_DECISION`. En este momento todavía
+no existe ningún bloqueo real.
+
+Copie el `run_id` y apruebe la respuesta:
+
+```bash
+make eval-decide \
+  RUN_ID=SF-EVAL-SCN-002-FECHA-Y-CODIGO-MOSTRADOS \
+  DECISION=approve \
+  ANALYST=nombre.apellido \
+  REASON='Prueba supervisada del bloqueo real y su restauración' \
+  KALI_SSH=USUARIO_KALI@10.20.0.30 \
+  CONFIRM=live
+```
+
+La intervención humana consiste en aprobar la respuesta. Después de la
+aprobación, la herramienta comprueba automáticamente estas tres fases:
+
+antes del control, Kali recibe HTTP 200;
+mientras el bloqueo está activo, Kali recibe HTTP 403;
+después del rollback, Kali vuelve a recibir HTTP 200.
+
+La salida final debe mostrar:
+
+- `status: PASS`;
+- `response_mode: live`;
+- acciones `rolled_back`;
+- `live_control_verification.status: PASS`;
+- validaciones `live_control_effect` y `rollback_restoration`.
+
+Devuelva inmediatamente el sistema al modo seguro:
+
+```bash
+make soar-disable-live
+make soar-health
+```
+
+El modo esperado al terminar es `response_mode=dry-run`.
+
+## Campaña completa de evaluación
+
+| Escenario | Fuente | Regla | Comprobación principal |
+|---|---|---:|---|
+| SCN-001 | Kali | 110100 | Ruta Suricata–Wazuh–SOAR |
+| SCN-002 | Kali | 110011 | Cinco fallos correlacionados y aprobación |
+| SCN-003 | Kali | 110120 | Ruta sensible inexistente y rechazo justificado |
+| SCN-004 | Kali | 110130 | Indicador SQLi inerte y bloqueo propuesto |
+| SCN-005 | Aplicación | 110020 | Ajuste de inventario compensado y usuario protegido |
+| SCN-006 | Aplicación | 110030 | Control de calidad y `quality_guard` |
+| SCN-007 | Ubuntu | 110210 | FIM de configuración de calidad |
+| SCN-008 | Windows | 110211 | FIM WhoData de configuración de calidad |
+
+Liste el catálogo:
+
+```bash
+make eval-list
+```
+
+Ejecute SCN-001 a SCN-004 con `KALI_SSH`, SCN-005 y SCN-006 desde Ubuntu,
+SCN-007 con permisos `sudo` cuando se soliciten y SCN-008 con `WINDOWS_SSH`:
+
+```bash
+make eval-run SCENARIO=SCN-001 KALI_SSH=USUARIO_KALI@10.20.0.30
+make eval-run SCENARIO=SCN-002 KALI_SSH=USUARIO_KALI@10.20.0.30
+make eval-run SCENARIO=SCN-003 KALI_SSH=USUARIO_KALI@10.20.0.30
+make eval-run SCENARIO=SCN-004 KALI_SSH=USUARIO_KALI@10.20.0.30
+make eval-run SCENARIO=SCN-005
+make eval-run SCENARIO=SCN-006
+make eval-run SCENARIO=SCN-007
+make eval-run SCENARIO=SCN-008 WINDOWS_SSH=USUARIO_WINDOWS@10.20.0.20
+```
+
+Cuando un escenario devuelva `PASS_PENDING_DECISION`, use su `run_id` exacto
+con `make eval-decide`. Una decisión puede ser `approve` o `reject`; lo
+importante es que corresponda al análisis y que el motivo quede escrito.
+
+Al terminar:
 
 ```bash
 make eval-summary
-make evidence-evaluation
 ```
 
-`EVAL-001` conserva el catálogo, resultados CSV/JSON, métricas agregadas,
-alertas nuevas, incidentes relacionados, estados de contenedores y hashes. No
-incorpora las credenciales locales, secretos SOAR ni volcados de bases de datos.
+Una campaña completa debe mostrar:
 
-Antes de `git add`, revise siempre:
+- ocho escenarios cubiertos;
+- cobertura de `100.0` por ciento;
+- `fail_count: 0`;
+- `pending_decision_count: 0`;
+- `invalid_timing_count: 0`.
+
+Cada ejecución crea una carpeta local
+`evaluation/results/runs/SF-EVAL-SCN-.../` con los datos que permiten seguir la
+prueba de principio a fin:
+
+- definición del escenario;
+- hora exacta de inicio;
+- alerta Wazuh encontrada;
+- incidente y acciones SOAR;
+- resultado y métricas;
+- comprobación del control y rollback cuando se usa el modo `live`.
+
+Los archivos JSON relacionan el mismo `run_id`, la alerta Wazuh y el incidente SOAR.
+
+Los resultados de la evaluación ya validada están en
+[`evidence/EVAL-001/summary.md`](evidence/EVAL-001/summary.md). La explicación
+detallada de cada escenario se encuentra en
+[`evaluation/README.md`](evaluation/README.md).
+
+## Por qué se sincronizan los relojes
+
+La detección pasa por varias máquinas. Kali registra cuándo inició la prueba,
+Wazuh registra cuándo lo detectó y SOAR registra cuándo lo recibió y respondió.
+Si cada equipo usa una hora distinta, una resta entre esas marcas produce una
+métrica incorrecta.
+
+Por eso `make eval-preflight` exige menos de un segundo de diferencia. La zona
+horaria visible puede ser distinta; lo importante es que todos representen el
+mismo instante en UTC.
+
+## Encender, apagar y revisar el sistema
+
+### Encender después de reiniciar las VMs
+
+Encienda primero Ubuntu, luego Windows y Kali. En Ubuntu:
 
 ```bash
-git status --short
-git diff --check
-git check-ignore .env wazuh/runtime/.env suricata/runtime/.env n8n/runtime/.env
-```
-
-Nunca publique `.env`, contraseñas, cookies, claves privadas, certificados
-privados, capturas con credenciales ni volcados completos de paquetes.
-
-## Operación diaria
-
-### Estado y logs
-
-```bash
+cd ~/sanolifood-soc
+make soc-up
 make soc-health
+```
+
+Si Windows o Kali no son necesarios, pueden permanecer apagados. En ese caso,
+compruebe los servicios centrales por separado porque `make soc-health`
+informará que faltan los endpoints:
+
+```bash
+make health
+make wazuh-health
+make suricata-health
+make soar-health
+```
+
+### Ver estado
+
+```bash
+docker ps
 make ps
 make wazuh-ps
 make suricata-ps
-make endpoint-health
 make soar-ps
+```
 
+### Ver logs
+
+```bash
 make logs
 make wazuh-logs
 make suricata-logs
 make soar-logs
 ```
 
-Los objetivos `*-logs` permanecen en primer plano; salga con `Ctrl+C`.
+Los comandos de logs permanecen abiertos; salga con `Ctrl+C`.
 
-### Apagado y arranque
-
-El apagado siguiente conserva todos los volúmenes:
+### Apagar de forma ordenada
 
 ```bash
-make suricata-down
+make soar-disable-live
 make soar-down
 make wazuh-down
+make suricata-down
 make down
 ```
 
-Después de reiniciar Ubuntu:
-
-```bash
-cd ~/sanolifood-soc
-make soc-up
-make soc-health
-make endpoint-health
-```
-
-El agente Ubuntu arranca mediante `systemd`; el agente Windows y Sysmon
-arrancan como servicios automáticos cuando se enciende su VM.
-
-Antes de cambios de versión o de configuración SOAR, cree un respaldo local:
-
-```bash
-make soar-backup
-```
-
-El respaldo contiene secretos y queda excluido de Git. Consérvelo en una
-ubicación protegida distinta del repositorio.
-
-### Cambios en reglas
-
-```bash
-make wazuh-reload-rules
-make wazuh-test-rules
-make suricata-config-test
-make suricata-test-rules
-```
-
-### Reconstrucción de la aplicación
-
-```bash
-make rebuild
-```
-
-Este objetivo conserva PostgreSQL. Para evitar que Nginx mantenga una dirección
-de contenedor antigua, la reconstrucción vuelve a levantar el stack principal
-completo.
-
-### Reinicio destructivo del estado empresarial
-
-```bash
-make reset-lab
-```
-
-Este comando elimina únicamente los contenedores, redes y volúmenes declarados
-por el stack principal de SanoliFood, genera secretos nuevos, reconstruye la
-aplicación y ejecuta las pruebas. **Destruye los usuarios y datos empresariales
-de PostgreSQL.** No elimina los volúmenes de Wazuh, Suricata o SOAR. Por
-seguridad se negará a continuar mientras el controlador SOAR esté desplegado;
-ejecute antes `make soar-down` y, después de la reconstrucción, vuelva a iniciar
-y publicar el plano con `make soar-up` y `make soar-install-workflows`.
-
-No utilice `docker compose down -v` ni `docker volume prune` como parte del flujo
-operativo normal.
+Estos comandos detienen los contenedores sin borrar los volúmenes.
 
 ## Resolución de problemas
 
-### La aplicación no alcanza `healthy`
+### Docker responde `permission denied`
 
 ```bash
-docker compose ps
-docker compose logs --no-color --tail=150 app
-docker compose exec -T app alembic current
-docker compose exec -T app python -m sanolifood.schema_guard
+groups
+sudo usermod -aG docker "$USER"
 ```
 
-Si se modificaron plantillas, estáticos o dependencias, use `make rebuild` en
-lugar de recrear únicamente el contenedor de la aplicación.
+Cierre la sesión y vuelva a entrar. Después pruebe `docker info`.
 
-### Wazuh no inicia
+### Wazuh indexer no inicia
 
 ```bash
 sysctl vm.max_map_count
-free -h
-df -h /
-make wazuh-preflight
 make wazuh-ps
 make wazuh-logs
 ```
 
-No elimine `wazuh/runtime/certs` parcialmente. Si la generación de certificados
-se interrumpe, preserve el directorio para diagnóstico y muévalo completo antes
-de volver a ejecutar `make wazuh-up`.
+Si el valor es menor que `262144`, repita la configuración de `sysctl` de esta
+guía. Compruebe también que Ubuntu tenga al menos 8 GiB de RAM disponibles.
 
-### Suricata detecta una interfaz incorrecta
-
-Compruebe las interfaces y el runtime persistido:
+### Nginx aparece `unhealthy`
 
 ```bash
-ip -br link
-grep -E 'SURICATA_INTERFACE|SURICATA_HOME_NET' suricata/runtime/.env
+make ps
+docker compose logs --tail=150 app nginx postgres
+curl -v http://127.0.0.1:8080/health/ready
 ```
 
-Puede forzar valores solo para el descubrimiento:
+Espere a que PostgreSQL y la aplicación estén saludables. Si el puerto 8080 ya
+está ocupado, identifique el proceso con `sudo ss -ltnp | grep ':8080'`.
+
+### Suricata usa la interfaz equivocada
 
 ```bash
+ip -br address
+cat suricata/runtime/.env
 SURICATA_INTERFACE_OVERRIDE=enp0s8 \
 SURICATA_HOME_NET_OVERRIDE=10.20.0.0/24 \
-make suricata-discover
-
 make suricata-up
+make suricata-health
 ```
 
-Adapte interfaz e IP a su laboratorio. Los valores se guardan en
-`suricata/runtime/.env` y no se versionan.
+No use la interfaz de administración para la campaña.
 
-### Un endpoint aparece desconectado
+### Un agente Wazuh no aparece activo
 
-En Ubuntu compruebe servicios, puertos y agentes:
+En Ubuntu:
 
 ```bash
 sudo systemctl status wazuh-agent --no-pager
-make endpoint-preflight
+sudo journalctl -u wazuh-agent -n 100 --no-pager
 make endpoint-health
 ```
 
-En Windows, desde PowerShell elevada:
+En Windows, PowerShell como administrador:
 
 ```powershell
-Get-Service WazuhSvc,Sysmon64 -ErrorAction SilentlyContinue
+Get-Service WazuhSvc, Sysmon64, sshd
 Test-NetConnection 10.20.0.10 -Port 1514
 Test-NetConnection 10.20.0.10 -Port 1515
-Get-Content "${env:ProgramFiles(x86)}\ossec-agent\ossec.log" -Tail 80
 ```
 
-No elimine `client.keys` para “probar de nuevo” sin conservar antes el estado y
-el diagnóstico. Un reenrolamiento crea una identidad nueva y debe documentarse.
+Compruebe que la IP interna sea correcta y que no exista una puerta de enlace
+en el segundo adaptador.
 
-### Las políticas centralizadas no aparecen
+### `eval-preflight` informa diferencia de hora
+
+En Ubuntu:
 
 ```bash
-make endpoint-configure
-make wazuh-reload-rules
-make endpoint-test-rules
+chronyc tracking
+sudo chronyc clients
 ```
 
-Confirme en el dashboard que cada agente pertenece a su grupo. La sincronización
-puede tardar algunos segundos después del primer enrolamiento.
-
-### La regla 110100 no aparece
-
-- Envíe la petición desde otro equipo o VM, no desde el propio host Ubuntu.
-- Confirme que la solicitud llega a `http://IP_DE_UBUNTU:8080`.
-- Ejecute `make suricata-health` y `make wazuh-health`.
-- Revise `make suricata-logs` y espere al menos 20 segundos antes de ejecutar
-  `make suricata-check-live`.
-
-### Las credenciales de Wazuh no están disponibles
+En Kali:
 
 ```bash
-make wazuh-up
-make wazuh-credentials
+timedatectl status
+timedatectl timesync-status
 ```
 
-Las credenciales se generan en el primer arranque y permanecen en
-`wazuh/runtime/.env`, con permisos restrictivos y fuera de Git.
+En Windows:
 
-### n8n está healthy pero Wazuh no crea incidentes
+```powershell
+w32tm /query /source
+w32tm /query /status
+w32tm /resync /rediscover
+```
+
+Confirme que Kali y Windows estén usando `10.20.0.10` y espere unos segundos
+antes de repetir el preflight.
+
+### n8n está healthy pero no recibe alertas
 
 ```bash
 make soar-health
-make soar-static-check
-cat n8n/runtime/integration.state
 make soar-install-workflows
+make wazuh-reload-rules
+make soar-logs
 make wazuh-logs
 ```
 
-El estado debe ser `enabled`. Si es `disabled`, no edite `ossec.conf`
-manualmente: vuelva a publicar los workflows. Una petición sin firma al webhook
-debe ser rechazada; ese rechazo confirma que el endpoint existe y que la
-autenticación funciona.
+En n8n confirme que los cinco workflows estén publicados. El reenvío Wazuh se
+mantiene deshabilitado si la publicación no termina correctamente.
 
-### Una acción SOAR queda en `failed`
+### Una acción queda en `failed`
 
 ```bash
 make soar-show INCIDENT_ID=UUID
 make soar-logs
-make soar-retry ACTION_ID=UUID ANALYST=soc.analyst
+make soar-retry ACTION_ID=UUID ANALYST=nombre.apellido
 ```
 
-Revise primero el error persistido. El reintento mantiene el mismo `action_id` y
-está limitado a cinco intentos. No cree manualmente un segundo bloqueo para el
-mismo incidente.
+No active `live` para ocultar un error. Primero resuelva la causa y vuelva a
+validar en `dry-run`.
 
-### Se necesita detener n8n de inmediato
+### Se interrumpió una prueba en modo live
 
 ```bash
-make soar-disable-integration
 make soar-disable-live
-make soar-down
+make soar-incidents
+make soar-show INCIDENT_ID=UUID
+make soar-rollback ACTION_ID=UUID ANALYST=nombre.apellido
+make soar-health
 ```
 
-Los incidentes y volúmenes se conservan. Los controles ya aplicados siguen
-teniendo su vencimiento en la aplicación; si n8n permanecerá apagado más allá
-del TTL, reviértalos antes de detener el controlador.
+Los controles tienen TTL y rollback, pero conviene verificar de forma explícita
+que la aplicación haya vuelto al estado esperado.
 
-## Reproducibilidad
+## Puertos publicados
 
-Una reproducción se considera válida cuando un tercero puede, desde un clon
-limpio y sin copiar volúmenes del autor:
+| Puerto | Servicio | Exposición esperada |
+|---:|---|---|
+| 8080/TCP | Aplicación mediante Nginx | Red de administración y laboratorio |
+| 8443/TCP | Wazuh Dashboard | Red de administración |
+| 1514/TCP | Eventos de agentes | Solo `10.20.0.0/24` |
+| 1515/TCP | Registro de agentes | Solo `10.20.0.0/24` |
+| 514/UDP | Entrada syslog | Solo `10.20.0.0/24` |
+| 5678/TCP | n8n | Solo `127.0.0.1`; acceso por túnel SSH |
+| 5680/TCP | Controlador SOAR | Solo `127.0.0.1` |
 
-1. generar su propia configuración local;
-2. levantar el laboratorio con `make soc-up`;
-3. obtener todos los healthchecks en verde;
-4. superar las pruebas de aplicación y reglas;
-5. completar el recorrido empresarial;
-6. generar la alerta NDR 110100 desde un segundo equipo;
-7. enrolar Ubuntu y Windows desde las fuentes versionadas;
-8. obtener las alertas EDR 110200, 110210, 110211 y 110220;
-9. publicar los cinco workflows y superar la validación SOAR en `dry-run`;
-10. aplicar y revertir la contención controlada en modo real;
-11. ejecutar SCN-001 a SCN-008 con marcadores únicos y decisiones registradas;
-12. producir nuevas evidencias BUS-001, WAZ-001, NDR-001, END-001, SOAR-001 y
-    EVAL-001.
+El indexer y las bases de datos no se publican directamente en el host.
 
-Para la entrega final se recomienda repetir este procedimiento en una VM nueva
-y registrar tiempo de despliegue, incidencias y consumo de recursos.
+## Datos que no deben compartirse
 
-## Decisiones de arquitectura
+- `.env`;
+- `wazuh/runtime/.env`;
+- `suricata/runtime/.env`;
+- `n8n/runtime/.env` y `n8n/runtime/secrets/`;
+- respaldos de PostgreSQL;
+- cookies o credenciales de n8n;
+- claves privadas y tokens internos.
 
-Las decisiones estables se documentan como ADR en [`docs/adr`](docs/adr):
+## Documentación incluida
 
-- monolito modular para la aplicación empresarial;
-- sesiones firmadas y control de acceso por roles;
-- transacciones y telemetría de negocio;
-- Wazuh single-node mediante Compose;
-- namespace propio para eventos de aplicación;
-- sensor Suricata en la interfaz interna del host;
-- telemetría de endpoint con políticas Wazuh centralizadas y Sysmon;
-- plano SOAR durable con aprobación, TTL, idempotencia y rollback.
-- campaña atribuible con objetivo fijo, presupuestos y resultados aislados.
+- [`n8n/README.md`](n8n/README.md): funcionamiento y operación SOAR.
+- [`evaluation/README.md`](evaluation/README.md): campaña y métricas.
+- [`scenarios/kali/README.md`](scenarios/kali/README.md): pruebas controladas desde Kali.
+- [`scenarios/business/README.md`](scenarios/business/README.md): escenarios empresariales.
+- [`CHANGELOG.md`](CHANGELOG.md): cambios entre versiones.
+- [`docs/adr/`](docs/adr/): decisiones técnicas del diseño.
 
-## Limitaciones del hito v0.8.0
+## Referencias oficiales
 
-- La aplicación se publica por HTTP porque el entorno es un laboratorio aislado;
-  no es una configuración apta para Internet.
-- El certificado del dashboard es autofirmado por la CA local del laboratorio.
-- Suricata observa la interfaz interna de Ubuntu y no pretende sustituir una
-  arquitectura física con TAP o SPAN.
-- Sysmon está configurado para un laboratorio acotado; una organización real
-  necesitaría tuning, retención y gestión de cambios adicionales.
-- Las contenciones se limitan deliberadamente a la aplicación empresarial; no
-  modifican firewalls del host ni ejecutan comandos remotos sobre endpoints.
-- La cuenta propietaria inicial de n8n se crea manualmente para no versionar ni
-  automatizar una credencial administrativa.
-- Las firmas locales están diseñadas para pruebas deterministas; un despliegue
-  productivo requeriría gestión adicional de reglas, tuning y reducción de
-  falsos positivos.
-
-## Hoja de ruta
-
-Con la implementación práctica y la campaña de evaluación finalizadas, las actividades restantes se concentran en la entrega académica:
-
-1. cerrar la memoria y los anexos técnicos;
-2. seleccionar las capturas más representativas de Wazuh, Suricata, n8n, endpoints y controles SOAR;
-3. preparar y ensayar la demostración de cinco minutos;
-4. conservar los artefactos, hashes y versiones publicadas para garantizar la reproducibilidad;
-5. documentar como trabajo futuro el tuning de reglas, la reducción de falsos positivos y la integración con controles externos de infraestructura.
-
-## Referencias técnicas
-
-- [Docker Engine para Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+- [Instalación de Docker Engine en Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+- [Uso de Docker sin sudo](https://docs.docker.com/engine/install/linux-postinstall/)
 - [Docker Compose](https://docs.docker.com/compose/)
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [PostgreSQL 17](https://www.postgresql.org/docs/17/)
-- [Wazuh Documentation](https://documentation.wazuh.com/current/)
-- [Instalación de Wazuh Agent en Linux](https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh-agent-package-linux.html)
-- [Instalación de Wazuh Agent en Windows](https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh-agent-package-windows.html)
-- [Configuración centralizada de agentes Wazuh](https://documentation.wazuh.com/current/user-manual/reference/centralized-configuration.html)
-- [Suricata 8.0.6 Documentation](https://docs.suricata.io/en/suricata-8.0.6/)
-- [Microsoft Sysmon](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon)
-- [n8n self-hosting](https://docs.n8n.io/hosting/)
-- [Wazuh: integración con APIs externas](https://documentation.wazuh.com/current/user-manual/manager/integration-with-external-apis.html)
-- [MITRE ATT&CK Enterprise](https://attack.mitre.org/techniques/enterprise/)
+- [Despliegue de Wazuh con Docker](https://documentation.wazuh.com/current/deployment-options/docker/index.html)
+- [Navegación del Wazuh Dashboard](https://documentation.wazuh.com/current/user-manual/wazuh-dashboard/navigating-the-wazuh-dashboard.html)
+- [File Integrity Monitoring de Wazuh](https://documentation.wazuh.com/current/user-manual/capabilities/file-integrity/index.html)
+- [Documentación de Suricata](https://docs.suricata.io/)
+- [Documentación de n8n](https://docs.n8n.io/)
+- [Kali en VirtualBox](https://www.kali.org/docs/virtualization/import-premade-virtualbox/)
+- [Redes de VirtualBox](https://www.virtualbox.org/manual/topics/networkingdetails.html)
+- [OpenSSH Server en Windows](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse)
+- [Herramientas del servicio de hora de Windows](https://learn.microsoft.com/en-us/windows-server/networking/windows-time-service/windows-time-service-tools-and-settings)
+- [MITRE ATT&CK](https://attack.mitre.org/)
 
-La evolución técnica del repositorio se resume en
-[`CHANGELOG.md`](CHANGELOG.md).
+## Resultado validado incluido
+
+La evidencia `EVAL-001` incluida en el repositorio registra:
+
+- 8 de 8 escenarios cubiertos;
+- 100 % de cobertura;
+- 10 ejecuciones aprobadas;
+- 0 fallos;
+- 0 decisiones pendientes;
+- 0 cronologías inválidas;
+- 2 ejecuciones verificadas en modo real;
+- 3 controles reales restaurados.
+
+Estos resultados permiten revisar una ejecución ya completada. Las secciones
+anteriores permiten repetirla desde una instalación nueva.
