@@ -4,7 +4,7 @@ param(
     [string]$AgentName = 'sanolifood-win-01',
     [string]$AgentGroup = 'sanolifood-windows',
     [string]$WazuhVersion = '4.14.7',
-    [string]$SysmonExpectedVersion = '15.21',
+    [string]$SysmonExpectedVersion = '15.22',
     [string]$SysmonConfigPath = '',
     [switch]$SkipSysmon
 )
