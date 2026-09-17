@@ -154,6 +154,7 @@ def command(
             cwd=ROOT,
             input=input_text,
             text=True,
+	    errors="replace",
             capture_output=True,
             timeout=timeout,
             check=False,
