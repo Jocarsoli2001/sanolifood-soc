@@ -115,33 +115,101 @@ administración en VirtualBox y vuelva a iniciarla. En redes donde el modo
 puente no entrega DHCP, utilice NAT para la administración o genere una nueva
 dirección MAC desde la configuración avanzada del adaptador.
 
-### 3. Levantar los servicios centrales
+### 3. Comprobar los servicios y sincronizar Ubuntu
 
-En Ubuntu:
+Después de iniciar Ubuntu, espere entre dos y cinco minutos para permitir que Docker restaure los contenedores configurados. Luego compruebe su estado:
 
 ```bash
 cd ~/sanolifood-soc
+docker ps --format 'table {{.Names}}\t{{.Status}}'
+```
+
+Si todos los contenedores esperados aparecen en ejecución y los que disponen de comprobación de salud muestran el estado healthy, no es necesario ejecutar nuevamente make soc-up.
+
+Si falta algún contenedor o aparece en estado Exited, Restarting o unhealthy, reconcilie los servicios:
+
+```bash
+make soar-disable-live
+make soar-down
+make wazuh-down
+make suricata-down
+make down
+
+sudo systemctl restart docker
+
 make soc-up
 ```
 
-El comando inicia o reconcilia la aplicación, Nginx, PostgreSQL, Wazuh,
-Suricata, n8n y el controlador SOAR. No ejecute `make bootstrap` ni reinstale
-los endpoints en esta ruta: las VMs ya contienen la configuración necesaria.
+Espere unos minutos y repita la comprobación:
 
-### 4. Encender Windows y Kali
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}'
+```
 
-Cuando los servicios centrales estén arriba, encienda Windows y Kali. Espere a que inicien apropiadamente. Luego de un tiempo, desde
-Ubuntu confirme la comunicación por la red interna:
+Si necesita consultar también los contenedores detenidos, utilice:
+
+```bash
+docker ps -a
+```
+
+No ejecute make bootstrap ni reinstale los endpoints: las VMs preconfiguradas ya contienen las cuentas, los agentes, los volúmenes y la configuración necesarios.
+
+Antes de encender Windows y Kali, vuelva a sincronizar el reloj de Ubuntu:
+
+```bash
+sudo systemctl restart chrony
+sudo chronyc makestep
+chronyc tracking
+```
+
+La salida de chronyc tracking debe mostrar Leap status : Normal. Ubuntu funciona como servidor horario para las demás máquinas del laboratorio.
+
+### 4. Encender y sincronizar Windows y Kali
+
+Cuando los servicios centrales estén disponibles, encienda Windows y Kali y espere a que ambos sistemas terminen de iniciar.
+
+En Kali, sincronice el reloj con Ubuntu:
+
+```bash
+sudo systemctl restart systemd-timesyncd
+sudo timedatectl set-ntp true
+timedatectl timesync-status
+```
+
+El servidor indicado debe ser 10.20.0.10.
+
+En Windows, abra PowerShell como administrador y fuerce una nueva sincronización:
+
+```bash
+w32tm /resync /rediscover
+Start-Sleep -Seconds 5
+w32tm /query /source
+w32tm /query /status
+```
+
+La fuente horaria debe aparecer como 10.20.0.10.
+
+Finalmente, desde Ubuntu compruebe la comunicación por la red interna:
 
 ```bash
 ping -c 3 10.20.0.20
 ping -c 3 10.20.0.30
 ```
 
-Dentro de Windows y Kali confirme que mantienen, respectivamente,
-`10.20.0.20/24` y `10.20.0.30/24`. Si una VM no responde, revise que su segundo
-adaptador esté conectado a `sanolifood-lab` y que no tenga puerta de enlace ni
-DNS configurados en esa interfaz.
+Dentro de Windows y Kali confirme que mantienen, respectivamente, las direcciones 10.20.0.20/24 y 10.20.0.30/24. Si una VM no responde, revise que su segundo adaptador esté conectado a la red interna sanolifood-lab y que esa interfaz no tenga puerta de enlace ni DNS configurados. 
+
+En caso que Ubuntu no pueda realizar ping a Windows, realizar el siguiente comando desde una ventana de Powershell como administrador:
+
+```bash
+New-NetFirewallRule -DisplayName "SanoliFood Lab - ICMPv4" -Direction Inbound -Protocol ICMPv4 -IcmpType 8 -RemoteAddress 10.20.0.0/24 -Action Allow
+```
+
+Luego de esto, comprobar nuevamente la conexión a Windows y Kali:
+
+```bash
+ping -c 3 10.20.0.20
+ping -c 3 10.20.0.30
+```
 
 ### 5. Verificar que el sistema esté disponible
 
