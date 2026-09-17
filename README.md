@@ -139,6 +139,11 @@ sudo systemctl restart docker
 
 make soc-up
 ```
+> [!IMPORTANT]
+> En caso exista algún problema al realizar make soc-up, como que la VM se quede congelada
+> o no haya avance luego de un tiempo muy largo, se recomienda que se borre la VM importada con todos sus archivos
+> y se re importe a VirtualBox desde la OVA descargada. Luego de esta re importación, se pueden volver a comprobar los servicios
+> como lo indica el inicio del [paso 3](#3-comprobar-los-servicios-y-sincronizar-ubuntu).
 
 Espere unos minutos y repita la comprobación:
 
